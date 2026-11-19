@@ -106,6 +106,7 @@ textarea.summary{font-family:Consolas,monospace;font-size:12.5px;min-height:130p
 .letter p{margin:2px 0}
 /* phones (iPhone 17 Pro Max 440 pt wide, Android) */
 #mbar{display:none}
+#draftBar span{min-width:200px}
 @media (max-width:500px){
   body{font-size:15px;padding-bottom:calc(64px + env(safe-area-inset-bottom))}
   header.top{padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}
@@ -121,6 +122,14 @@ textarea.summary{font-family:Consolas,monospace;font-size:12.5px;min-height:130p
   .grid>label.f:has(#sbp),.grid>label.f:has(#sbp2){grid-column:1/-1}
   .grid:has(#G){grid-template-columns:repeat(3,1fr)!important}
   .card table{display:block;overflow-x:auto;white-space:normal}
+  /* emergency protocol: each step becomes a card */
+  #emCard table,#emCard tbody,#emCard tr,#emCard td{display:block;width:auto!important;border:0}
+  #emCard tr:has(th){display:none}
+  #emCard tr{border:1px solid var(--line)!important;border-radius:8px;padding:8px 10px;margin-bottom:8px;background:#fff}
+  #emCard tr.hidden{display:none}
+  #emCard td{padding:3px 0}
+  #emCard td input[type=text]{width:100%;box-sizing:border-box}
+  #emCard td .row{flex-wrap:nowrap}
   details.grp .items,.epds-q .opts,#bappContra{grid-template-columns:1fr!important}
   /* risk panel becomes a bottom bar that opens as a sheet */
   .side{position:fixed;left:0;right:0;bottom:0;z-index:40;background:var(--bg);max-height:75vh;overflow:auto;transform:translateY(100%);transition:transform .25s;box-shadow:0 -4px 16px rgba(0,0,0,.2);border-radius:12px 12px 0 0;padding:10px 10px calc(70px + env(safe-area-inset-bottom))}
@@ -157,7 +166,7 @@ textarea.summary{font-family:Consolas,monospace;font-size:12.5px;min-height:130p
   <div class="grid">
     <label class="f">Name of patient<input type="text" id="name" placeholder="Surname, First name M.I."></label>
     <label class="f">Age (years)<input type="number" id="age" min="9" max="60"></label>
-    <label class="f">Patient's contact number<input type="text" id="phone" placeholder="09XX XXX XXXX"></label>
+    <label class="f">Patient's contact number<input type="tel" inputmode="tel" id="phone" placeholder="09XX XXX XXXX"></label>
     <label class="f">Sex<input type="text" id="sex" value="F" readonly></label>
     <label class="f">Address (Barangay, Bagac, Bataan)
       <select id="brgy"><option value="">— Select barangay —</option></select></label>
@@ -210,7 +219,7 @@ textarea.summary{font-family:Consolas,monospace;font-size:12.5px;min-height:130p
   <h2><span class="n">3</span>Dating (LMP and ultrasound)</h2>
   <div class="grid">
     <label class="f">LMP <span class="hint">MM/DD/YYYY, or ? / NA / N/A if not recalled</span>
-      <div class="row"><input type="text" id="lmp" placeholder="MM/DD/YYYY" style="flex:1"><span class="calbtn" title="Pick from calendar"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><input type="date" id="lmpPick" tabindex="-1"></span></div></label>
+      <div class="row"><input type="text" id="lmp" inputmode="numeric" placeholder="MM/DD/YYYY" style="flex:1"><button type="button" class="ghost small" id="lmpQ" title="LMP not recalled">?</button><span class="calbtn" title="Pick from calendar"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><input type="date" id="lmpPick" tabindex="-1"></span></div></label>
   </div>
   <div class="hint" style="margin-top:8px">Enter the earliest ultrasound in Section 7 (Labs) as <b>eUTZ</b>; it is used for dating.</div>
   <div class="calc" id="usOut"></div>
@@ -383,13 +392,14 @@ textarea.summary{font-family:Consolas,monospace;font-size:12.5px;min-height:130p
 
 <!-- MODAL -->
 <div class="modal hidden" id="modal"><div class="box">
-  <div class="row" style="justify-content:space-between"><b id="mTitle">Preview</b><button class="ghost small" id="mClose">Close</button></div>
+  <div class="row"><b id="mTitle">Preview</b></div>
   <div id="mSheet"></div>
   <div class="row" style="justify-content:center;gap:10px">
     <button id="mPdf">Save PDF</button>
     <button class="ghost" id="mPrint">Print directly</button>
+    <button class="ghost" id="mClose">Close</button>
   </div>
-  <p class="hint" id="mMsg" style="text-align:center;margin:8px 0 0">Open the PDF and print at actual size on 4×6 in paper.</p>
+  <p class="hint" id="mMsg" style="text-align:center;margin:8px 0 0">Save the PDF, then print at 100%.</p>
 </div></div>
 
 <script>
@@ -507,12 +517,12 @@ const RISK_GROUPS=[
 ];
 const RISK_INDEX={};RISK_GROUPS.forEach(g=>g.items.forEach(it=>RISK_INDEX[it[0]]={id:it[0],label:it[1],lvl:it[2],emerg:!!it[3]}));
 
-const AUTO_IDS=new Set(["ipi18","malnut","prior_preterm","sizedate","mc_twins","breech","oligo_early","oligo_term","previa"]);
+const AUTO_IDS=new Set(["ipi18","malnut","prior_preterm","sizedate","mc_twins","breech","oligo_early","oligo_term","previa","lowlying","aph_stable","fgr","macrosomia","anomaly","poly","poly_sev"]);
 const LABS=[
  {id:"eutz",name:"Earliest ultrasound (eUTZ)",kind:"eutz"},
  {id:"lutz",name:"Latest ultrasound (lUTZ)",kind:"lutz"},
  {id:"cbc",name:"CBC (hemoglobin, platelets)",kind:"hb"},
- {id:"bt",name:"Blood typing and Rh",kind:"bt"},
+ {id:"bt",name:"ABO Rh Typing",kind:"bt"},
  {id:"ict",name:"Indirect Coombs test",kind:"pn"},
  {id:"ua",name:"Urinalysis",kind:"ua"},
  {id:"upro",name:"Urine protein (dipstick)",kind:"dip"},
@@ -522,7 +532,7 @@ const LABS=[
  {id:"alt",name:"ALT (SGPT)",kind:"num",units:["U/L"]},
  {id:"ldh",name:"LDH",kind:"num",units:["U/L"]},
  {id:"bili",name:"Total bilirubin",kind:"num",units:["mg/dL","µmol/L"]},
- {id:"rpr",name:"Syphilis screening (RPR / rapid test)",kind:"rx"},
+ {id:"rpr",name:"VDRL/RPR Screening",kind:"rx"},
  {id:"hbsag",name:"HBsAg",kind:"rx"},
  {id:"hiv",name:"HIV screening",kind:"rx"},
  {id:"fbs",name:"Fasting blood sugar (FBS)",kind:"fbs"},
@@ -623,7 +633,9 @@ LABS.forEach(l=>{
     box=`<div class="row">${sel("loc","Location",["Intrauterine","Extrauterine"])}${sel("viab","Live / demise",["Live","Fetal demise"])}${sel("num","Number",["Singleton","Multiple gestation"])}</div>
      <div class="row" style="margin-top:4px"><span class="hint">AOG by fetal biometry</span><input type="number" data-r="${k}_w" min="4" max="42" placeholder="wk" style="width:64px"><input type="number" data-r="${k}_d" min="0" max="6" placeholder="days" style="width:64px">${k==="eu"?`<span class="hint">EDD: <b id="euEdd">—</b></span>`:""}</div>`+
      (k==="lu"?`<div class="row" style="margin-top:4px">${sel("pres","Presentation",["Cephalic","Breech","Transverse","Variable"])}<input type="number" data-r="lu_fhr" placeholder="FHR bpm" style="width:90px">${sel("af","Amniotic fluid",["Adequate","Inadequate"])}</div>
-     <input type="text" data-r="lu_plac" placeholder="Placenta (e.g., posterior, high-lying, grade II)" style="margin-top:4px">`:"");}
+     <input type="text" data-r="lu_plac" placeholder="Placenta (e.g., posterior, high-lying, grade II)" style="margin-top:4px">
+     <div class="row" style="margin-top:4px"><input type="number" data-r="lu_efw" placeholder="EFW (g)" style="width:100px"><input type="number" data-r="lu_cent" placeholder="EFW centile" style="width:110px"></div>
+     <input type="text" data-r="lu_oth" placeholder="Other findings (e.g., AFI 26 cm, echogenic bowel)" style="margin-top:4px">`:"");}
   else if(l.kind==="dip") box=`<select data-r="${l.id}" style="width:140px"><option value="">Result</option>${["Negative","Trace","1+","2+","3+","4+"].map(x=>`<option>${x}</option>`).join("")}</select>`;
   else if(l.kind==="num") box=`<div class="row"><input type="number" step="0.01" data-r="${l.id}" style="width:90px">${l.units.length>1?uSel(l.id,l.units):`<span class="hint">${l.units[0]}</span>`}</div>`;
   else box=`<input type="text" data-r="${l.id}" placeholder="Result" style="width:100%">`;
@@ -639,7 +651,7 @@ function renderPast(){
   const G=num("G"); const n=G&&G>1?Math.min(G-1,15):0;
   const body=$("pastBody"); const cur=body.children.length;
   for(let i=cur;i<n;i++){
-    body.insertAdjacentHTML("beforeend",`<tr data-i="${i}"><td><b>G${i+1}</b></td><td><input type="text" class="py" placeholder="MM/DD/YYYY"><div class="hint pyerr"></div></td>
+    body.insertAdjacentHTML("beforeend",`<tr data-i="${i}"><td><b>G${i+1}</b></td><td><input type="text" class="py" inputmode="numeric" placeholder="MM/DD/YYYY"><div class="hint pyerr"></div></td>
     <td><select class="pm"><option value="">—</option><option>SVD</option><option>CS</option><option>Abortion</option><option>Ectopic</option></select>
       <div class="pdc hidden" style="margin-top:4px"><select class="pdcv"><option value="">D&amp;C done?</option><option>D&amp;C done</option><option>No D&amp;C</option></select></div></td>
     <td><div class="row"><select class="pc" style="width:80px"><option>No</option><option>Yes</option></select><input type="text" class="pcs hidden" placeholder="Specify" style="flex:1"></div></td></tr>`);
@@ -655,6 +667,20 @@ function readPast(){
 const customLabs=[], customRx=[]; const unticked=new Set();
 
 /* ===================== COMPUTE ===================== */
+// word match for the free-text placenta / other-findings boxes (spaces, hyphens and case ignored)
+function placentaFlags(plac,oth){
+  const t=(" "+(plac||"")+" "+(oth||"")+" ").toLowerCase().replace(/[-_]/g," ").replace(/\s+/g," ");
+  const f={};
+  const cm=t.match(/(\d+(?:\.\d+)?)\s*cm\s*(?:away\s*)?from\s*(?:the\s*)?(?:internal\s*)?(?:cervical\s*)?os/);
+  f.vasa=/vasa (previa|praevia)/.test(t);
+  f.previa=!f.vasa&&/(previa|praevia|covering (the )?(internal )?os|placenta (is )?over (the )?os)/.test(t)||/vasa (previa|praevia).*(placenta )?(previa|praevia)/.test(t);
+  f.low=/low ?lying|\bllp\b|low implant/.test(t)||(cm&&+cm[1]<2);
+  f.accreta=/accreta|increta|percreta|\bpas\b|morbidly adherent|loss of (the )?clear zone|lacunae|placental lakes? with/.test(t);
+  f.abruption=/abruptio|retro ?placental (clot|hematoma|haematoma|bleed)|subchorionic h(a)?ematoma/.test(t);
+  f.anterior=/anterior/.test(t);
+  f.grade3=/grade ?(iii|3)\b|calcified|calcification/.test(t);
+  return f;
+}
 const SEVBP=C=>C.bpU&&(C.bpU[0]>=160||C.bpU[1]>=110);
 function compute(){
   const C={}; // context
@@ -757,7 +783,7 @@ function compute(){
   C.ogtt=C.lab.ogtt?[lr("ogtt0"),lr("ogtt1"),lr("ogtt2")].map(v=>v===""?null:Number(v)*gk("ogtt")):null;
   C.labLines=[]; C.labRows=[];
   if(C.labsDone==="1") LABS.forEach(l=>{ if(!C.lab[l.id]||l.id==="eutz")return; let v="";
-    if(l.id==="lutz"){const ga=lr("lu_w")?`AOG ${lr("lu_w")}${+lr("lu_d")?` ${lr("lu_d")}/7`:""} wk by biometry`:"";v=[lr("lu_loc"),lr("lu_viab"),lr("lu_num"),ga,lr("lu_pres"),lr("lu_fhr")&&`FHR ${lr("lu_fhr")}`,lr("lu_af")&&`amniotic fluid ${lr("lu_af").toLowerCase()}`,lr("lu_plac")&&`placenta ${lr("lu_plac")}`].filter(Boolean).join(", ");}
+    if(l.id==="lutz"){const ga=lr("lu_w")?`AOG ${lr("lu_w")}${+lr("lu_d")?` ${lr("lu_d")}/7`:""} wk by biometry`:"";v=[lr("lu_loc"),lr("lu_viab"),lr("lu_num"),ga,lr("lu_pres"),lr("lu_fhr")&&`FHR ${lr("lu_fhr")}`,lr("lu_af")&&`amniotic fluid ${lr("lu_af").toLowerCase()}`,lr("lu_plac")&&`placenta ${lr("lu_plac")}`,lr("lu_efw")&&`EFW ${lr("lu_efw")} g${lr("lu_cent")?` (${lr("lu_cent")}th centile)`:""}`,lr("lu_oth")].filter(Boolean).join(", ");}
     if(l.id==="cbc"){const p=[];if(lr("cbc"))p.push(`Hb ${lr("cbc")} ${unitOf("hb")}`);if(lr("plt"))p.push(`Plt ${lr("plt")} ${unitOf("plt")}`);const o=document.querySelector('[data-r2="cbc"]').value.trim();if(o)p.push(o);v=p.join(", ");}
     else if(l.id==="lutz"){}
     else if(l.id==="ogtt"){const o=[lr("ogtt0"),lr("ogtt1"),lr("ogtt2")];v=o.some(x=>x)?`${o.map(x=>x||"—").join(" / ")} ${unitOf("ogtt")} (F/1h/2h)`:"";}
@@ -771,7 +797,7 @@ function compute(){
   if(C.us){const v=C.us.gaStr+(C.us.txt?`, ${C.us.txt}`:""), dt=mdy(C.us.sd);
     C.labRows.unshift({name:"Earliest ultrasound (eUTZ)",val:v,date:dt}); C.labLines.unshift(`Earliest ultrasound (eUTZ): ${v} (${dt})`);}
 
-  C.lu=scanOn("lutz")?{pres:rv("lu_pres"),fhr:rv("lu_fhr"),af:rv("lu_af"),plac:rv("lu_plac")}:null;
+  C.lu=scanOn("lutz")?{pres:rv("lu_pres"),fhr:rv("lu_fhr"),af:rv("lu_af"),plac:rv("lu_plac"),efw:rv("lu_efw"),cent:rv("lu_cent"),oth:rv("lu_oth")}:null;
   const scanPick=f=>(C.lu&&rv("lu_"+f))||(C.usDone==="1"&&rv("eu_"+f))||"";
   C.scanLoc=scanPick("loc"); C.scanViab=scanPick("viab"); C.scanNum=scanPick("num");
   // ---- automatic risk items (value = true/false when auto, null when manual) ----
@@ -786,7 +812,21 @@ function compute(){
   auto.breech=C.lu&&C.lu.pres?(C.lu.pres==="Breech"&&fw!=null&&fw>=37):null;
   C.oligoMid=false;
   if(C.lu&&C.lu.af==="Inadequate"&&fw!=null){auto.oligo_early=fw<34?true:null; auto.oligo_term=fw>=37?true:null; C.oligoMid=fw>=34&&fw<37;}
-  if(C.lu&&/previa|low.?lying/i.test(C.lu.plac)&&fw!=null&&fw>32)auto.previa=true;
+  // placenta and other lUTZ findings (Module 2 Sec. 4; Field Manual Ch. 5, 7; RCOG GTG 27a/27b)
+  C.plac=C.lu?placentaFlags(C.lu.plac,C.lu.oth):{};
+  const P=C.plac;
+  if(C.lu&&fw!=null){
+    if(P.low&&!P.previa&&fw<32){auto.lowlying=true;C.rescan32=true;}
+    if(P.previa||P.accreta||(P.low&&fw>=32))auto.previa=true;
+    if(P.abruption)auto.aph_stable=true;
+    const efw=+C.lu.efw||null, cent=C.lu.cent===""?null:+C.lu.cent, t=(C.lu.plac+" "+C.lu.oth).toLowerCase();
+    if((cent!=null&&cent<10)||/\b(fgr|iugr|sga|growth restrict)/.test(t))auto.fgr=true;
+    if((efw&&efw>4000)||/macrosomi|\blga\b|large for gest/.test(t))auto.macrosomia=true;
+    if(/anomal|malformation|\bdefect|hydrops|neural tube|spina bifida|anencephal|hydroceph|cleft|gastroschisis|omphalocele/.test(t))auto.anomaly=true;
+    const afi=+(t.match(/\bafi\s*[:=]?\s*(\d+(?:\.\d+)?)/)||[])[1]||0, dvp=+(t.match(/\b(?:dvp|mvp)\s*[:=]?\s*(\d+(?:\.\d+)?)/)||[])[1]||0;
+    if(/severe polyhydramnios/.test(t)||afi>=35||dvp>=16)auto.poly_sev=true;
+    else if(/polyhydramnios/.test(t)||afi>=24||dvp>=8)auto.poly=true;
+  }
   C.auto=auto;
   C.rf=new Set();
   document.querySelectorAll(".rf").forEach(x=>{const id=x.dataset.id; if(AUTO_IDS.has(id)&&auto[id]!=null){if(auto[id])C.rf.add(id)} else if(x.checked)C.rf.add(id)});
@@ -808,6 +848,8 @@ function compute(){
   if(L.unknown&&!(C.us&&C.us.gw<22))add(C.us?"Unsure LMP, suboptimally dated (scan at 22 weeks or later)":"Unsure LMP / unknown dates",2);
   if(C.scanLoc==="Extrauterine")add("Ectopic pregnancy (extrauterine on ultrasound)",4,true);
   if(C.scanViab==="Fetal demise")add("Fetal demise on ultrasound",4);
+  if(C.plac&&C.plac.vasa)add("Vasa previa on ultrasound",4);
+  if(C.plac&&C.plac.abruption)add("Placental abruption / retroplacental clot on ultrasound",4,true);
   if(C.contact===1&&C.w!=null&&C.w>20)add("First ANC contact after 20 weeks",2);
   if(C.w!=null&&C.w>=40)add("40 weeks or more",3);
   /* ---- BP, hypertensive disorders, HELLP (BAPP Ch. 1–3) ---- */
@@ -934,7 +976,7 @@ function compute(){
 
   /* ---- LABS DUE ---- */
   const due=[]; const unk=C.days==null;
-  ["cbc","bt","ua","rpr","hbsag","hiv"].forEach(id=>{ if(!C.lab[id]) due.push({id,t:{cbc:"CBC with platelet count",bt:"Blood typing with Rh",ua:"Urinalysis",rpr:"RPR / Syphilis screening",hbsag:"HBsAg",hiv:"HIV screening (with counseling)"}[id]})});
+  ["cbc","bt","ua","rpr","hbsag","hiv"].forEach(id=>{ if(!C.lab[id]) due.push({id,t:{cbc:"CBC with platelet count",bt:"ABO Rh Typing",ua:"Urinalysis",rpr:"VDRL/RPR Screening",hbsag:"HBsAg",hiv:"HIV screening (with counseling)"}[id]})});
   if(C.lab.cbc&&C.gt) due.push({id:"cbc_re",t:"CBC with platelet count (monitoring)"});
   else if(C.lab.cbc&&(C.contact===3||C.contact===6)) due.push({id:"cbc_re",t:"CBC (hemoglobin recheck)"});
   if(C.rhNeg&&!C.lab.ict) due.push({id:"ict",t:"Indirect Coombs Test"});
@@ -950,13 +992,14 @@ function compute(){
   const knownDM=C.rf.has("pgdm")||C.rf.has("gdm_diet")||C.rf.has("gdm_ins")||(C.fbs!=null&&C.fbs>=92);
   if(dmRisk&&!C.lab.fbs&&!knownDM&&(unk||w<24)) due.push({id:"fbs",t:"Fasting blood sugar (FBS)"});
   if(!C.lab.ogtt&&!knownDM&&w!=null&&((w>=21&&w<=28)||(C.uaGlu&&w>=24))) due.push({id:"ogtt",t:w>28?"75 g OGTT (glucosuria)":"75 g OGTT (at 24–28 weeks AOG)"});
-  if(C.rf.has("sti_risk")&&w!=null&&w>=28&&w<=30){due.push({id:"rpr_re",t:"RPR (repeat, 3rd trimester)"});due.push({id:"hiv_re",t:"HIV screening (repeat, 3rd trimester)"});}
+  if(C.rf.has("sti_risk")&&w!=null&&w>=28&&w<=30){due.push({id:"rpr_re",t:"VDRL/RPR Screening (repeat, 3rd trimester)"});due.push({id:"hiv_re",t:"HIV screening (repeat, 3rd trimester)"});}
   if(!C.us){
     if(unk) due.push({id:"utz",t:"Ultrasound for dating (transvaginal if 1st trimester)"});
     else if(w<14) due.push({id:"utz",t:"Transvaginal ultrasound (TVS) for dating and viability"});
     else if(w<18) due.push({id:"utz",t:"Pelvic ultrasound (UTZ) for dating"});
     else if(w>22&&!C.lu) due.push({id:"utz",t:"Pelvic ultrasound (UTZ): biometry, placenta, amniotic fluid"});
   } else if(loc==="none"&&(unk||w<14)) due.push({id:"utz",t:"Transvaginal ultrasound (TVS) to confirm intrauterine location"});
+  if(C.rescan32) due.push({id:"utz32",t:"Repeat placental ultrasound (UTZ) at 32 weeks: placental edge to internal os"});
   if(C.rf.has("sizedate")&&!due.some(d=>d.id==="utz")) due.push({id:"utz_sd",t:"Pelvic ultrasound (UTZ): fetal growth and amniotic fluid (size-date discrepancy)"});
   if(!C.lab.cas&&w!=null&&w>=14&&w<=22) due.push({id:"cas",t:"Congenital anomaly scan (CAS) at 18–22 weeks AOG"});
   customLabs.forEach((t,i)=>due.push({id:"cl"+i,t,custom:i}));
@@ -1029,6 +1072,10 @@ function render(){
   let gw="";
   if(C.tpalDone&&C.parIn!=null&&C.parIn!==C.parCalc) gw+=`<div class="alert amber">P = ${C.parIn}, but T + P(preterm) = ${C.parCalc}. Check the score (a twin delivery counts once in parity).</div>`;
   if(C.tpalDone&&C.G>=1){const s=C.T+C.Pp+C.A; if(s!==C.G-1) gw+=`<div class="alert amber">T + P + A = ${s}, but G − 1 = ${C.G-1}. Check the score (twins count once in G and in T or P).</div>`;}
+  {const P=C.plac||{}, w=C.w;
+   if(P.low||P.previa||P.vasa||P.accreta) gw+=`<div class="alert ${P.previa||P.vasa||P.accreta||(w!=null&&w>=32)?"red":"amber"}"><b>${P.vasa?"Vasa previa":P.accreta?"Suspected placenta accreta spectrum":P.previa?"Placenta previa":"Low-lying placenta"} on the latest ultrasound.</b> No digital vaginal exam. ${P.vasa?"Refer to BGHMC (MFM): admission from about 30–32 wk, delivery about 34–37 wk (RCOG GTG 27b; SMFM).":P.accreta?"Refer to BGHMC (Level 4); blood bank alert; planned delivery 34 0/7–35 6/7 wk.":P.previa||(w!=null&&w>=32)?"Refer to BGHMC (Level 4); blood bank alert; planned delivery 36 0/7–37 6/7 wk.":"Repeat placental scan at 32 wk (added to the request)."}${C.cs>=1&&P.anterior&&(P.low||P.previa)?" <b>Prior cesarean with an anterior low placenta: assess for accreta at BGHMC; MFM teleconsult.</b>":""}</div>`;
+   if(P.abruption) gw+=`<div class="alert red"><b>Placental abruption / retroplacental clot on ultrasound: EMERGENCY.</b> IV line, check FHT and bleeding, no digital vaginal exam, urgent transfer to BGHMC.</div>`;
+   if(P.grade3&&w!=null&&w<36) gw+=`<div class="alert amber">Grade III / calcified placenta before 36 wk: check fundal height; consider a growth scan. <span class="hint">Not in the modules; grading alone does not change the level.</span></div>`;}
   if(C.oligoMid) gw+=`<div class="alert amber"><b>Inadequate amniotic fluid at 34–36 weeks (lUTZ):</b> tick the oligohydramnios item that applies (with FGR or isolated) and refer for fetal surveillance.</div>`;
   if(C.lu&&C.lu.fhr&&(+C.lu.fhr<110||+C.lu.fhr>160)) gw+=`<div class="alert red"><b>Fetal heart rate ${esc(C.lu.fhr)} bpm on the latest ultrasound</b> (normal 110–160).</div>`;
   if(C.ectopic&&C.loc==="none") gw+=`<div class="alert red"><b>Prior ectopic pregnancy and site not yet confirmed:</b> request early TVS to confirm intrauterine location.</div>`;
@@ -1095,18 +1142,17 @@ function render(){
 function summaryText(C){
   const ord=n=>n+(["th","st","nd","rd"][(n%100>10&&n%100<14)?0:(n%10<4?n%10:0)]);
   const lmp=C.lmp.date?mdy(C.lmp.date):(C.lmp.unknown?"Not recalled":"");
-  const hist=C.past.map((p,i)=>{let t=`  G${i+1}: ${p.raw||"date ?"} – ${p.manner||"?"}`; if((p.manner==="Abortion"||p.manner==="Ectopic")&&p.dc)t+=` (${p.dc})`; t+=p.comp==="Yes"?`; complication: ${p.spec||"yes, unspecified"}`:"; no complications"; return t}).join("\n");
+  const hist=C.past.map((p,i)=>{let m=p.manner||"?"; if((p.manner==="Abortion"||p.manner==="Ectopic")&&p.dc)m+=` (${p.dc})`; return `G${i+1} - ${p.raw||"date ?"} - ${m} - ${p.comp==="Yes"?`FMC: ${p.spec||"yes, unspecified"}`:"no FMC"}`}).join("\n");
   return `OB HISTORY
-Name: ${C.name||""}
-Age/Sex: ${C.age!=null?C.age:""}/F
-Address: ${C.brgy?`Brgy. ${brgyShort(C.brgy)}`:""}
 Date: ${mdy(C.vdate)}
 Visit: ${C.contact?ord(C.contact)+" prenatal contact":""}
 LMP: ${lmp}
 EDD: ${C.edd?mdy(C.edd)+" by "+C.basis:(C.lmp.unknown?"X":"")}
-BP: ${C.sbp!=null?`${C.sbp}/${C.dbp}`:""}${C.sbp2!=null?` (repeat ${C.sbp2}/${C.dbp2})`:""}${C.map!=null?`; MAP ${C.map.toFixed(1)}`:""}
-OB score: ${C.GP||""}${hist?"\n"+hist:(C.G===1?" (current pregnancy is the first)":"")}
+
+OB score: ${C.GP||""}${hist?"\n"+hist:(C.G===1?" - current pregnancy is the first":"")}
+
 Diagnosis: ${C.dx}
+
 Labs done: ${C.labLines.length?"\n"+C.labLines.map(l=>"  "+l).join("\n"):(C.labsDone==="0"?"None":"")}`;
 }
 function renderEPDS(){
@@ -1160,7 +1206,7 @@ const EM_STEPS=[
 ];
 const emExtra=[];
 $("emBody").innerHTML=`<tr><th>Step</th><th>Dose / preparation</th><th style="width:170px">Time given</th><th style="width:130px">BP / notes</th></tr>`+EM_STEPS.map(st=>`<tr data-step="${st.id}"><td><b><span class="stepn" data-stepn="${st.id}"></span>${esc(st.d)}</b></td><td>${esc(st.dose)}${st.route&&st.route!=="—"?` <span class="hint">(${st.route})</span>`:""}<div class="emnote" data-emnote="${st.id}" style="font-size:11.5px;color:#7f1d17;margin-top:3px"></div></td>
- <td><div class="row"><button class="small" data-given="${st.id}">Given</button><input type="time" data-emt="${st.id}" style="width:100px"></div></td><td><input type="text" data-emn="${st.id}" placeholder="e.g. BP 150/100"></td></tr>`).join("");
+ <td><div class="row"><button class="small" data-given="${st.id}">Given</button><input type="time" data-emt="${st.id}" style="width:100px"></div></td><td><input type="text" data-emn="${st.id}" placeholder="BP / notes, e.g. BP 150/100"></td></tr>`).join("");
 const nowHM=()=>{const d=new Date();return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`};
 const hm12=t=>{if(!t)return"";const[h,m]=t.split(":").map(Number);return `${((h+11)%12)+1}:${String(m).padStart(2,"0")} ${h<12?"AM":"PM"}`};
 function emGiven(){
@@ -1391,7 +1437,7 @@ function openPreview(mode){
    <ol>${items.map(i=>`<li class="${i.red?"red":""}">${mode==="rx"?`<b>${esc(i.main)}</b><br>${esc(i.sub)}`:esc(i.main)}</li>`).join("")}</ol>
    ${printNotes().map(n=>`<div style="margin-top:4px;font-style:italic">${esc(n)}</div>`).join("")}
    <div class="sig"><div style="display:inline-block;text-align:left"><span class="ln"></span><br><b>${esc(C.doc.name)}</b><br>Lic. No. ${C.doc.lic}<br>Rural Health Physician</div></div></div>`;
-  $("mMsg").textContent="Save the PDF, open it and print at actual size (100%) on 4×6 in paper.";
+  $("mMsg").textContent=`Save the PDF, open it and print at actual size (100%) on ${paper()}.`;
   $("modal").querySelector(".box").classList.remove("wide");
   $("modal").classList.remove("hidden");
 }
@@ -1445,6 +1491,7 @@ function buildPDF(){
   lines.forEach(([t,f])=>{doc.setFont("helvetica",f);doc.text(t,x0,fy);fy+=0.15;});
   return doc;
 }
+const paper=()=>MODE==="ref"||MODE==="epds"?"US Letter":"4×6 in paper";
 let downloadsNS=null;
 (async()=>{try{if(window.claude&&window.claude.use)downloadsNS=await window.claude.use("downloads")}catch(e){}})();
 async function savePDF(){
@@ -1454,10 +1501,10 @@ async function savePDF(){
   const fn=`${MODE==="lab"?"LabRequest":MODE==="ref"?"Referral":MODE==="epds"?"EPDS":"Prescription"}_${sur}_${todayISO()}.pdf`;
   const blob=doc.output("blob");
   if(downloadsNS){
-    try{await downloadsNS.save({filename:fn,data:blob});$("mMsg").textContent=`PDF saved. Open it and print at 100% on ${MODE==="ref"||MODE==="epds"?"US Letter":"4×6 in paper"}.`;return}
+    try{await downloadsNS.save({filename:fn,data:blob});$("mMsg").textContent=`PDF saved. Open it and print at 100% on ${paper()}.`;return}
     catch(e){ if(e&&e.code==="declined"){$("mMsg").textContent="Save cancelled.";return} }
   }
-  try{const url=URL.createObjectURL(blob);$("mMsg").innerHTML=`<a href="${url}" target="_blank" rel="noopener">Open the PDF</a> and print at 100% on 4×6 in paper.`;}catch(e){$("mMsg").textContent="This view cannot save files. Use Print directly."}
+  try{const url=URL.createObjectURL(blob);$("mMsg").innerHTML=`<a href="${url}" target="_blank" rel="noopener">Open the PDF</a> and print at 100% on ${paper()}.`;}catch(e){$("mMsg").textContent="This view cannot save files. Use Print directly."}
 }
 
 /* ===================== EVENTS ===================== */
@@ -1545,13 +1592,31 @@ $("openFile").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(
 document.addEventListener("input",saveDraft); document.addEventListener("change",saveDraft); document.addEventListener("click",e=>{if(e.target.dataset&&e.target.dataset.given)saveDraft();});
 (()=>{let d=null;try{d=JSON.parse(localStorage.getItem(DRAFT)||"null")}catch(e){}
   if(!d||typeof d.f!=="object")return;
-  const b=document.createElement("div");b.className="alert blue";b.id="draftBar";b.style.cssText="position:sticky;top:0;z-index:50;display:flex;gap:8px;align-items:center";
+  const b=document.createElement("div");b.className="alert blue";b.id="draftBar";b.style.cssText="position:sticky;top:env(safe-area-inset-top);z-index:50;display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0";
   b.innerHTML=`<span style="flex:1">Restore unsaved form${d.name?" of <b>"+esc(d.name)+"</b>":""} (${new Date(d.saved).toLocaleString()})?</span><button id="drY">Restore</button><button class="ghost" id="drN">Discard</button>`;
-  document.body.prepend(b); $("drY").onclick=()=>{b.remove();restore(d);}; $("drN").onclick=()=>{b.remove();dropDraft();};})();
+  document.querySelector("header.top").after(b); $("drY").onclick=()=>{b.remove();restore(d);}; $("drN").onclick=()=>{b.remove();dropDraft();};})();
+
+/* ===================== PHONE INPUT HELPERS ===================== */
+// digit keypad on phones for every number field (incl. rows added later)
+const setKeypad=t=>{if(t.type==="number"&&!t.inputMode) t.inputMode=/\./.test(t.step||"")?"decimal":"numeric";};
+document.querySelectorAll('input[type="number"]').forEach(setKeypad);
+document.addEventListener("focusin",e=>setKeypad(e.target));
+// G P T P A L: one digit typed -> next box
+const OBSEQ=["G","Pa","T","Pp","A","L"];
+document.addEventListener("input",e=>{const t=e.target, i=OBSEQ.indexOf(t.id);
+  if(i>=0&&i<OBSEQ.length-1&&e.inputType==="insertText"&&/^\d$/.test(t.value)) $(OBSEQ[i+1]).focus();
+  // dates typed as digits get their slashes: MMDDYYYY -> MM/DD/YYYY; past rows also MMYYYY -> MM/YYYY
+  if((t.id==="lmp"||t.classList.contains("py"))&&e.inputType==="insertText"&&/^[\d/]+$/.test(t.value)){
+    const d=t.value.replace(/\//g,"").slice(0,8); let v;
+    if(t.classList.contains("py")&&d.length===6&&/^(19|20)/.test(d.slice(2))) v=d.slice(0,2)+"/"+d.slice(2);
+    else v=d.length>4?`${d.slice(0,2)}/${d.slice(2,4)}/${d.slice(4)}`:d.length>2?`${d.slice(0,2)}/${d.slice(2)}`:d;
+    if(v!==t.value){t.value=v;render();}
+  }},true);
+$("lmpQ").onclick=()=>{$("lmp").value="?";$("lmp").dispatchEvent(new Event("input",{bubbles:true}));};
 
 /* EHR import: emr-prenatal-bridge.user.js (Tampermonkey, local file only) dispatches this event. */
 const brgyKey=s=>String(s||"").toLowerCase().replace(/\(.*?\)/g,"").replace(/[^a-z]/g,"");
-function ehrToast(msg,warn){let t=$("ehrToast");if(!t){t=document.createElement("div");t.id="ehrToast";t.style.cssText="position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:9999;padding:8px 14px;border-radius:8px;font:600 14px system-ui;color:#fff;box-shadow:0 2px 8px #0004";document.body.appendChild(t);}
+function ehrToast(msg,warn){let t=$("ehrToast");if(!t){t=document.createElement("div");t.id="ehrToast";t.style.cssText="position:fixed;top:calc(12px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:9999;padding:8px 14px;border-radius:8px;font:600 14px system-ui;color:#fff;box-shadow:0 2px 8px #0004";document.body.appendChild(t);}
   t.style.background=warn?"#c62828":"#1565c0";t.textContent=msg;t.style.display="block";clearTimeout(t._h);t._h=setTimeout(()=>t.style.display="none",6000);}
 window.addEventListener("prenatal-ehr",e=>{
   const p=e.detail||{}; if(!p.name)return;
