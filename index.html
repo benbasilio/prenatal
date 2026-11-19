@@ -137,8 +137,10 @@ textarea.summary{font-family:Consolas,monospace;font-size:12.5px;min-height:130p
   .side .sticky{position:static}
   #mbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:45;gap:8px;align-items:center;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:var(--accent);color:#fff;font-weight:600;border:0;border-radius:0;min-height:56px;width:100%;text-align:left}
   #mbar .lv{flex:none}
-  .modal{padding:0}
-  .modal .box,.modal .box.wide{max-width:none;min-height:100%;border-radius:0;padding:12px 12px calc(12px + env(safe-area-inset-bottom))}
+  .modal{padding:0;overflow:auto;-webkit-overflow-scrolling:touch}
+  .modal .box,.modal .box.wide{max-width:none;min-height:100%;box-sizing:border-box;border-radius:0;padding:calc(12px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom))}
+  /* title row stays visible below the status bar while the sheet scrolls */
+  .modal .box>.row:first-child{position:sticky;top:0;z-index:2;background:#fff;margin:calc(-12px - env(safe-area-inset-top)) -12px 8px;padding:calc(10px + env(safe-area-inset-top)) 12px 10px;border-bottom:1px solid var(--line)}
   .sheet{zoom:.85}
   .letter{zoom:.45}
 }
