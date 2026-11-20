@@ -106,7 +106,8 @@ textarea.summary{font-family:Consolas,monospace;font-size:12.5px;min-height:130p
 .letter p{margin:2px 0}
 /* phones (iPhone 17 Pro Max 440 pt wide, Android) */
 input::placeholder,textarea::placeholder{font-size:13px}
-@media (max-width:500px){input::placeholder,textarea::placeholder{font-size:11px}select:has(option:checked[value=""]){font-size:11px!important}}
+@media (max-width:500px){input::placeholder,textarea::placeholder{font-size:11px}select:has(option:checked[value=""]),#loc:has(option[value="none"]:checked),#refUrg:has(option[value="auto"]:checked),#wU,#hU,#tU,select[data-u],#refNote.dflt{font-size:11px!important}}
+.sbShort{display:none}
 #mbar{display:none}
 #modal.drive #mPdf,#modal.drive #mPrint{display:none}
 .bad{outline:2px solid #c62828!important}
@@ -127,6 +128,7 @@ input::placeholder,textarea::placeholder{font-size:13px}
   .grid>label.f:has(#sbp2){grid-column:1/-1}
   /* section 1: date beside the heading; age+sex, contact+address */
   #h1row{display:flex;align-items:center;gap:8px}
+  #signBtn{font-size:12px;padding:6px 8px;min-height:32px;max-width:72px;white-space:nowrap}#signBtn .sbFull{display:none}#signBtn .sbShort{display:inline}
   #h1row #vdateWrap{font-size:0;margin:0}
   #h1row #vdate{font-size:13px!important;min-height:30px;padding:3px 6px;width:auto}
   .grid>label.f:has(#age){order:1}.grid>label.f:has(#sex){order:2}.grid>label.f:has(#phone){order:3}.grid>label.f:has(#brgy){order:4}
@@ -1040,6 +1042,7 @@ function compute(){
 /* ===================== RENDER ===================== */
 let CUR=null;
 function render(){
+  if(typeof markRef==="function")markRef();
   const C=compute(); CUR=C;
   // dating
   const ao=$("aogOut"),eo=$("eddOut");ao.classList.remove("err");
@@ -1666,6 +1669,11 @@ document.addEventListener("input",e=>{const t=e.target;
 (()=>{const mq=matchMedia("(max-width:500px)"), w=$("vdateWrap"), home=w.parentElement, next=w.nextElementSibling;
   const place=()=>mq.matches?$("h1row").appendChild(w):home.insertBefore(w,next); place(); mq.addEventListener("change",place);})();
 
+// notes box shows the default sentence small (phones) until it is edited
+const REF_DFLT="For evaluation and management.";
+const markRef=()=>$("refNote").classList.toggle("dflt",$("refNote").value.trim()===REF_DFLT);
+document.addEventListener("input",e=>{if(e.target.id==="refNote")markRef();}); markRef();
+
 /* ===================== PHONE INPUT HELPERS ===================== */
 // digit keypad on phones for every number field (incl. rows added later)
 const setKeypad=t=>{if(t.type==="number"&&!t.inputMode) t.inputMode=/\./.test(t.step||"")?"decimal":"numeric";};
@@ -1828,7 +1836,9 @@ const CLOUD={on:location.origin==="https://benbasilio.github.io",CID:"7139168701
   async get(id){return (await this.api(`https://www.googleapis.com/drive/v3/files/${id}?alt=media`,{raw:true})).json();}
 };
 function paintSign(){const b=$("signBtn"); if(!b)return; const q=CLOUD.queue().length, ok=CLOUD.tok&&Date.now()<CLOUD.exp;
-  b.textContent=ok?`✓ ${CLOUD.email||"Signed in"}${q?` · ${q} to upload`:""}`:`Sign in to RHU Drive${q?` (${q} waiting)`:""}`;}
+  const full=ok?`✓ ${CLOUD.email||"Signed in"}${q?` · ${q} to upload`:""}`:`Sign in to RHU Drive${q?` (${q} waiting)`:""}`;
+  const short=ok?(q?`✓ · ${q}`:"✓ Drive"):(q?`Sign in · ${q}`:"Sign in");
+  b.innerHTML=`<span class="sbFull">${esc(full)}</span><span class="sbShort">${esc(short)}</span>`; b.title=full;}
 // start a new visit from a returning patient's last record
 function newVisit(){
   if(visitLog.length&&visitLog[visitLog.length-1].date===todayISO())return;
