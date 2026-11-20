@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0f6b5c">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
@@ -106,7 +106,7 @@ textarea.summary{font-family:Consolas,monospace;font-size:12.5px;min-height:130p
 .letter p{margin:2px 0}
 /* phones (iPhone 17 Pro Max 440 pt wide, Android) */
 input::placeholder,textarea::placeholder{font-size:13px}
-@media (max-width:500px){input::placeholder,textarea::placeholder{font-size:11px}}
+@media (max-width:500px){input::placeholder,textarea::placeholder{font-size:11px}select:has(option:checked[value=""]){font-size:11px!important}}
 #mbar{display:none}
 #modal.drive #mPdf,#modal.drive #mPrint{display:none}
 .bad{outline:2px solid #c62828!important}
