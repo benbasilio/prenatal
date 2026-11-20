@@ -70,7 +70,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .prog>div{height:100%;width:100%;background:var(--accent);transform-origin:left;transition:transform 200ms var(--ease-out)}
 .missing{font-size:12px;text-align:left;margin:6px 0 0;padding-left:16px;color:var(--muted)}
 .asp{font-size:40px;font-weight:800;text-align:center;border-radius:8px;padding:6px}
-.asp.yes{background:#e8f5e9;color:var(--l1)} .asp.no{background:#f1f3f2;color:#55605b}
+.asp.yes{background:#e8f5e9;color:var(--l1)} .asp.no{background:#f1f3f2;color:#55605b} .asp.notyet{background:#fff4d6;color:#8a5a00}
 .reasons{font-size:12px;margin:8px 0 0;padding-left:16px}
 .reasons li{margin:2px 0}
 .dlist li{margin:4px 0}
@@ -424,8 +424,8 @@ button:active:not(:disabled){transform:scale(.97)}
 <section class="card" id="epdsCard">
   <h2 style="display:flex;align-items:center;gap:8px"><span class="n">10</span><span style="flex:1">Depression and Abuse Screening</span></h2>
   <h3 style="font-size:14px;margin:4px 0">EPDS — Antas ng Postnatal Depression ng Edinburgh (Tagalog)</h3>
-  <div id="epdsReq" class="alert amber hidden"><b>Required at this contact</b> (1st contact or first 3rd-trimester contact). Risk stratification waits until all 10 items are answered.</div>
-  <div id="epdsAsk" class="row">EPDS done before in this pregnancy?
+  <div id="epdsReq" class="alert amber hidden"><b>Required at this visit</b> (1st contact, or first visit from 28 weeks). Risk stratification waits until all 10 items are answered.</div>
+  <div id="epdsAsk" class="row"><span id="epdsAskTxt">EPDS done before in this pregnancy?</span>
     <span class="yn"><label class="chk"><input type="radio" name="epdsPrev" value="1"> Yes</label>
     <label class="chk"><input type="radio" name="epdsPrev" value="0"> No</label></span></div>
   <div id="epdsOff" class="hint hidden">EPDS already done; section collapsed.</div>
@@ -726,7 +726,7 @@ LABS.forEach(l=>{
   else if(l.kind==="num") box=`<div class="row"><input type="number" step="0.01" data-r="${l.id}" style="width:90px">${l.units.length>1?uSel(l.id,l.units):`<span class="hint">${l.units[0]}</span>`}</div>`;
   else box=`<input type="text" data-r="${l.id}" placeholder="Result" style="width:100%">`;
   box+=`<div class="row" style="margin-top:4px"><span class="hint">Date done</span><input type="date" data-d="${l.id}" style="width:150px"></div>`;
-  $("labsBody").insertAdjacentHTML("beforeend",`<tr><td style="width:40%"><label class="chk"><input type="checkbox" class="labchk" data-id="${l.id}"> ${l.name}</label></td><td><span class="labres hidden" data-for="${l.id}">${box}</span></td></tr>`);
+  $("labsBody").insertAdjacentHTML("beforeend",`<tr><td style="width:40%"><label class="chk" style="width:100%"><input type="checkbox" class="labchk" data-id="${l.id}"> ${l.name}</label></td><td><span class="labres hidden" data-for="${l.id}">${box}</span></td></tr>`);
 });
 
 $("epdsQs").innerHTML=EPDS.map((it,i)=>`<div class="epds-q"><div class="q">${i+1}. ${esc(it.q)} <span class="en">${esc(it.en)}</span></div><div class="opts">${it.o.map((o,j)=>`<label class="chk"><input type="radio" name="e${i}" value="${it.rev?3-j:j}"><span>${esc(o[0])}<span class="en">${esc(o[1])}</span></span></label>`).join("")}</div></div>`).join("");
@@ -1029,9 +1029,11 @@ function compute(){
     ...RISK_GROUPS.map((g,gi)=>[`Risk factors: ${g.g} (tick or None)`,C.groupsDone[gi]]),
     ["Labs done? (yes/no)",C.labsDone!=null]
   ];
-  C.epdsMand=C.contact===1||C.contact===4; C.epdsShow=C.epdsMand||radioVal("epdsPrev")==="0";
+  // EPDS (Field Manual Step 6 / contact 4): at booking, and again in the third trimester (from 28 wk) unless already done this trimester
+  C.epdsT3=C.w!=null&&C.w>=28;
+  C.epdsMand=C.contact===1||(C.epdsT3&&radioVal("epdsPrev")!=="1"); C.epdsShow=C.epdsMand||radioVal("epdsPrev")==="0";
   C.epdsDone=EPDS.every((_,i)=>radioVal("e"+i)!=null);
-  if(C.epdsMand) req.push(["EPDS (required at this contact)",C.epdsDone]);
+  if(C.epdsMand) req.push(["EPDS (required at this visit)",C.epdsDone]);
   C.aasPrev=radioVal("aasPrev");
   if(C.epdsMand) req.push(["Abuse screen: done before? or answered",C.aasPrev==="1"&&!(C.epdsDone&&EPDS.reduce((t,_,i)=>t+Number(radioVal("e"+i)||0),0)>=10)||AAS.every((_,i)=>radioVal("a"+i)!=null)]);
   C.req=req; C.missing=req.filter(r=>!r[1]).map(r=>r[0]); C.progress=(req.length-C.missing.length)/req.length; C.ready=C.missing.length===0;
@@ -1059,6 +1061,10 @@ function compute(){
   else if(C.w>=36)C.aspWhy="36 weeks reached: stop aspirin";
   else C.aspWhy="Eligible, but past 28 weeks (not started)";
   C.asp160=C.bmi!=null&&C.bmi>=30;
+  // eligible but under 12 wk: NOT YET, with the date she reaches 12 0/7 wk
+  C.aspNotYet=C.aspEligible&&!C.contra&&C.w!=null&&C.w<12;
+  C.aspStart=C.aspNotYet?new Date(C.vdate.getFullYear(),C.vdate.getMonth(),C.vdate.getDate()+84-C.days):null;
+  C.aspTxt=C.asp?"YES":C.aspNotYet?"NOT YET":"NO";
 
   /* ---- DIAGNOSIS ---- */
   const locSel=$("loc"); if(C.scanLoc==="Intrauterine")locSel.value="utz"; locSel.disabled=C.scanLoc==="Intrauterine";
@@ -1078,7 +1084,17 @@ function compute(){
   const due=[]; const unk=C.days==null;
   ["cbc","bt","ua","rpr","hbsag","hiv"].forEach(id=>{ if(!C.lab[id]) due.push({id,t:{cbc:"CBC with platelet count",bt:"ABO Rh Typing",ua:"Urinalysis",rpr:"VDRL/RPR Screening",hbsag:"HBsAg",hiv:"HIV screening"}[id]})});
   if(C.lab.cbc&&C.gt) due.push({id:"cbc_re",t:"CBC with platelet count (monitoring)"});
-  else if(C.lab.cbc&&(C.contact===3||C.contact===6)) due.push({id:"cbc_re",t:"CBC (hemoglobin recheck)"});
+  else if(C.lab.cbc){
+    // Hb recheck by AOG (Module 2 / Field Manual: contact 3 at 21–27 wk, contact 6 at 35 wk; WHO ANC 2016: ~28 and ~36 wk). No CBC date = treat as old.
+    const cd=isoToDate(document.querySelector('[data-d="cbc"]').value), since=cd?Math.round((C.vdate-cd)/864e5):null;
+    const atCbc=cd&&C.days!=null?C.days-since:null; // AOG (days) when the CBC was taken
+    const before=d=>atCbc==null||atCbc<d;
+    // Anemia: Hb <11 g/dL before 14 wk, <10.5 from 14 wk (WHO; Field Manual 2nd-trimester cut-off); recheck in 2–4 wk (Module 2)
+    const anemic=C.hb!=null&&C.hb<(atCbc!=null?(atCbc<98?11:10.5):(C.w!=null&&C.w<14?11:10.5));
+    if(anemic&&(since==null||since>=14)) due.push({id:"cbc_re",t:"CBC (hemoglobin recheck: anemia)"});
+    else if(C.days!=null&&C.w>=35&&before(245)) due.push({id:"cbc_re",t:"CBC (hemoglobin recheck, 35 weeks)"});
+    else if(C.days!=null&&C.w>=24&&before(168)) due.push({id:"cbc_re",t:"CBC (hemoglobin recheck, 24–28 weeks)"});
+  }
   if(C.rhNeg&&!C.lab.ict) due.push({id:"ict",t:"Indirect Coombs Test"});
   if(C.hellpScreen){
     if(!due.some(d=>d.id==="cbc"||d.id==="cbc_re")) due.push({id:"hl_cbc",t:"CBC with platelet count"});
@@ -1110,8 +1126,9 @@ function compute(){
   rx.push({id:"fe",d:"Ferrous Sulfate + Folic Acid #30",s:"Sig: 1 tab 1 beses sa 1 araw sa TANGHALI"});
   if(w!=null&&w>=20) rx.push({id:"ca",d:"Calcium Carbonate 500 mg/tab #60",s:"Sig: 1 tab 2 beses sa 1 araw (umaga-gabi)"});
   rx.push({id:"mv",d:"Prenatal Multivitamins #30",s:"Sig: 1 tab 1 beses sa 1 araw sa TANGHALI"});
-  if(C.ready&&C.asp){ if(C.asp160) rx.push({id:"asa",d:"Aspirin 80 mg/tab #60",s:"Sig: 2 tabs 1 beses sa 1 araw sa GABI hanggang sa mag 36 weeks AOG"});
-    else rx.push({id:"asa",d:"Aspirin 80 mg/tab #30",s:"Sig: 1 tab 1 beses sa 1 araw sa GABI hanggang sa mag 36 weeks AOG"});}
+  if(C.ready&&(C.asp||C.aspNotYet)){ const st=C.aspNotYet?`SIMULAN LAMANG SA ${mdy(C.aspStart)}`:"";
+    if(C.asp160) rx.push({id:"asa",d:"Aspirin 80 mg/tab #60",s:"Sig: 2 tabs 1 beses sa 1 araw sa GABI hanggang sa mag 36 weeks AOG",start:st});
+    else rx.push({id:"asa",d:"Aspirin 80 mg/tab #30",s:"Sig: 1 tab 1 beses sa 1 araw sa GABI hanggang sa mag 36 weeks AOG",start:st});}
   customRx.forEach((r,i)=>rx.push({id:"cr"+i,d:r.d,s:r.s,custom:i}));
   C.rx=rx; C.bpNote=!!(C.bpU&&(C.bpU[0]>=130||C.bpU[1]>=80));
   return C;
@@ -1197,7 +1214,7 @@ function render(){
   // BAPP
   $("bappHigh").innerHTML=C.bappHi.map(([l,v])=>`<div class="chk">${v?"☑":"☐"} ${l}</div>`).join("")+`<div class="hint">Ticked from section 5.</div>`;
   $("bappModAuto").innerHTML=C.bappModAuto.map(([l,v])=>`<div class="chk">${v?"☑":"☐"} ${l}</div>`).join("");
-  $("bappOut").innerHTML=`<div class="alert ${C.asp?"green":"blue"}" style="margin-top:10px">High-risk factors: <b>${C.nHigh}</b> · Moderate-risk factors: <b>${C.nMod}</b> → Aspirin <b>${C.ready?(C.asp?"YES":"NO"):"(pending)"}</b>${C.ready&&C.asp?` · ${C.asp160?"160 mg (2 × 80 mg), BMI 30 or more":"80 mg"} at bedtime until 36 weeks`:""}</div>`;
+  $("bappOut").innerHTML=`<div class="alert ${C.asp?"green":C.ready&&C.aspNotYet?"amber":"blue"}" style="margin-top:10px">High-risk factors: <b>${C.nHigh}</b> · Moderate-risk factors: <b>${C.nMod}</b> → Aspirin <b>${C.ready?C.aspTxt:"(pending)"}</b>${C.ready&&C.asp?` · ${C.asp160?"160 mg (2 × 80 mg), BMI 30 or more":"80 mg"} at bedtime until 36 weeks`:""}</div>`;
   // labs
   document.querySelectorAll(".labchk").forEach(x=>document.querySelector(`.labres[data-for="${x.dataset.id}"]`).classList.toggle("hidden",!x.checked));
   $("labsWrap").classList.toggle("hidden",radioVal("labsdone")!=="1");
@@ -1212,12 +1229,12 @@ function render(){
   // due list
   $("dueList").innerHTML=(C.cbcNote?`<li class="hint" style="order:9"><i>Note on request: “${C.cbcNote}”</i></li>`:"")+(C.due.length?C.due.map(d=>`<li class="row"><label class="chk"><input type="checkbox" class="dueChk" data-id="${d.id}" ${unticked.has(d.id)?"":"checked"}> <span class="${isUTZ(d.t)?"red":""}">${esc(d.t)}</span></label>${d.custom!=null?`<button class="ghost small" data-rmlab="${d.custom}">Remove</button>`:""}</li>`).join(""):`<li class="hint">No labs due by the rules for this AOG and contact.</li>`);
   // rx
-  $("rxList").innerHTML=C.rx.map(r=>`<li class="row"><label class="chk"><input type="checkbox" class="rxChk" data-id="${r.id}" ${unticked.has(r.id)?"":"checked"}><span><b>${esc(r.d)}</b><br><span class="hint">${esc(r.s)}</span></span></label>${r.custom!=null?`<button class="ghost small" data-rmrx="${r.custom}">Remove</button>`:""}</li>`).join("")
+  $("rxList").innerHTML=C.rx.map(r=>`<li class="row"><label class="chk"><input type="checkbox" class="rxChk" data-id="${r.id}" ${unticked.has(r.id)?"":"checked"}><span><b>${esc(r.d)}</b><br><span class="hint">${esc(r.s)}</span>${r.start?`<br><b style="color:#c00000">${esc(r.start)}</b>`:""}</span></label>${r.custom!=null?`<button class="ghost small" data-rmrx="${r.custom}">Remove</button>`:""}</li>`).join("")
    +(C.bpNote?`<li class="hint" style="margin-top:6px"><i>Note at end of list: “For BP monitoring”</i></li>`:"")
    +(C.cbcNote?`<li class="hint"><i>Note at end of list: “${C.cbcNote}”</i></li>`:"")
    +(!C.ready?`<li class="hint" style="margin-top:6px">Aspirin is added once the risk stratification is complete.</li>`:"");
   // EPDS
-  $("epdsReq").classList.toggle("hidden",!C.epdsMand); 
+  $("epdsReq").classList.toggle("hidden",!C.epdsMand); $("epdsAskTxt").textContent=C.epdsT3?"EPDS done this trimester (from 28 weeks)?":"EPDS done before in this pregnancy?";
   $("epdsOn").classList.toggle("hidden",!C.epdsShow); $("epdsOff").classList.toggle("hidden",!( !C.epdsMand&&radioVal("epdsPrev")==="1"));
   renderEPDS();
   // side panels
@@ -1234,14 +1251,14 @@ function render(){
      +(C.reasons.length?`<ul class="reasons">${C.reasons.map(r=>`<li><span class="lv lv${r.l}">L${r.l}</span> ${esc(r.t)}</li>`).join("")}</ul>`:`<div class="hint" style="margin-top:6px">No risk factor and no warning sign.</div>`)
      +(C.bmiCaution?`<div class="hint" style="margin-top:6px">BMI is from current weight (${esc(C.bmiSrc)}).</div>`:"")
      +(C.bmiUnusable?`<div class="hint" style="margin-top:6px">BMI not available (weight beyond 30 wk); BMI factors not counted.</div>`:"");
-    $("aspBox").innerHTML=`<div class="asp ${C.asp?"yes":"no"}">${C.asp?"YES":"NO"}</div><div class="hint" style="text-align:center;margin-top:4px">${esc(C.aspWhy)}</div>`;
+    $("aspBox").innerHTML=`<div class="asp ${C.asp?"yes":C.aspNotYet?"notyet":"no"}">${C.aspTxt}</div><div class="hint" style="text-align:center;margin-top:4px">${esc(C.aspWhy)}</div>`;
   }
   { const nb=$("riskBox").querySelector(".riskbox"), bar=$("riskBox").querySelector(".prog>div");
     if(bar){ bar.style.transform=`scaleX(${prevP??C.progress})`; bar.getBoundingClientRect(); bar.style.transform=`scaleX(${C.progress})`; }
     $("riskBox").dataset.p=C.ready?1:C.progress;
     if(nb&&prevBg){ const to=nb.style.background; nb.style.background=prevBg; nb.getBoundingClientRect(); nb.style.background=to; } }
   $("dxSide").textContent=C.dx;
-  $("mbarTxt").textContent=C.ready?`Level ${C.level} (${LEVEL_COLOR[C.level]})${C.emerg?" · EMERGENCY":""} · Aspirin ${C.asp?"YES":"NO"}`:`Risk: ${Math.round(C.progress*100)}% complete`;
+  $("mbarTxt").textContent=C.ready?`Level ${C.level} (${LEVEL_COLOR[C.level]})${C.emerg?" · EMERGENCY":""} · Aspirin ${C.aspTxt}`:`Risk: ${Math.round(C.progress*100)}% complete`;
   $("mbar").style.background=C.ready?`var(--l${C.level})`:""; $("mbar").style.color=C.ready&&C.level===3?"#222":"";
   renderEm(C); renderRef(C); updateNav(C);
   // summary
@@ -1394,16 +1411,16 @@ function refBlocks(){
     if(C.hellpScreen)B.push(kv("HELLP",C.hellp?`${C.hellp}: ${C.hellpParts.join("; ")}`:"Screen indicated; no criteria met with available results"));
   }
   B.push({t:"h",text:"BAPP preeclampsia prevention"});
-  B.push(kv("Aspirin",C.asp?`YES — ${C.asp160?"160 mg (2 × 80 mg)":"80 mg"} at bedtime until 36 weeks`:`NO (${C.aspWhy})`));
+  B.push(kv("Aspirin",C.asp?`YES — ${C.asp160?"160 mg (2 × 80 mg)":"80 mg"} at bedtime until 36 weeks`:C.aspNotYet?`NOT YET — eligible; start ${C.asp160?"160 mg (2 × 80 mg)":"80 mg"} at bedtime on ${mdy(C.aspStart)} (12 weeks)`:`NO (${C.aspWhy})`));
   B.push(kv("Risk factors",`${C.nHigh} high, ${C.nMod} moderate`));
   B.push({t:"h",text:"Current prescription"});
-  B.push({t:"list",items:C.rx.filter(r=>!unticked.has(r.id)).map(r=>`${r.d} — ${r.s.replace(/^Sig:\s*/,"Sig: ")}`)});
+  B.push({t:"list",items:C.rx.filter(r=>!unticked.has(r.id)).map(r=>{const t=`${r.d} — ${r.s.replace(/^Sig:\s*/,"Sig: ")}`;return r.start?{t,start:r.start}:t;})});
   const g=emGiven();
   B.push({t:"h",text:"Medicines and actions given at the RHU"});
   if(g.length)B.push({t:"table",head:["Time","Medicine / action","Dose","Route","BP / notes"],rows:g.map(x=>[hm12(x.time),x.d,x.dose||"—",x.route||"—",x.note||""])}); else B.push({t:"p",text:"None."});
   const e=epdsInfo();
   B.push({t:"h",text:"Mental health and safety screening"});
-  B.push(kv("EPDS (Tagalog)",!e&&radioVal("epdsPrev")==="1"?"Done before in this pregnancy":e?`Total ${e.total}/30${e.complete?"":" (incomplete)"}; item 10 (self-harm) score ${e.item10??"—"}`:"Not done at this visit"));
+  B.push(kv("EPDS (Tagalog)",!e&&radioVal("epdsPrev")==="1"?(C.epdsT3?"Done earlier this trimester":"Done before in this pregnancy"):e?`Total ${e.total}/30${e.complete?"":" (incomplete)"}; item 10 (self-harm) score ${e.item10??"—"}`:"Not done at this visit"));
   B.push(kv("Abuse Assessment Screen",e&&e.aas?e.aas:radioVal("aasPrev")==="1"?"Done before in this pregnancy":"Not done"));
   return B;
 }
@@ -1417,7 +1434,7 @@ function refHTML(){
     if(b.t==="kv")return `<p><b>${esc(b.k)}:</b> ${esc(b.v)}</p>`;
     if(b.t==="kvrow")return `<p>${b.pairs.map(([k,v])=>`<span style="display:inline-block;margin-right:.35in"><b>${esc(k)}:</b> ${esc(v)}</span>`).join("")}</p>`;
     if(b.t==="p")return `<p>${esc(b.text)}</p>`;
-    if(b.t==="list")return `<ol style="margin:2px 0;padding-left:20px">${b.items.map(i=>`<li>${esc(i)}</li>`).join("")}</ol>`;
+    if(b.t==="list")return `<ol style="margin:2px 0;padding-left:20px">${b.items.map(i=>typeof i==="string"?`<li>${esc(i)}</li>`:`<li>${esc(i.t)}<br><b style="color:#c00000">${esc(i.start)}</b></li>`).join("")}</ol>`;
     if(b.t==="grid")return `<table>${chunk(b.items,3).map(r=>`<tr>${r.map(([k,v])=>`<td><b>${esc(k)}:</b> ${esc(v||"—")}</td>`).join("")}</tr>`).join("")}</table>`;
     if(b.t==="table")return `<table><tr>${b.head.map(x=>`<th>${esc(x)}</th>`).join("")}</tr>${b.rows.map(r=>`<tr>${r.map(x=>`<td>${esc(x)}</td>`).join("")}</tr>`).join("")}</table>`;
     return "";}).join("");
@@ -1457,7 +1474,8 @@ function buildRefPDF(){
         doc.setFont("helvetica","bold");doc.text(k+":",x,y);doc.setFont("helvetica","normal");const ls=doc.splitTextToSize(v,W-M-x-kw);doc.text(ls[0],x+kw,y);
         if(ls.length>1){ls.slice(1).forEach(l=>{y+=LH;need(LH);doc.text(l,x+kw,y);});x=W-M;} else x+=kw+vw+0.35;});y+=LH;}
     else if(b.t==="p")para(b.text,false);
-    else if(b.t==="list")b.items.forEach((it,i)=>{doc.setFont("helvetica","normal");const ls=doc.splitTextToSize(it,CW-0.3);need(LH);doc.text(`${i+1}.`,M+0.05,y);ls.forEach(l=>{need(LH);doc.text(l,M+0.3,y);y+=LH;});});
+    else if(b.t==="list")b.items.forEach((it,i)=>{const t=typeof it==="string"?it:it.t;doc.setFont("helvetica","normal");const ls=doc.splitTextToSize(t,CW-0.3);need(LH);doc.text(`${i+1}.`,M+0.05,y);ls.forEach(l=>{need(LH);doc.text(l,M+0.3,y);y+=LH;});
+      if(it.start){need(LH);doc.setFont("helvetica","bold");doc.setTextColor(192,0,0);doc.text(it.start,M+0.3,y);y+=LH;doc.setTextColor(0,0,0);doc.setFont("helvetica","normal");}});
     else if(b.t==="grid"){chunk(b.items,3).forEach(r=>table_row(r));y+=0.06;}
     else if(b.t==="table")table(b.head,b.rows,b.head.length===3?[3,3,1.4]:b.head.length===4?[1,1.4,1.6,3]:[0.9,2.6,2.6,0.9,1.6]);
   });
@@ -1533,7 +1551,7 @@ let MODE=null;
 function getPrintItems(){
   const C=CUR;
   if(MODE==="lab") return C.due.filter(d=>!unticked.has(d.id)).map(d=>({main:d.t,red:isUTZ(d.t)}));
-  return C.rx.filter(r=>!unticked.has(r.id)).map(r=>({main:r.d,sub:r.s}));
+  return C.rx.filter(r=>!unticked.has(r.id)).map(r=>({main:r.d,sub:r.s,start:r.start}));
 }
 function printNotes(){const C=CUR,n=[];if(MODE==="rx"&&C.bpNote)n.push("For BP monitoring");if(C.cbcNote)n.push(C.cbcNote);return n}
 function addrStr(){const C=CUR;return C.brgy?`Brgy. ${brgyShort(C.brgy)}`:""}
@@ -1547,7 +1565,7 @@ function openPreview(mode){
    <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-end"><span>Address: <span class="u">${esc(addrStr())}</span></span><span style="white-space:nowrap">Date: <span class="u">${mdy(new Date())}</span></span></div>
    <div>Diagnosis: <span class="u">${esc(C.dx)}</span></div>
    <div class="ttl">${title}</div>
-   <ol>${items.map(i=>`<li class="${i.red?"red":""}">${mode==="rx"?`<b>${esc(i.main)}</b><br>${esc(i.sub)}`:esc(i.main)}</li>`).join("")}</ol>
+   <ol>${items.map(i=>`<li class="${i.red?"red":""}">${mode==="rx"?`<b>${esc(i.main)}</b><br>${esc(i.sub)}${i.start?`<br><b style="color:#c00000">${esc(i.start)}</b>`:""}`:esc(i.main)}</li>`).join("")}</ol>
    ${printNotes().map(n=>`<div style="margin-top:4px;font-style:italic">${esc(n)}</div>`).join("")}
    <div class="sig"><div style="display:inline-block;text-align:left"><span class="ln"></span><br><b>${esc(C.doc.name)}</b><br>Lic. No. ${C.doc.lic}<br>Rural Health Physician</div></div></div>`;
   $("mMsg").textContent=`Save the PDF, open it and print at actual size (100%) on ${paper()}.`;
@@ -1591,6 +1609,7 @@ function buildPDF(){
     doc.setFont("helvetica",MODE==="rx"?"bold":"normal");
     const lines=doc.splitTextToSize(it.main,W-2*M-0.25);doc.text(`${i+1}.`,M,y);doc.text(lines,M+0.22,y);y+=LH*lines.length;
     if(it.sub){doc.setFont("helvetica","normal");const s=doc.splitTextToSize(it.sub,W-2*M-0.25);doc.text(s,M+0.22,y);y+=LH*s.length;}
+    if(it.start){doc.setFont("helvetica","bold");doc.setTextColor(192,0,0);const s=doc.splitTextToSize(it.start,W-2*M-0.25);doc.text(s,M+0.22,y);y+=LH*s.length;doc.setTextColor(0,0,0);}
     y+=0.08;doc.setTextColor(0,0,0);
   });
   doc.setFont("helvetica","italic");doc.setFontSize(9);
@@ -1650,6 +1669,11 @@ function foldSummary(id,C){
 function updateNav(C){
   const done={}; (C.req||[]).forEach(([l,ok])=>{const s=REQ_SEC(l); if(s) done[s]=(done[s]??true)&&!!ok;});
   if(done.s3&&radioVal("eutzDone")==null) done.s3=false; // keep Dating open until the eUTZ question is answered
+  // sections with nothing required: complete once the risk stratification is
+  if(C.ready) ["s6","s8","s9","refCard","s11"].forEach(k=>done[k]=true);
+  // screening: both "done before?" answered, plus every item of a screen being done now
+  { const ep=radioVal("epdsPrev"), epOk=C.epdsMand||ep==="0"?C.epdsDone:ep==="1", apOk=radioVal("aasPrev")==="1"||AAS.every((_,i)=>radioVal("a"+i)!=null);
+    done.epdsCard=epOk&&apOk&&(done.epdsCard??true); }
   SECS.forEach(sec=>{
     const a=$("jump").querySelector(`[data-sec="${sec.id}"]`), red=!!sec.querySelector(".alert.red:not(.hidden)")&&!sec.classList.contains("hidden")||sec.id==="emCard";
     a.classList.toggle("hidden",sec.classList.contains("hidden"));
@@ -1664,15 +1688,20 @@ function updateNav(C){
 }
 (()=>{let c=false; addEventListener("scroll",()=>{const y=scrollY; if(!c&&y>80){c=true;document.body.classList.add("compact");} else if(c&&y<10){c=false;document.body.classList.remove("compact");}},{passive:true});})();
 // A finished section folds once you leave its last field (focus moves out, or a tick/radio/select change completes it).
+// Labs stay open while results are being entered ("labs done: Yes"); they fold only for "No".
+const canAutoFold=sec=>sec.classList.contains("foldable")&&secDone[sec.id]&&!(sec.id==="s7"&&radioVal("labsdone")==="1");
 function foldIfDone(sec,next){
-  if(!sec||!sec.classList.contains("foldable")||!secDone[sec.id]||sec.classList.contains("fold"))return;
+  if(!sec||!canAutoFold(sec)||sec.classList.contains("fold"))return;
   if(next&&sec.contains(next))return;
   const anchor=next&&document.contains(next)?next:null, top=anchor?anchor.getBoundingClientRect().top:0;
   sec.classList.add("fold");
   if(anchor){const d=anchor.getBoundingClientRect().top-top; if(d)window.scrollBy(0,d);}
   else if(sec.getBoundingClientRect().top<0) sec.scrollIntoView({block:"start"});
 }
-document.addEventListener("focusout",e=>{const sec=e.target.closest&&e.target.closest("main>section.card"); if(!sec)return; const next=e.relatedTarget; setTimeout(()=>foldIfDone(sec,next||document.activeElement),0);});
+// Tapping a lab's name ticks it; it never unticks (only the checkbox itself does), so an open result box can't be closed by a near-miss.
+document.addEventListener("click",e=>{const lb=e.target.closest&&e.target.closest("label.chk"), cb=lb&&lb.querySelector(".labchk"); if(cb&&e.target!==cb&&cb.checked)e.preventDefault();},true);
+// Fold only when the cursor lands in another field; taps on blank space, labels or checkboxes (iPhone) don't count.
+document.addEventListener("focusout",e=>{const sec=e.target.closest&&e.target.closest("main>section.card"), next=e.relatedTarget; if(!sec||!next||sec.contains(next))return; setTimeout(()=>foldIfDone(sec,next),0);});
 // Radios and "None" ticks finish a section; single risk ticks and dropdowns don't (more may follow). "Labs done: Yes" opens the lab table, so it never folds.
 document.addEventListener("change",e=>{const t=e.target, sec=t.closest&&t.closest("main>section.card"); if(!sec)return; sec.dataset.seen="1";
   if(!(t.type==="radio"&&!(t.name==="labsdone"&&t.value==="1")||t.classList.contains("noneG")))return; setTimeout(()=>foldIfDone(sec,null),0);});
@@ -1680,7 +1709,7 @@ document.addEventListener("change",e=>{const t=e.target, sec=t.closest&&t.closes
 document.addEventListener("focusin",e=>{
   const here=e.target.closest("main>section.card"); if(!here)return;
   const top=e.target.getBoundingClientRect().top;
-  SECS.forEach(sec=>{if(sec!==here&&sec.classList.contains("foldable")&&secDone[sec.id]&&sec.dataset.seen)sec.classList.add("fold");});
+  SECS.forEach(sec=>{if(sec!==here&&canAutoFold(sec)&&sec.dataset.seen)sec.classList.add("fold");});
   here.dataset.seen="1";
   const d=e.target.getBoundingClientRect().top-top; if(d)window.scrollBy(0,d);
 });
@@ -1775,14 +1804,14 @@ $("saveBtn").onclick=()=>{
   if(!$("consent").checked){cl.style.outline="2px solid #c62828";cl.scrollIntoView({block:"center"});ehrToast("Tick patient consent to save this record.",true);return;}
   cl.style.outline="";
   if(CLOUD.tok&&Date.now()<CLOUD.exp-60e3){CLOUD.save(Promise.resolve(CLOUD.tok));saveFile();return;}
-  if(!navigator.onLine||!(window.google&&google.accounts&&google.accounts.oauth2)){CLOUD.save(new Promise(()=>{}));saveFile();
-    ehrToast("No internet: saved on this device. It will upload automatically once you're online and signed in.",true);return;}
-  MODE="drive"; $("modal").classList.add("drive"); $("mTitle").textContent="Sign in to RHU Drive to save";
-  $("mSheet").innerHTML=`<p>Records are saved to the RHU Drive and the Pregnancy Tracker. Please sign in first.</p><div class="row" style="gap:10px"><button id="sgnGo">Sign in</button><button class="ghost" id="sgnNo">Cancel</button></div><p class="hint" id="sgnMsg"></p>`;
+  // not signed in (online or not): keep it in the device's waiting list; it uploads at the next sign-in
+  CLOUD.save(new Promise(()=>{})); saveFile();
+  MODE="drive"; $("modal").classList.add("drive"); $("mTitle").textContent="Saved on this device only";
+  $("mSheet").innerHTML=`<div class="alert amber"><b>Saved on this device only.</b> Her record on the RHU Drive and the Pregnancy Tracker are <b>not updated yet</b>. They will update when you sign in to RHU Drive.</div><div class="row" style="gap:10px"><button id="sgnGo">Sign in now</button><button class="ghost" id="sgnNo">OK</button></div><p class="hint" id="sgnMsg"></p>`;
   $("mMsg").textContent=""; $("modal").classList.remove("hidden");
   $("sgnNo").onclick=closeModal;
-  $("sgnGo").onclick=()=>{CLOUD.token().then(()=>{closeModal();CLOUD.save(Promise.resolve(CLOUD.tok));saveFile();})
-    .catch(e=>{$("sgnMsg").textContent="Sign-in did not complete ("+e.message+"). Nothing was saved; try again.";});};
+  $("sgnGo").onclick=()=>{CLOUD.token().then(()=>closeModal())
+    .catch(e=>{$("sgnMsg").textContent=(e.message==="offline"?"No internet right now.":"Sign-in did not complete ("+e.message+").")+" The form stays saved on this device and uploads at the next sign-in.";});};
 };
 $("openBtn").onclick=()=>$("openFile").click();
 $("openFile").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;
@@ -1882,7 +1911,7 @@ function trackerRow(C,visits){
   if(C.days!=null){const w=C.days/7, nx=CONTACT_WK.find(k=>k>w+0.5); set("Next visit due",nx?mdy(new Date(+C.vdate+Math.round((nx-w)*7)*864e5)):"");}
   if(C.ready){set("DOH class",C.high?"High-risk":"Low-risk"); set("Level",C.level); set("Main reasons",C.reasons.slice().sort((a,b)=>b.l-a.l).slice(0,3).map(x=>x.t).join("; "));}
   set("HDP / HELLP / GT",[C.hdpTxt,C.hellp,C.gt?"Gestational thrombocytopenia":""].filter(Boolean).join("; "));
-  set("Aspirin",C.ready?(C.asp?"YES":"NO"):""); set("Aspirin dose",C.asp?(C.asp160?"160 mg":"80 mg"):"");
+  set("Aspirin",C.ready?C.aspTxt:""); set("Aspirin dose",C.asp||C.aspNotYet?(C.asp160?"160 mg":"80 mg"):"");
   set("Calcium",C.w!=null&&C.w>=20?"Yes":"");
   TLABS.forEach(([id,h])=>{
     if(id==="eutz"){set(h,C.us?`Done ${mdy(C.us.sd)}`:"");return;}
@@ -1906,7 +1935,7 @@ const CLOUD={on:location.origin==="https://benbasilio.github.io",CID:"7139168701
     if(this.tok&&Date.now()<this.exp-60e3)return Promise.resolve(this.tok);
     if(!window.google||!google.accounts||!google.accounts.oauth2)return Promise.reject(new Error("offline"));
     if(!this.tc)this.tc=google.accounts.oauth2.initTokenClient({client_id:this.CID,scope:"https://www.googleapis.com/auth/drive.file",callback:()=>{}});
-    return new Promise((ok,no)=>{this.tc.callback=r=>{if(r.error)return no(new Error(r.error));this.tok=r.access_token;this.exp=Date.now()+r.expires_in*1000;this.who();ok(this.tok);};
+    return new Promise((ok,no)=>{this.tc.callback=r=>{if(r.error)return no(new Error(r.error));this.tok=r.access_token;this.exp=Date.now()+r.expires_in*1000;this.who();ok(this.tok);setTimeout(()=>this.flush(),0);};
       this.tc.error_callback=e=>no(new Error(e.type||"signin"));this.tc.requestAccessToken({prompt:""});});
   },
   async api(url,opt={}){const r=await fetch(url,{...opt,headers:{Authorization:"Bearer "+this.tok,...(opt.body&&typeof opt.body==="string"?{"Content-Type":"application/json"}:{}),...(opt.headers||{})}});
@@ -1957,6 +1986,11 @@ const CLOUD={on:location.origin==="https://benbasilio.github.io",CID:"7139168701
   async push(job){
     const root=await this.folder("Bagac Prenatal Records"), yr=await this.folder(job.year,root), br=await this.folder(job.brgy||"No barangay",yr);
     const sid=await this.tracker(root), S=`https://sheets.googleapis.com/v4/spreadsheets/${sid}/values`;
+    // a waiting save older than the Drive record (e.g. saved later on another phone) only adds its Visits row
+    if(job.driveId&&job.recId){let last="";try{const m=await this.api(`https://www.googleapis.com/drive/v3/files/${job.driveId}?fields=appProperties`);last=(m.appProperties||{}).last||"";}catch(e){}
+      if(last&&last>job.date){const vr=((await this.api(`${S}/Visits!A:B`)).values||[]); const vrow=vr.findIndex(r=>r[0]===job.recId&&r[1]===job.vrow[1])+1||vr.length+1;
+        await this.api(`${S}:batchUpdate`,{method:"POST",body:JSON.stringify({valueInputOption:"USER_ENTERED",data:[{range:`Visits!A${vrow}`,values:[[job.recId,...job.vrow.slice(1)]]}]})});
+        return {rec:job.recId,id:job.driveId,stale:true};}}
     const ids=((await this.api(`${S}/Tracker!A:A`)).values||[]).map(r=>r[0]);
     let rec=job.recId;
     if(!rec){const pre=`${BRGY_CODE[job.brgy]||"BAGC"}-${job.year}-`; const n=ids.filter(x=>x&&x.startsWith(pre)).map(x=>+x.slice(pre.length)||0);
@@ -1973,18 +2007,18 @@ const CLOUD={on:location.origin==="https://benbasilio.github.io",CID:"7139168701
   queue(){try{return JSON.parse(localStorage.getItem("prenatalQueue")||"[]")}catch(e){return []}},
   setQueue(q){try{localStorage.setItem("prenatalQueue",JSON.stringify(q))}catch(e){} paintSign();},
   async flush(){if(this.busy||!this.tok||Date.now()>this.exp-60e3)return; this.busy=true;
-    let q=this.queue(), done=0;
-    try{while(q.length){const j=q[0]; const r=await this.push(j); done++;
+    let q=this.queue(), done=0, stale=0;
+    try{while(q.length){const j=q[0]; const r=await this.push(j); done++; if(r.stale)stale++;
         if($("name").value.trim()===j.name&&!$("recId").value){$("recId").value=r.rec;$("driveId").value=r.id;}
         else if($("recId").value===r.rec)$("driveId").value=r.id;
         q.shift(); this.setQueue(q);}
-      if(done)ehrToast(`Uploaded to RHU Drive ✓ (${done})`);}
+      if(done)ehrToast(`Uploaded to RHU Drive ✓ (${done})`+(stale?` · ${stale} older save${stale>1?"s":""} added to Visits only (Drive has a newer visit)`:""));}
     catch(e){ehrToast(navigator.onLine?`Upload failed: ${e.message}. Kept on this device; will retry.`:"Saved on device; will upload when online.",true);}
     this.busy=false;},
   save(tokP){ // called from the Save click
     const C=CUR, v=visitSummary(C); visitLog=visitLog.filter(x=>x.date!==v.date); visitLog.push(v); visitLog.sort((a,b)=>a.date<b.date?-1:1);
     const job={name:C.name,brgy:C.brgy,year:String(C.vdate.getFullYear()),edd:C.edd?`${String(C.edd.getMonth()+1).padStart(2,"0")}-${C.edd.getFullYear()}`:"",date:v.date,
-      recId:$("recId").value,driveId:$("driveId").value,file:snapshot(),trow:trackerRow(C,visitLog),vrow:visitRow(v,"")};
+      recId:$("recId").value,driveId:$("driveId").value,saved:Date.now(),file:snapshot(),trow:trackerRow(C,visitLog),vrow:visitRow(v,"")};
     // a queued job for the same patient is replaced by this newer save
     const q=this.queue().filter(x=>!(x.name===job.name&&x.edd===job.edd)); q.push(job); this.setQueue(q);
     tokP.then(()=>this.flush()).catch(()=>ehrToast("Saved on device; sign in to RHU Drive to upload.",true));
@@ -1995,7 +2029,14 @@ const CLOUD={on:location.origin==="https://benbasilio.github.io",CID:"7139168701
 function paintSign(){const b=$("signBtn"); if(!b)return; const q=CLOUD.queue().length, ok=CLOUD.tok&&Date.now()<CLOUD.exp;
   const full=ok?`✓ ${CLOUD.email||"Signed in"}${q?` · ${q} to upload`:""}`:`Sign in to RHU Drive${q?` (${q} waiting)`:""}`;
   const short=ok?(q?`✓ · ${q}`:"✓ Drive"):(q?`Sign in · ${q}`:"Sign in");
-  b.innerHTML=`<span class="sbFull">${esc(full)}</span><span class="sbShort">${esc(short)}</span>`; b.title=full;}
+  b.innerHTML=`<span class="sbFull">${esc(full)}</span><span class="sbShort">${esc(short)}</span>`; b.title=full;
+  // reminder under the header while saves are waiting
+  let bn=$("syncBar"); const Q=CLOUD.queue();
+  if(!Q.length||ok){if(bn)bn.remove();return;}
+  if(!bn){bn=document.createElement("div");bn.id="syncBar";bn.className="alert amber";bn.style.cssText="margin:8px auto;max-width:1280px;display:flex;gap:10px;align-items:center;flex-wrap:wrap";$("topbar").after(bn);}
+  const old=new Date(Math.min(...Q.map(j=>j.saved||+isoToDate(j.date)||Date.now())));
+  bn.innerHTML=`<span style="flex:1"><b>${Q.length} saved form${Q.length>1?"s":""} waiting to sync</b> (oldest ${mdy(old)}). Sign in to upload to the RHU Drive and the Pregnancy Tracker.</span><button class="small" id="syncGo">Sign in</button>`;
+  $("syncGo").onclick=()=>CLOUD.token().catch(e=>ehrToast(e.message==="offline"?"No internet right now; try again when online.":"Sign-in failed: "+e.message,true));}
 // start a new visit from a returning patient's last record
 function newVisit(){
   if(visitLog.length&&visitLog[visitLog.length-1].date===todayISO())return;
@@ -2008,7 +2049,10 @@ function newVisit(){
   document.querySelectorAll('#epdsCard input[type=radio],#aasQs input').forEach(x=>{if(x.type==="radio")x.checked=false;else x.value="";});
   [["epdsPrev","1"],["aasPrev","1"]].forEach(([n,v])=>{const r=document.querySelector(`input[name="${n}"][value="${v}"]`);if(r)r.checked=true;});
   const c=num("contact"); if(c)$("contact").value=String(Math.min(12,c+1));
-  syncVis(); render(); saveDraft();
+  const prevW=CUR&&CUR.w; syncVis(); render();
+  // a "done" EPDS from before 28 weeks doesn't count for the third-trimester screen
+  if(CUR.w!=null&&CUR.w>=28&&!(prevW>=28)){const r=document.querySelector('input[name="epdsPrev"]:checked'); if(r){r.checked=false; render();}}
+  saveDraft();
 }
 async function openFromDrive(){
   try{await CLOUD.token();}catch(e){ehrToast("Sign in to RHU Drive first (needs internet).",true);return;}
@@ -2030,6 +2074,7 @@ if(CLOUD.on){
   $("signBtn").onclick=()=>CLOUD.token().then(()=>CLOUD.flush()).catch(e=>ehrToast("Sign-in failed: "+e.message,true));
   $("driveOpenBtn").onclick=openFromDrive;
   addEventListener("online",()=>CLOUD.flush()); paintSign();
+  try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist();}catch(e){} // keep the waiting list from being evicted
 }
 
 /* EHR import: emr-prenatal-bridge.user.js (Tampermonkey, local file only) dispatches this event. */
