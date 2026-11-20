@@ -105,6 +105,8 @@ textarea.summary{font-family:Consolas,monospace;font-size:12.5px;min-height:130p
 .letter table{width:100%;border-collapse:collapse}.letter td,.letter th{border:1px solid #999;padding:2px 5px;font-size:9.5pt}
 .letter p{margin:2px 0}
 /* phones (iPhone 17 Pro Max 440 pt wide, Android) */
+input::placeholder,textarea::placeholder{font-size:13px}
+@media (max-width:500px){input::placeholder,textarea::placeholder{font-size:11px}}
 #mbar{display:none}
 #modal.drive #mPdf,#modal.drive #mPrint{display:none}
 .bad{outline:2px solid #c62828!important}
@@ -384,7 +386,7 @@ textarea.summary{font-family:Consolas,monospace;font-size:12.5px;min-height:130p
   <h2><span class="n">11</span>OB history summary (copy and paste)</h2>
   <textarea class="summary" id="summary" readonly></textarea>
   <div class="row" style="margin-top:8px"><button class="ghost" id="copyBtn">Copy</button><span id="copyMsg" class="hint"></span>
-    <label class="chk cloudOnly hidden" style="flex-basis:100%"><input type="checkbox" id="consent"> Patient consents to secure storage of her prenatal record by Bagac RHU (RA 10173)</label><input type="hidden" id="recId"><input type="hidden" id="driveId">
+    <label class="chk cloudOnly hidden" style="flex-basis:100%"><input type="checkbox" id="consent" onchange="this.closest('label').style.outline=''"> Patient consents to secure storage of her prenatal record by Bagac RHU (RA 10173)</label><input type="hidden" id="recId"><input type="hidden" id="driveId">
     <span style="flex:1"></span><button id="saveBtn">Save</button><button class="ghost cloudOnly hidden" id="driveOpenBtn">Open from Drive</button><button class="ghost" id="openBtn">Open saved form</button><input type="file" id="openFile" accept=".json,application/json" class="hidden"><button class="ghost" id="clearBtn">Clear form for next patient</button></div>
 </section>
 
@@ -1606,7 +1608,22 @@ async function saveFile(){
   if(downloadsNS){try{await downloadsNS.save({filename:fn,data:blob});ehrToast(`Saved ${fn}`);return}catch(e){if(e&&e.code==="declined")return}}
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();a.remove();ehrToast(`Saved ${fn}`);
 }
-$("saveBtn").onclick=()=>{const tok=CLOUD.on&&$("consent").checked?CLOUD.token():null; if(tok)CLOUD.save(tok); else if(CLOUD.on)ehrToast("Saved on device only: tick patient consent to upload to RHU Drive.",true); saveFile(); if(tok||CLOUD.on)return; else if(!CLOUD.on&&location.protocol==="file:") ehrToast("Saved on this computer. This copy can't upload; open the installed app to sync.");};
+$("saveBtn").onclick=()=>{
+  if(!CLOUD.on){saveFile(); if(location.protocol==="file:")ehrToast("Saved on this computer. This copy can't upload; open the installed app to sync."); return;}
+  // installed app: consent is required, then a signed-in RHU account (offline saves queue on the device)
+  const cl=$("consent").closest("label");
+  if(!$("consent").checked){cl.style.outline="2px solid #c62828";cl.scrollIntoView({block:"center"});ehrToast("Tick patient consent to save this record.",true);return;}
+  cl.style.outline="";
+  if(CLOUD.tok&&Date.now()<CLOUD.exp-60e3){CLOUD.save(Promise.resolve(CLOUD.tok));saveFile();return;}
+  if(!navigator.onLine||!(window.google&&google.accounts&&google.accounts.oauth2)){CLOUD.save(new Promise(()=>{}));saveFile();
+    ehrToast("No internet: saved on this device. It will upload automatically once you're online and signed in.",true);return;}
+  MODE="drive"; $("modal").classList.add("drive"); $("mTitle").textContent="Sign in to RHU Drive to save";
+  $("mSheet").innerHTML=`<p>Records are saved to the RHU Drive and the Pregnancy Tracker. Please sign in first.</p><div class="row" style="gap:10px"><button id="sgnGo">Sign in</button><button class="ghost" id="sgnNo">Cancel</button></div><p class="hint" id="sgnMsg"></p>`;
+  $("mMsg").textContent=""; $("modal").classList.remove("hidden");
+  $("sgnNo").onclick=closeModal;
+  $("sgnGo").onclick=()=>{CLOUD.token().then(()=>{closeModal();CLOUD.save(Promise.resolve(CLOUD.tok));saveFile();})
+    .catch(e=>{$("sgnMsg").textContent="Sign-in did not complete ("+e.message+"). Nothing was saved; try again.";});};
+};
 $("openBtn").onclick=()=>$("openFile").click();
 $("openFile").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;
   try{const d=JSON.parse(await f.text());if(!d||typeof d.f!=="object")throw 0;
