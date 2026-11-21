@@ -45,7 +45,7 @@ details.grp{border:1px solid var(--line);border-radius:8px;margin-bottom:8px}
 details.grp summary{cursor:pointer;padding:8px 12px;font-weight:600;font-size:13px}
 details.grp .items{padding:4px 12px 10px;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:4px 16px}
 .chk{display:flex;gap:8px;align-items:flex-start;font-size:13px;padding:3px 0}
-.chk input{margin-top:3px}
+.chk input{margin-top:3px;flex:none} /* never squeeze the tick box; the label wraps instead */
 .lv{font-size:10px;font-weight:700;border-radius:4px;padding:1px 5px;color:#fff;white-space:nowrap}
 .lv1{background:var(--l1)}.lv2{background:var(--l2)}.lv3{background:var(--l3);color:#222}.lv4{background:var(--l4)}.lv0{background:#8a948f}
 .badge{display:inline-block;font-size:12px;padding:2px 7px;border-radius:10px;background:#e8efec;color:var(--accent);font-weight:600}
