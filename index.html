@@ -218,15 +218,15 @@ body.viewonly main .card{background:#fafbfa}
   #h1row{display:flex;align-items:center;gap:8px}
   /* previous visits: one card per visit (date | place | remove, then AOG and slot) */
   #pvWrap table,#pvWrap tbody{display:block}#pvWrap thead{display:none}
-  #pvBody tr{display:grid;grid-template-columns:118px 1fr auto 44px;gap:6px 8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
-  #pvBody td{border:0;padding:0}#pvBody td:nth-child(2){grid-row:1;grid-column:1/4}#pvBody td:nth-child(5){grid-row:1;grid-column:4}
-  #pvBody td:nth-child(1){grid-row:2;grid-column:1}#pvBody td:nth-child(3){grid-row:2;grid-column:2}#pvBody td:nth-child(4){grid-row:2;grid-column:3/5}
+  #pvBody tr{display:grid;grid-template-columns:118px 1fr 44px;gap:6px 8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+  #pvBody td{border:0;padding:0}#pvBody td:nth-child(1){grid-row:1;grid-column:1}#pvBody td:nth-child(2){grid-row:1;grid-column:2}#pvBody td:nth-child(5){grid-row:1;grid-column:3}
+  #pvBody td:nth-child(3){grid-row:2;grid-column:1}#pvBody td:nth-child(4){grid-row:2;grid-column:2/4}
   #pvBody .pvAog:not(:empty)::before{content:"AOG "}#pvBody .pvSlot:not(:empty)::before{content:"ANC slot "}#pvBody .pvAog,#pvBody .pvSlot{font-size:13px;color:var(--muted);white-space:nowrap}
   #signBtn{font-size:12px;padding:6px 8px;min-height:32px;max-width:72px;white-space:nowrap}#signBtn .sbFull{display:none}#signBtn .sbShort{display:inline}
   #h1row #vdateWrap{font-size:0;margin:0}
   #h1row #vdate{font-size:13px!important;min-height:30px;padding:3px 6px;width:auto}
   .grid>label.f:has(#age){order:1}.grid>label.f:has(#sex){order:2}.grid>label.f:has(#phone){order:3}.grid>label.f:has(#brgy){order:4}
-  .grid>label.f:has(#contact){order:4}.grid>label.f:has(#doc),.grid>label.f:has(#loc),.grid>label.f:has(#vplace){order:5;grid-column:1/-1}
+  .grid>label.f:has(#contact){order:4}.grid>label.f:has(#doc),.grid>label.f:has(#loc){order:5;grid-column:1/-1}
   /* vitals: weight+unit and height+unit on one line */
   .grid>label.f:has(#wt) select,.grid>label.f:has(#ht)~select,#hU,#wU,#tU{width:62px!important;min-width:0;padding:4px}
   .grid>label.f:has(#wt) .row,#htCmRow{gap:4px}
@@ -309,8 +309,6 @@ body.viewonly main .card{background:#fafbfa}
         <option value="utz">Intrauterine — confirmed by ultrasound</option>
         <option value="clin">Intrauterine — clinically (fundus palpable, FHT heard)</option>
       </select></label>
-    <label class="f">Place of this visit
-      <select id="vplace" onchange="this.closest('label').style.outline=''"></select><span class="hint cloudOnly hidden" id="siteHint"></span></label>
   </div>
   <div id="pvWrap" style="margin-top:12px">
     <div style="font-weight:600;margin:4px 0">Previous prenatal visits <span class="hint" style="font-weight:400">before this visit, including visits outside the RHU</span></div>
@@ -732,7 +730,7 @@ function isUTZ(s){return /ultrasound|\btvs\b|\butz\b|scan|\bcas\b|\bbpp\b|biophy
 /* ===================== BUILD UI ===================== */
 BRGYS.forEach(b=>$("brgy").insertAdjacentHTML("beforeend",`<option>${b}</option>`));
 DOCS.forEach(d=>$("doc").insertAdjacentHTML("beforeend",`<option value="${d.id}">${d.name}</option>`));
-for(let i=1;i<=12;i++)$("contact").insertAdjacentHTML("beforeend",`<option value="${i}">${i}${["st","nd","rd"][i-1]||"th"} contact</option>`);
+for(let i=1;i<=8;i++)$("contact").insertAdjacentHTML("beforeend",`<option value="${i}">${i}${["st","nd","rd"][i-1]||"th"} contact</option>`);
 $("vdate").value=todayISO();
 
 RISK_GROUPS.forEach((g,gi)=>{
@@ -799,11 +797,8 @@ function readPast(){
 /* ===================== PREVIOUS VISITS + DOH 1-2-5 ANC SLOTS ===================== */
 let visitLog=[]; // visits saved in the app (End Visit), oldest first
 let prevVisits=[]; // typed-in earlier visits (before the tracker, or outside the RHU): {date:"MM/DD/YYYY", place}
-const PLACES_OUT=["Private OB or Lying-in","Hospital","Others"];
-const placeOpts=(all,sel)=>`<option value="">— Select —</option><option${sel==="RHU"?" selected":""}>RHU</option><optgroup label="Barangay Health Station">`+
-  BRGYS.map(b=>{const v="BHS – Brgy "+b;return `<option value="${v}"${sel===v?" selected":""}>${v}</option>`}).join("")+`</optgroup>`+
-  (all?PLACES_OUT.map(p=>`<option${sel===p?" selected":""}>${p}</option>`).join(""):"");
-$("vplace").innerHTML=placeOpts(false);
+const PLACES=["RHU","BHS","Private OB or Lying-in","Hospital","Others"];
+const placeOpts=sel=>`<option value="">— Select —</option>`+[...PLACES,...(sel&&!PLACES.includes(sel)?[sel]:[])].map(p=>`<option${sel===p?" selected":""}>${esc(p)}</option>`).join("");
 // DOH 1-2-5 contact windows in days AOG (Module 2 slide 51: 8-13, 14-20, 21-27, 28-30, 31-34, 35, 36, 37-40 wk); a visit before 8 wk counts as contact 1 (first trimester, Field Manual)
 const ANC_WIN=[[0,98],[98,147],[147,196],[196,217],[217,245],[245,252],[252,259],[259,287]];
 const ancSlot=d=>d==null||d<0?null:(ANC_WIN.findIndex(([a,b])=>d>=a&&d<b)+1||null);
@@ -812,7 +807,7 @@ const dayDiff=(a,b)=>Math.round((a-b)/864e5);
 function pvDate(p,vd){const r=parseFlex(p&&p.date); return r&&r.d&&r.d<vd?r.d:null;} // typed date, only if before this visit
 // every visit up to this one (typed-in, saved in the app, this visit), one per date, oldest first
 function ancVisits(C){const m=new Map(), put=(dt,src,place)=>{if(dt&&!isNaN(dt)&&!m.has(+dt))m.set(+dt,{src,place});};
-  put(isoToDate($("vdate").value)||C.vdate,"today",$("vplace").value);
+  put(isoToDate($("vdate").value)||C.vdate,"today",SITE);
   visitLog.forEach(v=>{const d=isoToDate(v.date); if(d&&d<C.vdate)put(d,"app",v.place||"");});
   prevVisits.forEach(p=>put(pvDate(p,C.vdate),"past",p.place));
   return [...m].sort((a,b)=>a[0]-b[0]).map(([k,o])=>{const days=C.lmpEq?dayDiff(k,C.lmpEq):null; return {d:new Date(k),...o,days,slot:ancSlot(days)};});}
@@ -824,10 +819,10 @@ const ancTxt=A=>A.undated?null:{t1:`${A.t[0]}/1`,t2:`${A.t[1]}/2`,t3:`${A.t[2]}/
 function buildPV(){ // visits saved in the app (locked), then typed-in ones
   const vd=$("vdate").value;
   $("pvBody").innerHTML=visitLog.filter(v=>v.date&&v.date<vd).map(v=>`<tr data-date="${v.date}"><td>${mdy(isoToDate(v.date))}</td><td>${esc(v.place||"—")} <span class="hint">· recorded in app</span></td><td class="pvAog"></td><td class="pvSlot"></td><td></td></tr>`).join("")+
-    prevVisits.map((p,i)=>`<tr data-pv="${i}"><td><input type="text" class="pvd" inputmode="numeric" placeholder="MM/DD/YYYY" value="${esc(p.date||"")}" aria-label="Date of previous visit"><div class="hint pverr"></div></td><td><select class="pvp" aria-label="Place of previous visit">${placeOpts(true,p.place)}</select></td><td class="pvAog"></td><td class="pvSlot"></td><td><button type="button" class="ghost small pvx" aria-label="Remove this visit">✕</button></td></tr>`).join("");
+    prevVisits.map((p,i)=>`<tr data-pv="${i}"><td><input type="text" class="pvd" inputmode="numeric" placeholder="MM/DD/YYYY" value="${esc(p.date||"")}" aria-label="Date of previous visit"><div class="hint pverr"></div></td><td><select class="pvp" aria-label="Place of previous visit">${placeOpts(p.place)}</select></td><td class="pvAog"></td><td class="pvSlot"></td><td><button type="button" class="ghost small pvx" aria-label="Remove this visit">✕</button></td></tr>`).join("");
   if(document.body.classList.contains("viewonly"))applyView();
 }
-function paintPV(C){const A=C.anc; if($("vplace").value)$("vplace").closest("label").style.outline="";
+function paintPV(C){const A=C.anc;
   [...$("pvBody").children].forEach(tr=>{let dt=null;
     if(tr.dataset.pv!=null){const p=prevVisits[+tr.dataset.pv], r=parseFlex(p&&p.date), late=r&&r.d&&r.d>=C.vdate;
       tr.querySelector(".pverr").textContent=r&&r.bad?"Use MM/DD/YYYY or MM/YYYY":late?"Must be before this visit":""; dt=pvDate(p,C.vdate);}
@@ -841,7 +836,7 @@ function paintPV(C){const A=C.anc; if($("vplace").value)$("vplace").closest("lab
 function autoContact(){const c=$("contact"); if(document.body.classList.contains("viewonly")||!(c.value===""||c.dataset.auto==="1"))return;
   const vd=isoToDate($("vdate").value)||new Date();
   const n=new Set([...visitLog.map(v=>isoToDate(v.date)).filter(d=>d&&d<vd),...prevVisits.map(p=>pvDate(p,vd)).filter(Boolean)].map(Number)).size;
-  c.value=String(Math.min(12,n+1)); c.dataset.auto="1";}
+  c.value=String(Math.min(8,n+1)); c.dataset.auto="1";}
 function pvEdit(e){const tr=e.target.closest("[data-pv]"); if(!tr)return; const p=prevVisits[+tr.dataset.pv]; if(!p)return;
   if(e.target.classList.contains("pvd"))p.date=e.target.value.trim(); else if(e.target.classList.contains("pvp"))p.place=e.target.value;}
 $("pvBody").addEventListener("input",pvEdit); $("pvBody").addEventListener("change",pvEdit);
@@ -1335,7 +1330,7 @@ function render(){
    +(C.cbcNote?`<li class="hint"><i>Note at end of list: “${C.cbcNote}”</i></li>`:"")
    +(!C.ready?`<li class="hint" style="margin-top:6px">Aspirin is added once the risk stratification is complete.</li>`:"");
   // EPDS
-  $("epdsReq").classList.toggle("hidden",!C.epdsMand); $("epdsAskTxt").textContent=C.epdsT3?"EPDS done this trimester (from 28 weeks)?":"EPDS done before in this pregnancy?";
+  $("epdsReq").classList.toggle("hidden",!C.epdsMand); $("epdsAsk").classList.toggle("hidden",C.contact===1); $("epdsAskTxt").textContent=C.epdsT3?"EPDS done this trimester (from 28 weeks)?":"EPDS done before in this pregnancy?";
   $("epdsOn").classList.toggle("hidden",!C.epdsShow); $("epdsOff").classList.toggle("hidden",!( !C.epdsMand&&radioVal("epdsPrev")==="1"));
   renderEPDS();
   // side panels
@@ -1890,7 +1885,7 @@ $("clearBtn").onclick=keep=>{ if(keep!==true)dropDraft(); document.querySelector
   document.querySelectorAll("input[type=checkbox],input[type=radio]").forEach(x=>x.checked=false);
   document.querySelectorAll("select").forEach(x=>x.selectedIndex=0);
   $("lmpPick").value="";$("vdate").value=todayISO();customLabs.length=0;customRx.length=0;unticked.clear();
-  visitLog=[]; prevVisits=[]; $("contact").dataset.auto="1"; $("vplace").value=SITE; buildPV(); renderPast();render();window.scrollTo(0,0);
+  visitLog=[]; prevVisits=[]; $("contact").dataset.auto="1"; buildPV(); renderPast();render();window.scrollTo(0,0);
 };
 /* ===================== VIEW / UNFINISHED / NEW PATIENT ===================== */
 // Read-only view: every field in the form is disabled; printing and copying stay available.
@@ -1957,7 +1952,6 @@ async function saveFile(){
 function visitEnded(){unfDrop(); dropDraft(); DIRTY=false; CLOUD.list&&(CLOUD.cache=null); setView(`Visit ended ${mdy(CUR.vdate)} — read only. Use New Patient or Search Patient for the next one.`,false);}
 $("endBtn").onclick=()=>{
   if(!$("name").value.trim()){ehrToast("Enter the patient's name first.",true);return;}
-  if(!$("vplace").value){const l=$("vplace").closest("label");l.style.outline="2px solid #c62828";l.scrollIntoView({block:"center"});ehrToast("Choose the place of this visit (section 1).",true);return;}
   if(!CLOUD.on){saveFile(); visitEnded(); if(location.protocol==="file:")ehrToast("Saved on this computer. This copy can't upload; open the installed app to sync."); return;}
   // installed app: consent is required, then a signed-in RHU account (offline saves queue on the device)
   const cl=$("consent").closest("label");
@@ -2057,7 +2051,7 @@ const fmtD=d=>d?mdy(d):"";
 function aogWk(C){return C.days!=null?+(C.days/7).toFixed(1):"";}
 function visitSummary(C){
   const e=emGiven(), dt=$("vdate").value;
-  return {date:dt,place:$("vplace").value,contact:C.contact||"",aog:C.aogStr||"",bp:C.sbp!=null?`${C.sbp}/${C.dbp}`:"",bp2:C.sbp2!=null?`${C.sbp2}/${C.dbp2}`:"",
+  return {date:dt,place:SITE,contact:C.contact||"",aog:C.aogStr||"",bp:C.sbp!=null?`${C.sbp}/${C.dbp}`:"",bp2:C.sbp2!=null?`${C.sbp2}/${C.dbp2}`:"",
     wt:C.wtDisp||"",bmi:C.bmi!=null?C.bmi.toFixed(1):"",wg:C.wg?`${C.wg.g.toFixed(1)} kg (${C.wg.st})`:"",fht:C.fht??"",fh:C.fh??"",
     level:C.ready?C.level:"",dx:C.dx,labs:C.due.filter(d=>!unticked.has(d.id)).map(d=>d.t).join("; "),
     rx:C.rx.filter(r=>!unticked.has(r.id)).map(r=>r.d).join("; "),ref:refNeeded(C)?refUrgency(C):"",em:e.length?e.map(x=>x.d).join("; "):"",doc:C.doc?C.doc.name:"",aogDays:C.days};
@@ -2250,27 +2244,14 @@ function paintSign(){const b=$("signBtn"); if(!b)return; const q=CLOUD.queue().l
   const old=new Date(Math.min(...Q.map(j=>j.saved||+isoToDate(j.date)||Date.now())));
   bn.innerHTML=`<span style="flex:1"><b>${Q.length} saved form${Q.length>1?"s":""} waiting to sync</b> (oldest ${mdy(old)}). Sign in to upload to the RHU Drive and the Pregnancy Tracker.</span><button class="small" id="syncGo">Sign in</button>`;
   $("syncGo").onclick=()=>CLOUD.token().catch(e=>ehrToast(e.message==="offline"?"No internet right now; try again when online.":"Sign-in failed: "+e.message,true));}
-/* Device site: the RHU account means RHU; any other account is a BHS, its barangay picked once per account on this device.
-   Only a SHA-256 of the RHU email is in this public file. */
+/* Device site from the signed-in account: the RHU account is RHU, any other account is a BHS.
+   Only a SHA-256 of the RHU email is in this public file. The last site stays on the device for signed-out saves. */
 const RHU_HASH="0ed95199634aa8b0bdc8b464f3d58f5c67065b90114e6761e7802813a958ac54";
-const SITEK="prenatalSite", siteGet=()=>{try{return JSON.parse(localStorage.getItem(SITEK)||"{}")||{}}catch(e){return {}}}, siteSave=o=>{try{localStorage.setItem(SITEK,JSON.stringify(o))}catch(e){}};
-let SITE=siteGet().last||"", SITE_H="", PICK_LATER=false;
+let SITE=(()=>{try{return (JSON.parse(localStorage.getItem("prenatalSite")||"{}")||{}).last||""}catch(e){return ""}})();
 async function siteFromEmail(email){
   const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(email.trim().toLowerCase()));
-  SITE_H=[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); const by=siteGet().by||{};
-  if(SITE_H===RHU_HASH)setSite("RHU"); else if(by[SITE_H])setSite(by[SITE_H]); else pickSite();}
-function setSite(v){SITE=v; const o=siteGet(); o.last=v; if(SITE_H&&SITE_H!==RHU_HASH)(o.by=o.by||{})[SITE_H]=v; siteSave(o); paintSite();
-  if(!VIEW&&!$("vplace").value){$("vplace").value=v; render(); saveDraft();}}
-function paintSite(){const h=$("siteHint"); if(!h)return;
-  h.innerHTML=SITE?`This device: <b>${esc(SITE)}</b>${SITE_H===RHU_HASH?" (RHU account)":` · <a href="#" id="siteChg">Change</a>`}`:`<a href="#" id="siteChg">Set this device's Barangay Health Station</a>`;
-  const a=$("siteChg"); if(a)a.onclick=e=>{e.preventDefault();pickSite();};}
-function pickSite(){
-  if(!$("modal").classList.contains("hidden")){PICK_LATER=true;return;} // another window is open: ask when it closes
-  MODE="drive"; $("modal").classList.add("drive"); $("mTitle").textContent="Which Barangay Health Station is this?";
-  $("mSheet").innerHTML=`<p>This account is not the RHU account, so its visits are recorded as BHS visits. Choose this device's BHS (asked once).</p>`+
-    BRGYS.map(b=>`<button class="ghost" data-site="BHS – Brgy ${esc(b)}" style="display:block;width:100%;text-align:left;margin:4px 0">BHS – Brgy ${esc(b)}</button>`).join("");
-  $("mMsg").textContent="You can change it later under Place of this visit (section 1)."; $("modal").classList.remove("hidden");
-  $("mSheet").onclick=e=>{const b=e.target.closest("[data-site]"); if(!b)return; setSite(b.dataset.site); closeModal();};}
+  SITE=[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("")===RHU_HASH?"RHU":"BHS";
+  try{localStorage.setItem("prenatalSite",JSON.stringify({last:SITE}))}catch(e){} render();}
 // start a new visit from a returning patient's last record
 function newVisit(){
   if(visitLog.length&&visitLog[visitLog.length-1].date===todayISO())return;
@@ -2282,7 +2263,7 @@ function newVisit(){
   $("refNote").value="For evaluation and management."; $("refUrg").value="auto"; unticked.clear();
   document.querySelectorAll('#epdsCard input[type=radio],#aasQs input').forEach(x=>{if(x.type==="radio")x.checked=false;else x.value="";});
   [["epdsPrev","1"],["aasPrev","1"]].forEach(([n,v])=>{const r=document.querySelector(`input[name="${n}"][value="${v}"]`);if(r)r.checked=true;});
-  $("contact").dataset.auto="1"; if(SITE)$("vplace").value=SITE; buildPV();
+  $("contact").dataset.auto="1"; buildPV();
   const prevW=CUR&&CUR.w; syncVis(); render();
   // a "done" EPDS from before 28 weeks doesn't count for the third-trimester screen
   if(CUR.w!=null&&CUR.w>=28&&!(prevW>=28)){const r=document.querySelector('input[name="epdsPrev"]:checked'); if(r){r.checked=false; render();}}
@@ -2329,14 +2310,13 @@ async function checkMatch(){
   $("mSheet").onclick=async e=>{const b=e.target.closest("[data-ret]"); if(!b)return; b.disabled=true; DIRTY=false; try{await loadDrive(b.dataset.ret); closeModal(); $("mSheet").onclick=null;}catch(err){b.disabled=false; ehrToast("Could not open: "+err.message,true);}};
 }
 $("name").addEventListener("change",checkMatch);
-function closeModal(){$("modal").classList.add("hidden");$("modal").classList.remove("drive");$("mSheet").onclick=null; if(PICK_LATER){PICK_LATER=false;setTimeout(pickSite,0);}}
+function closeModal(){$("modal").classList.add("hidden");$("modal").classList.remove("drive");$("mSheet").onclick=null;}
 if(CLOUD.on){
   document.querySelectorAll(".cloudOnly").forEach(x=>x.classList.remove("hidden"));
   const g=document.createElement("script"); g.src="https://accounts.google.com/gsi/client"; g.async=true; document.head.appendChild(g);
   $("signBtn").onclick=()=>CLOUD.token().then(()=>CLOUD.flush()).catch(e=>ehrToast("Sign-in failed: "+e.message,true));
   $("searchBtn").onclick=openFromDrive; $("openBtn").classList.add("hidden"); // in the app, saved files open from the search window
-  addEventListener("online",()=>CLOUD.flush()); paintSign(); paintSite();
-  if(SITE&&!$("vplace").value){$("vplace").value=SITE; render();}
+  addEventListener("online",()=>CLOUD.flush()); paintSign();
   try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist();}catch(e){} // keep the waiting list from being evicted
   // link from the Tracker sheet: ?open=<Drive file id>&rec=<Record ID>; signing in needs a tap, so offer a button
   const P=new URLSearchParams(location.search), fid=P.get("open"), rec=P.get("rec")||"";
