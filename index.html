@@ -158,12 +158,32 @@ button:active:not(:disabled){transform:scale(.97)}
   button:not(:disabled):hover{background:#0c5a4d}
   button.ghost:not(:disabled):hover,#signBtn:hover{background:#e8f2ef!important}
 }
+/* no sideways page scroll (iPhone): clip overflow (keeps the sticky header working) and keep boxes inside the screen */
+html,body{overflow-x:clip;max-width:100%}
+input,select,textarea{min-width:0;max-width:100%}
+@media (max-width:500px){body{touch-action:pan-y pinch-zoom}.card table,#jump{touch-action:pan-x pan-y pinch-zoom}}
 .sbShort{display:none}
 #mbar{display:none}
+.mchev{flex:none;transition:transform 200ms var(--ease-out)}
+body.sheet-open .mchev{transform:rotate(180deg)}
 #modal.drive #mPdf,#modal.drive #mPrint{display:none}
 .bad{outline:2px solid #c62828!important}
 #bmiBox{background:#f1f4f2;font-weight:600}
 #draftBar span{min-width:200px}
+header.top>div{flex:1;min-width:0}
+#tools{display:flex;gap:8px;flex-wrap:nowrap;margin-left:auto;flex:none}
+header #tools button{white-space:nowrap}
+#tools+#signBtn{margin-left:0!important}
+header #tools button.ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.75);min-height:36px}
+#unfN:not(:empty){background:#fff;color:var(--accent);border-radius:9px;padding:0 6px;margin-left:2px;font-size:11px}
+@media (hover:hover) and (pointer:fine){header #tools button.ghost:not(:disabled):hover{background:rgba(255,255,255,.18)!important}}
+/* keyboard focus: visible ring; pinned header never covers the focused field */
+:is(button,a,summary,select,input[type=checkbox],input[type=radio]):focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+header.top :is(button,a):focus-visible,button#mbar:focus-visible{outline-color:#fff}
+html{scroll-padding-top:150px}
+@media (min-width:961px){body{font-size:15px}label.f,.hint{font-size:13px}}
+body.viewonly main .card{background:#fafbfa}
+#viewBar{margin:8px auto;max-width:1280px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 @media (max-width:500px){
   body{font-size:15px;padding-bottom:calc(64px + env(safe-area-inset-bottom))}
   header.top{padding-top:calc(24px + env(safe-area-inset-top));padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}
@@ -186,14 +206,21 @@ button:active:not(:disabled){transform:scale(.97)}
   body.compact header.top .logo{height:28px}
   body.compact header.top h1{font-size:15px}
   body.compact header.top .h1rest{display:none}
-  .card{scroll-margin-top:calc(92px + env(safe-area-inset-top))}
+  .card{scroll-margin-top:calc(100px + env(safe-area-inset-top))}
+  html{scroll-padding-top:calc(110px + env(safe-area-inset-top))}
+  header.top{flex-wrap:wrap}
+  header.top>div{flex:1;min-width:0}
+  #tools{order:9;flex-basis:100%;margin-left:0;gap:6px;flex-wrap:nowrap}
+  header #tools button.ghost{min-height:40px;font-size:13px;padding:4px 8px;flex:1 1 auto;white-space:nowrap}
+  body.compact #tools{display:none}
+  #lmpQ{min-width:40px}
   /* section 1: date beside the heading; age+sex, contact+address */
   #h1row{display:flex;align-items:center;gap:8px}
   #signBtn{font-size:12px;padding:6px 8px;min-height:32px;max-width:72px;white-space:nowrap}#signBtn .sbFull{display:none}#signBtn .sbShort{display:inline}
   #h1row #vdateWrap{font-size:0;margin:0}
   #h1row #vdate{font-size:13px!important;min-height:30px;padding:3px 6px;width:auto}
   .grid>label.f:has(#age){order:1}.grid>label.f:has(#sex){order:2}.grid>label.f:has(#phone){order:3}.grid>label.f:has(#brgy){order:4}
-  .grid>label.f:has(#doc),.grid>label.f:has(#contact),.grid>label.f:has(#loc){order:5}
+  .grid>label.f:has(#contact){order:4}.grid>label.f:has(#doc),.grid>label.f:has(#loc){order:5;grid-column:1/-1}
   /* vitals: weight+unit and height+unit on one line */
   .grid>label.f:has(#wt) select,.grid>label.f:has(#ht)~select,#hU,#wU,#tU{width:62px!important;min-width:0;padding:4px}
   .grid>label.f:has(#wt) .row,#htCmRow{gap:4px}
@@ -243,6 +270,7 @@ button:active:not(:disabled){transform:scale(.97)}
 <div id="topbar"><header class="top"><img class="logo" alt="Bagac Prenatal Screening" src="data:image/png;base64,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"><div>
   <h1>Prenatal Screening<span class="h1rest"> — Bagac Rural Health Unit</span></h1>
   <p>DOH DC 2021-0005 classification · BIMSP levels of care (Safe Motherhood Module 2 v2) · BAPP preeclampsia checklist · EPDS (Tagalog).</p></div>
+<nav id="tools" aria-label="Patient"><button class="ghost small" id="newBtn">New Patient</button><button class="ghost small cloudOnly hidden" id="searchBtn">Search Patient</button><button class="ghost small" id="unfBtn">Unfinished visits <span id="unfN"></span></button><button class="ghost small" id="openBtn">Open saved file</button></nav>
 <button type="button" class="cloudOnly hidden" id="signBtn" style="margin-left:auto;background:#fff;color:var(--accent);flex:none">Sign in to RHU Drive</button>
 </header>
 
@@ -255,9 +283,9 @@ button:active:not(:disabled){transform:scale(.97)}
   <h2 id="h1row"><span class="n">1</span><span style="flex:1">Patient and visit</span></h2>
   <div class="grid">
     <label class="f">Name of patient<input type="text" id="name" placeholder="Surname, First name M.I."></label>
-    <label class="f">Age (years)<input type="number" id="age" min="9" max="60"></label>
+    <label class="f">Age (years) · F<input type="number" id="age" min="9" max="60"></label>
     <label class="f">Patient's contact number<input type="tel" inputmode="tel" id="phone" placeholder="09XX XXX XXXX"></label>
-    <label class="f">Sex<input type="text" id="sex" value="F" readonly></label>
+    <input type="hidden" id="sex" value="F">
     <label class="f">Barangay
       <select id="brgy"><option value="">— Select barangay —</option></select></label>
     <label class="f" id="vdateWrap">Date<input type="date" id="vdate"></label>
@@ -376,7 +404,7 @@ button:active:not(:disabled){transform:scale(.97)}
   <h2><span class="n">8</span>Diagnostic request (labs due this visit)</h2>
   <ul id="dueList" class="dlist" style="list-style:none;padding:0;margin:0"></ul>
   <div class="addRow">
-    <input type="text" id="addLab" placeholder="Add another request (e.g., Biophysical profile)">
+    <input type="text" id="addLab" aria-label="Add another request" placeholder="Add another request (e.g., Biophysical profile)">
     <span class="btnPair"><button class="ghost small addBtn" id="addLabBtn">Add</button><button id="printLab">Print</button></span>
   </div>
 </section>
@@ -386,8 +414,8 @@ button:active:not(:disabled){transform:scale(.97)}
   <h2><span class="n">9</span>Prescription</h2>
   <ul id="rxList" class="dlist" style="list-style:none;padding:0;margin:0"></ul>
   <div class="addRow">
-    <input type="text" id="addDrug" placeholder="Drug, strength, quantity (e.g., Paracetamol 500 mg/tab #10)">
-    <input type="text" id="addSig" placeholder="Sig (e.g., 1 tab tuwing 4 oras kung may lagnat)">
+    <input type="text" id="addDrug" aria-label="Drug, strength, quantity" placeholder="Drug, strength, quantity (e.g., Paracetamol 500 mg/tab #10)">
+    <input type="text" id="addSig" aria-label="Sig" placeholder="Sig (e.g., 1 tab tuwing 4 oras kung may lagnat)">
     <span class="btnPair"><button class="ghost small addBtn" id="addRxBtn">Add</button><button id="printRx">Print</button></span>
   </div>
 </section>
@@ -450,10 +478,10 @@ button:active:not(:disabled){transform:scale(.97)}
 <!-- 11 SUMMARY -->
 <section class="card" id="s11">
   <h2><span class="n">11</span>OB history summary (copy and paste)</h2>
-  <textarea class="summary" id="summary" readonly></textarea>
+  <textarea class="summary" id="summary" aria-label="OB history summary" readonly></textarea>
   <div class="row" style="margin-top:8px"><button class="ghost" id="copyBtn">Copy</button><span id="copyMsg" class="hint"></span>
     <label class="chk cloudOnly hidden" style="flex:1 1 220px"><input type="checkbox" id="consent" onchange="this.closest('label').style.outline=''"> Patient consents to secure storage of her prenatal record by Bagac RHU (RA 10173)</label><input type="hidden" id="recId"><input type="hidden" id="driveId"></div>
-  <div class="row" style="margin-top:8px"><span style="flex:1"></span><button id="saveBtn">Save</button><button class="ghost cloudOnly hidden" id="driveOpenBtn">Open from Drive</button><button class="ghost" id="clearBtn">Clear form for next patient</button><button class="ghost" id="openBtn">Open saved form</button><input type="file" id="openFile" accept=".json,application/json" class="hidden"></div>
+  <div class="row" style="margin-top:8px"><span class="hint" style="flex:1">Save keeps the visit on this device to finish later. End Visit records it to the RHU Drive and the Tracker.</span><button class="ghost" id="saveBtn">Save</button><button id="endBtn">End Visit</button><button class="hidden" id="clearBtn"></button><input type="file" id="openFile" accept=".json,application/json" class="hidden"></div>
 </section>
 
 </main>
@@ -473,7 +501,7 @@ button:active:not(:disabled){transform:scale(.97)}
   </div>
 </div></aside>
 </div>
-<button id="mbar" type="button" aria-label="Show risk stratification"><span id="mbarTxt" style="flex:1">Risk stratification</span><span aria-hidden="true">▲</span></button>
+<button id="mbar" type="button" aria-label="Show risk stratification"><span id="mbarTxt" style="flex:1">Risk stratification</span><svg class="mchev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg></button>
 
 <!-- MODAL -->
 <div class="modal hidden" id="modal"><div class="box">
@@ -1260,7 +1288,7 @@ function render(){
   $("dxSide").textContent=C.dx;
   $("mbarTxt").textContent=C.ready?`Level ${C.level} (${LEVEL_COLOR[C.level]})${C.emerg?" · EMERGENCY":""} · Aspirin ${C.aspTxt}`:`Risk: ${Math.round(C.progress*100)}% complete`;
   $("mbar").style.background=C.ready?`var(--l${C.level})`:""; $("mbar").style.color=C.ready&&C.level===3?"#222":"";
-  renderEm(C); renderRef(C); updateNav(C);
+  renderEm(C); renderRef(C); updateNav(C); applyView();
   // summary
   $("summary").value=summaryText(C);
 }
@@ -1765,6 +1793,37 @@ $("clearBtn").onclick=keep=>{ if(keep!==true)dropDraft(); document.querySelector
   document.querySelectorAll("select").forEach(x=>x.selectedIndex=0);
   $("lmpPick").value="";$("vdate").value=todayISO();customLabs.length=0;customRx.length=0;unticked.clear();renderPast();render();window.scrollTo(0,0);
 };
+/* ===================== VIEW / UNFINISHED / NEW PATIENT ===================== */
+// Read-only view: every field in the form is disabled; printing and copying stay available.
+let VIEW=null, DIRTY=false;
+const KEEP_BTNS=new Set(["printLab","printRx","printRef","printEpds","copyBtn"]);
+function applyView(){if(!VIEW)return; document.querySelectorAll("main input, main select, main textarea, main button").forEach(e=>{if(!KEEP_BTNS.has(e.id))e.disabled=true;});}
+function setView(text,canNewVisit){
+  VIEW=text; document.body.classList.toggle("viewonly",!!text); let b=$("viewBar");
+  if(!text){if(b)b.remove(); document.querySelectorAll("main input, main select, main textarea, main button").forEach(e=>e.disabled=false); render(); return;}
+  if(!b){b=document.createElement("div");b.id="viewBar";b.className="alert blue";$("topbar").after(b);}
+  b.innerHTML=`<span style="flex:1"><b>${esc(text)}</b></span>`+(canNewVisit?`<button class="small" id="nvBtn">Record a New Visit</button>`:"");
+  if(canNewVisit)$("nvBtn").onclick=()=>{setView(null);newVisit();DIRTY=false;ehrToast("New visit started");};
+  applyView();
+}
+// Unfinished visits: device-only saves, finished later with End Visit
+const UNF="prenatalUnfinished", unfKey=d=>(d.recId||d.name||"").toLowerCase();
+const unfList=()=>{try{return JSON.parse(localStorage.getItem(UNF)||"[]")}catch(e){return []}};
+function unfSet(l){try{localStorage.setItem(UNF,JSON.stringify(l))}catch(e){} $("unfN").textContent=l.length||"";}
+function unfDrop(){const k=unfKey(snapshot()); if(k)unfSet(unfList().filter(x=>unfKey(x)!==k));}
+function confirmLeave(){const n=$("name").value.trim(); return VIEW||!DIRTY||!n||confirm(`Leave ${n}? Unsaved changes will be lost (press Save first to keep them).`);}
+$("saveBtn").onclick=()=>{
+  if(!$("name").value.trim()){ehrToast("Enter the patient's name first.",true);return;}
+  const d=snapshot(), k=unfKey(d); unfSet([...unfList().filter(x=>unfKey(x)!==k),d]); DIRTY=false; dropDraft();
+  ehrToast("Saved on this device. Not yet in the Drive or Tracker — press End Visit when done.");};
+$("newBtn").onclick=()=>{if(!confirmLeave())return; setView(null); $("clearBtn").onclick(); DIRTY=false; ehrToast("Blank form for a new patient");};
+$("unfBtn").onclick=()=>{const l=unfList();
+  MODE="drive"; $("modal").classList.add("drive"); $("mTitle").textContent="Unfinished visits (this device)";
+  $("mSheet").innerHTML=l.length?l.map((d,i)=>`<button class="ghost" data-unf="${i}" style="display:block;width:100%;text-align:left;margin:4px 0"><b>${esc(d.name||"Unnamed")}</b>${d.recId?" · "+esc(d.recId):""}<br><span class="hint">Saved ${esc(new Date(d.saved).toLocaleString())}</span></button>`).join(""):`<p class="hint">No unfinished visits on this device.</p>`;
+  $("mMsg").textContent="Saved with Save; not yet in the Drive or Tracker."; $("modal").classList.remove("hidden");
+  $("mSheet").onclick=e=>{const b=e.target.closest("[data-unf]"); if(!b)return; if(!confirmLeave())return; closeModal(); $("mSheet").onclick=null; setView(null); restore(l[+b.dataset.unf]); DIRTY=false; ehrToast(`Opened unfinished visit of ${l[+b.dataset.unf].name}`);};};
+document.addEventListener("input",e=>{if(e.target.closest&&e.target.closest("main"))DIRTY=true;}); $("unfN").textContent=unfList().length||"";
+
 /* ===================== SAVE / OPEN / AUTOSAVE ===================== */
 // Controls are saved in document order; G is restored first so the past-pregnancy rows exist.
 const ctrls=()=>[...document.querySelectorAll("main input, main select, main textarea, .side input, .side select")].filter(e=>e.type!=="file"&&!e.closest("#modal")&&!e.classList.contains("summary"));
@@ -1797,21 +1856,23 @@ async function saveFile(){
   if(downloadsNS){try{await downloadsNS.save({filename:fn,data:blob});ehrToast(`Saved ${fn}`);return}catch(e){if(e&&e.code==="declined")return}}
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=fn;document.body.appendChild(a);a.click();a.remove();ehrToast(`Saved ${fn}`);
 }
-$("saveBtn").onclick=()=>{
-  if(!CLOUD.on){saveFile(); if(location.protocol==="file:")ehrToast("Saved on this computer. This copy can't upload; open the installed app to sync."); return;}
+function visitEnded(){unfDrop(); dropDraft(); DIRTY=false; CLOUD.list&&(CLOUD.cache=null); setView(`Visit ended ${mdy(CUR.vdate)} — read only. Use New Patient or Search Patient for the next one.`,false);}
+$("endBtn").onclick=()=>{
+  if(!$("name").value.trim()){ehrToast("Enter the patient's name first.",true);return;}
+  if(!CLOUD.on){saveFile(); visitEnded(); if(location.protocol==="file:")ehrToast("Saved on this computer. This copy can't upload; open the installed app to sync."); return;}
   // installed app: consent is required, then a signed-in RHU account (offline saves queue on the device)
   const cl=$("consent").closest("label");
   if(!$("consent").checked){cl.style.outline="2px solid #c62828";cl.scrollIntoView({block:"center"});ehrToast("Tick patient consent to save this record.",true);return;}
   cl.style.outline="";
-  if(CLOUD.tok&&Date.now()<CLOUD.exp-60e3){CLOUD.save(Promise.resolve(CLOUD.tok));saveFile();return;}
+  if(CLOUD.tok&&Date.now()<CLOUD.exp-60e3){CLOUD.save(Promise.resolve(CLOUD.tok));saveFile();visitEnded();return;}
   if(IOS_BROWSER){ // Safari tab: sign in first, nothing waits on this device
     MODE="drive"; $("modal").classList.add("drive"); $("mTitle").textContent="Sign in to RHU Drive to save";
     $("mSheet").innerHTML=`<p>In Safari, records save straight to the RHU Drive. Please sign in first, or save from the installed app.</p><div class="row" style="gap:10px"><button id="sgnGo">Sign in</button><button class="ghost" id="sgnNo">Cancel</button></div><p class="hint" id="sgnMsg"></p>`;
     $("mMsg").textContent=""; $("modal").classList.remove("hidden"); $("sgnNo").onclick=closeModal;
-    $("sgnGo").onclick=()=>{CLOUD.token().then(()=>{closeModal();CLOUD.save(Promise.resolve(CLOUD.tok));saveFile();}).catch(e=>{$("sgnMsg").textContent="Sign-in did not complete ("+e.message+"). Nothing was saved; try again.";});};
+    $("sgnGo").onclick=()=>{CLOUD.token().then(()=>{closeModal();CLOUD.save(Promise.resolve(CLOUD.tok));saveFile();visitEnded();}).catch(e=>{$("sgnMsg").textContent="Sign-in did not complete ("+e.message+"). Nothing was saved; try again.";});};
     return;}
   // not signed in (online or not): keep it in the device's waiting list; it uploads at the next sign-in
-  CLOUD.save(new Promise(()=>{})); saveFile();
+  CLOUD.save(new Promise(()=>{})); saveFile(); visitEnded();
   MODE="drive"; $("modal").classList.add("drive"); $("mTitle").textContent="Saved on this device only";
   $("mSheet").innerHTML=`<div class="alert amber"><b>Saved on this device only.</b> Her record on the RHU Drive and the Pregnancy Tracker are <b>not updated yet</b>. They will update when you sign in to RHU Drive.</div><div class="row" style="gap:10px"><button id="sgnGo">Sign in now</button><button class="ghost" id="sgnNo">OK</button></div><p class="hint" id="sgnMsg"></p>`;
   $("mMsg").textContent=""; $("modal").classList.remove("hidden");
@@ -1822,7 +1883,7 @@ $("saveBtn").onclick=()=>{
 $("openBtn").onclick=()=>$("openFile").click();
 $("openFile").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;
   try{const d=JSON.parse(await f.text());if(!d||typeof d.f!=="object")throw 0;
-    if($("name").value.trim()&&!confirm(`Replace the current form with ${d.name||"the saved form"}?`))return; restore(d);ehrToast(`Opened ${d.name||f.name}`);}
+    if(!confirmLeave())return; setView(null); restore(d); DIRTY=false; ehrToast(`Opened ${d.name||f.name}`);}
   catch(_){ehrToast("This file is not a saved Prenatal Screening Form.",true);}};
 document.addEventListener("input",saveDraft); document.addEventListener("change",saveDraft); document.addEventListener("click",e=>{if(e.target.dataset&&e.target.dataset.given)saveDraft();});
 (()=>{let d=null;try{d=JSON.parse(localStorage.getItem(DRAFT)||"null")}catch(e){}
@@ -2022,7 +2083,7 @@ const CLOUD={on:location.origin==="https://benbasilio.github.io",CID:"7139168701
     if(!rec){const pre=`${BRGY_CODE[job.brgy]||"BAGC"}-${job.year}-`; const n=ids.filter(x=>x&&x.startsWith(pre)).map(x=>+x.slice(pre.length)||0);
       rec=pre+String((n.length?Math.max(...n):0)+1).padStart(3,"0");}
     job.file.recId=rec; job.file.f["#recId~1"]=rec;
-    const meta={name:`${job.name||"Unnamed"} – EDD ${job.edd||"unknown"}.json`,mimeType:"application/json",appProperties:{app:"prenatal",recId:rec,name:job.name,brgy:job.brgy||"",edd:job.edd||"",last:job.date}};
+    const meta={name:`${job.name||"Unnamed"} – EDD ${job.edd||"unknown"}.json`,mimeType:"application/json",appProperties:{app:"prenatal",recId:rec,name:job.name,brgy:job.brgy||"",edd:job.edd||"",eddFull:job.eddFull||"",age:String(job.age??""),last:job.date}};
     const up=await this.upload(job.driveId,meta,job.file,br);
     job.file.f["#driveId~1"]=up.id;
     const row=ids.indexOf(rec)+1||ids.length+1, tr=[...job.trow]; tr[0]=rec; tr[TI["Drive file"]]=`=HYPERLINK("https://benbasilio.github.io/prenatal/?open=${up.id}&rec=${rec}","Open")`;
@@ -2043,7 +2104,7 @@ const CLOUD={on:location.origin==="https://benbasilio.github.io",CID:"7139168701
     this.busy=false;},
   save(tokP){ // called from the Save click
     const C=CUR, v=visitSummary(C); visitLog=visitLog.filter(x=>x.date!==v.date); visitLog.push(v); visitLog.sort((a,b)=>a.date<b.date?-1:1);
-    const job={name:C.name,brgy:C.brgy,year:String(C.vdate.getFullYear()),edd:C.edd?`${String(C.edd.getMonth()+1).padStart(2,"0")}-${C.edd.getFullYear()}`:"",date:v.date,
+    const job={name:C.name,age:C.age,eddFull:C.edd?mdy(C.edd):"",brgy:C.brgy,year:String(C.vdate.getFullYear()),edd:C.edd?`${String(C.edd.getMonth()+1).padStart(2,"0")}-${C.edd.getFullYear()}`:"",date:v.date,
       recId:$("recId").value,driveId:$("driveId").value,saved:Date.now(),file:snapshot(),trow:trackerRow(C,visitLog),vrow:visitRow(v,"")};
     // a queued job for the same patient is replaced by this newer save
     const q=this.queue().filter(x=>!(x.name===job.name&&x.edd===job.edd)); q.push(job); this.setQueue(q);
@@ -2082,9 +2143,10 @@ function newVisit(){
 }
 async function openFromDrive(){
   try{await CLOUD.token();}catch(e){ehrToast("Sign in to RHU Drive first (needs internet).",true);return;}
-  MODE="drive"; $("modal").classList.add("drive"); $("mTitle").textContent="Open from RHU Drive";
+  MODE="drive"; $("modal").classList.add("drive"); $("mTitle").textContent="Search Patient";
   $("mSheet").innerHTML=`<input type="search" id="dq" placeholder="Search name, Record ID or barangay" style="width:100%;margin:8px 0"><div id="dl" class="hint">Loading…</div>`;
-  $("mMsg").textContent="Loads her last visit; today's vitals, symptoms and screening start fresh."; $("modal").classList.remove("hidden");
+  $("mMsg").innerHTML=`Opens her record read-only; press <b>Record a New Visit</b> to start today's visit. <a href="#" id="dlFile">Open a saved file instead</a>`; $("modal").classList.remove("hidden");
+  $("dlFile").onclick=e=>{e.preventDefault();closeModal();$("openFile").click();};
   let files=[]; try{files=await CLOUD.list();}catch(e){$("dl").textContent="Could not list records: "+e.message;return;}
   const paint=()=>{const t=$("dq").value.toLowerCase(), f=files.filter(x=>!t||[x.name,x.appProperties.recId,x.appProperties.brgy].join(" ").toLowerCase().includes(t)).slice(0,80);
     $("dl").innerHTML=f.length?f.map(x=>`<button class="ghost" data-fid="${x.id}" style="display:block;width:100%;text-align:left;margin:4px 0"><b>${esc(x.appProperties.name||x.name)}</b> · ${esc(x.appProperties.recId||"")}<br><span class="hint">${esc(x.appProperties.brgy||"")} · EDD ${esc(x.appProperties.edd||"?")} · last visit ${esc(x.appProperties.last||"")}</span></button>`).join(""):"No matching records.";};
@@ -2094,16 +2156,38 @@ async function openFromDrive(){
     catch(err){b.disabled=false; ehrToast("Could not open: "+err.message,true);}};
 }
 async function loadDrive(fid){
-  const d=await CLOUD.get(fid), cur=$("name").value.trim();
-  if(cur&&cur!==d.name&&!confirm(`Replace ${cur} with ${d.name}?\nThe form will be cleared.`))return false;
-  restore(d); $("driveId").value=fid; if(d.recId)$("recId").value=d.recId; $("consent").checked=true; newVisit(); ehrToast(`Opened ${d.name} (${d.recId||""}); new visit started`); return true;
+  const d=await CLOUD.get(fid);
+  if(!confirmLeave())return false;
+  setView(null); restore(d); $("driveId").value=fid; if(d.recId)$("recId").value=d.recId; $("consent").checked=true; dropDraft(); DIRTY=false;
+  const last=(d.visits||[]).slice(-1)[0];
+  setView(`Viewing record of ${d.name}${d.recId?" ("+d.recId+")":""} — read only${last&&last.date?" (last visit "+mdy(isoToDate(last.date))+")":""}`,true);
+  return true;
 }
-function closeModal(){$("modal").classList.add("hidden");$("modal").classList.remove("drive");}
+// Probable match: same surname (case, spaces, ñ ignored) and first name equal or within 2 letters
+const normN=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z,]/g,"");
+function lev(a,b){const d=Array.from({length:a.length+1},(_,i)=>[i]);for(let j=1;j<=b.length;j++)d[0][j]=j;
+  for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return d[a.length][b.length];}
+function nameMatch(a,b){const [sa,fa=""]=String(a).split(","), [sb,fb=""]=String(b).split(","); if(!normN(sa)||normN(sa)!==normN(sb))return false;
+  const x=normN(fa.trim().split(/\s+/)[0]), y=normN(fb.trim().split(/\s+/)[0]); return !x||!y||x===y||lev(x,y)<=2;}
+console.assert(nameMatch("Dela Cruz, Ana","dela cruz, Anna")&&nameMatch("Peña, Liza","Pena, Lisa")&&!nameMatch("Cruz, Ana","Cruz, Maria")&&!nameMatch("Santos, Ana","Reyes, Ana"),"nameMatch self-check");
+async function checkMatch(){
+  const n=$("name").value.trim(); if(VIEW||!n.includes(",")||$("recId").value||!CLOUD.on||!(CLOUD.tok&&Date.now()<CLOUD.exp-60e3))return;
+  try{CLOUD.cache=CLOUD.cache||await CLOUD.list();}catch(e){return;}
+  const m=CLOUD.cache.filter(f=>nameMatch(n,(f.appProperties||{}).name||"")); if(!m.length)return;
+  MODE="drive"; $("modal").classList.add("drive"); $("mTitle").textContent="Probable matching records";
+  $("mSheet").innerHTML=`<p>Probable matching records. Confirm if this is a new patient or a returning patient.</p>`+m.slice(0,8).map(f=>{const a=f.appProperties;
+    return `<div class="row" style="border:1px solid var(--line);border-radius:8px;padding:8px;margin:6px 0"><span style="flex:1"><b>${esc(a.name)}</b>, ${esc(a.age||"—")} y, EDD ${esc(a.eddFull||(a.edd||"—").replace("-","/"))}${a.recId?` · <span class="hint">${esc(a.recId)}</span>`:""}</span><button class="small" data-ret="${f.id}">Returning: open her record</button></div>`;}).join("")+
+    `<div class="row" style="justify-content:flex-end"><button class="ghost" id="mNew">New patient</button></div>`;
+  $("mMsg").textContent=""; $("modal").classList.remove("hidden"); $("mNew").onclick=closeModal;
+  $("mSheet").onclick=async e=>{const b=e.target.closest("[data-ret]"); if(!b)return; b.disabled=true; DIRTY=false; try{await loadDrive(b.dataset.ret); closeModal(); $("mSheet").onclick=null;}catch(err){b.disabled=false; ehrToast("Could not open: "+err.message,true);}};
+}
+$("name").addEventListener("change",checkMatch);
+function closeModal(){$("modal").classList.add("hidden");$("modal").classList.remove("drive");$("mSheet").onclick=null;}
 if(CLOUD.on){
   document.querySelectorAll(".cloudOnly").forEach(x=>x.classList.remove("hidden"));
   const g=document.createElement("script"); g.src="https://accounts.google.com/gsi/client"; g.async=true; document.head.appendChild(g);
   $("signBtn").onclick=()=>CLOUD.token().then(()=>CLOUD.flush()).catch(e=>ehrToast("Sign-in failed: "+e.message,true));
-  $("driveOpenBtn").onclick=openFromDrive;
+  $("searchBtn").onclick=openFromDrive; $("openBtn").classList.add("hidden"); // in the app, saved files open from the search window
   addEventListener("online",()=>CLOUD.flush()); paintSign();
   try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist();}catch(e){} // keep the waiting list from being evicted
   // link from the Tracker sheet: ?open=<Drive file id>&rec=<Record ID>; signing in needs a tap, so offer a button
