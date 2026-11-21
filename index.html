@@ -216,11 +216,17 @@ body.viewonly main .card{background:#fafbfa}
   #lmpQ{min-width:40px}
   /* section 1: date beside the heading; age+sex, contact+address */
   #h1row{display:flex;align-items:center;gap:8px}
+  /* previous visits: one card per visit (date | place | remove, then AOG and slot) */
+  #pvWrap table,#pvWrap tbody{display:block}#pvWrap thead{display:none}
+  #pvBody tr{display:grid;grid-template-columns:118px 1fr auto 44px;gap:6px 8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+  #pvBody td{border:0;padding:0}#pvBody td:nth-child(2){grid-row:1;grid-column:1/4}#pvBody td:nth-child(5){grid-row:1;grid-column:4}
+  #pvBody td:nth-child(1){grid-row:2;grid-column:1}#pvBody td:nth-child(3){grid-row:2;grid-column:2}#pvBody td:nth-child(4){grid-row:2;grid-column:3/5}
+  #pvBody .pvAog:not(:empty)::before{content:"AOG "}#pvBody .pvSlot:not(:empty)::before{content:"ANC slot "}#pvBody .pvAog,#pvBody .pvSlot{font-size:13px;color:var(--muted);white-space:nowrap}
   #signBtn{font-size:12px;padding:6px 8px;min-height:32px;max-width:72px;white-space:nowrap}#signBtn .sbFull{display:none}#signBtn .sbShort{display:inline}
   #h1row #vdateWrap{font-size:0;margin:0}
   #h1row #vdate{font-size:13px!important;min-height:30px;padding:3px 6px;width:auto}
   .grid>label.f:has(#age){order:1}.grid>label.f:has(#sex){order:2}.grid>label.f:has(#phone){order:3}.grid>label.f:has(#brgy){order:4}
-  .grid>label.f:has(#contact){order:4}.grid>label.f:has(#doc),.grid>label.f:has(#loc){order:5;grid-column:1/-1}
+  .grid>label.f:has(#contact){order:4}.grid>label.f:has(#doc),.grid>label.f:has(#loc),.grid>label.f:has(#vplace){order:5;grid-column:1/-1}
   /* vitals: weight+unit and height+unit on one line */
   .grid>label.f:has(#wt) select,.grid>label.f:has(#ht)~select,#hU,#wU,#tU{width:62px!important;min-width:0;padding:4px}
   .grid>label.f:has(#wt) .row,#htCmRow{gap:4px}
@@ -303,6 +309,13 @@ body.viewonly main .card{background:#fafbfa}
         <option value="utz">Intrauterine — confirmed by ultrasound</option>
         <option value="clin">Intrauterine — clinically (fundus palpable, FHT heard)</option>
       </select></label>
+    <label class="f">Place of this visit
+      <select id="vplace" onchange="this.closest('label').style.outline=''"></select><span class="hint cloudOnly hidden" id="siteHint"></span></label>
+  </div>
+  <div id="pvWrap" style="margin-top:12px">
+    <div style="font-weight:600;margin:4px 0">Previous prenatal visits <span class="hint" style="font-weight:400">before this visit, including visits outside the RHU</span></div>
+    <table><thead><tr><th style="width:130px">Date<br><span class="hint">MM/DD/YYYY or MM/YYYY</span></th><th>Place</th><th style="width:90px">AOG</th><th style="width:60px">ANC slot</th><th style="width:44px"></th></tr></thead><tbody id="pvBody"></tbody></table>
+    <div class="row" style="margin-top:6px;gap:10px"><button type="button" class="ghost small" id="pvAdd">+ Add previous visit</button><span class="hint" id="pvSum" style="flex:1"></span></div>
   </div>
 </section>
 
@@ -422,6 +435,8 @@ body.viewonly main .card{background:#fafbfa}
     <input type="text" id="addSig" aria-label="Sig" placeholder="Sig (e.g., 1 tab tuwing 4 oras kung may lagnat)">
     <span class="btnPair"><button class="ghost small addBtn" id="addRxBtn">Add</button><button id="printRx">Print</button></span>
   </div>
+  <label class="f" style="margin-top:10px">Other current medicines (not prescribed today) <span class="hint">one per line: medicine, dose, frequency (e.g., Methyldopa 250 mg, 1 tab, TID)</span>
+    <textarea id="otherMeds" rows="2"></textarea></label>
 </section>
 
 <!-- EMERGENCY PROTOCOL -->
@@ -780,6 +795,59 @@ function renderPast(){
 function readPast(){
   return [...$("pastBody").children].map(tr=>({raw:tr.querySelector(".py").value.trim(),pd:parseFlex(tr.querySelector(".py").value),manner:tr.querySelector(".pm").value,dc:tr.querySelector(".pdcv").value,comp:tr.querySelector(".pc").value,spec:tr.querySelector(".pcs").value.trim()}));
 }
+
+/* ===================== PREVIOUS VISITS + DOH 1-2-5 ANC SLOTS ===================== */
+let visitLog=[]; // visits saved in the app (End Visit), oldest first
+let prevVisits=[]; // typed-in earlier visits (before the tracker, or outside the RHU): {date:"MM/DD/YYYY", place}
+const PLACES_OUT=["Private OB or Lying-in","Hospital","Others"];
+const placeOpts=(all,sel)=>`<option value="">— Select —</option><option${sel==="RHU"?" selected":""}>RHU</option><optgroup label="Barangay Health Station">`+
+  BRGYS.map(b=>{const v="BHS – Brgy "+b;return `<option value="${v}"${sel===v?" selected":""}>${v}</option>`}).join("")+`</optgroup>`+
+  (all?PLACES_OUT.map(p=>`<option${sel===p?" selected":""}>${p}</option>`).join(""):"");
+$("vplace").innerHTML=placeOpts(false);
+// DOH 1-2-5 contact windows in days AOG (Module 2 slide 51: 8-13, 14-20, 21-27, 28-30, 31-34, 35, 36, 37-40 wk); a visit before 8 wk counts as contact 1 (first trimester, Field Manual)
+const ANC_WIN=[[0,98],[98,147],[147,196],[196,217],[217,245],[245,252],[252,259],[259,287]];
+const ancSlot=d=>d==null||d<0?null:(ANC_WIN.findIndex(([a,b])=>d>=a&&d<b)+1||null);
+const wkStr=d=>`${Math.floor(d/7)}${d%7?` ${d%7}/7`:""} wk`;
+const dayDiff=(a,b)=>Math.round((a-b)/864e5);
+function pvDate(p,vd){const r=parseFlex(p&&p.date); return r&&r.d&&r.d<vd?r.d:null;} // typed date, only if before this visit
+// every visit up to this one (typed-in, saved in the app, this visit), one per date, oldest first
+function ancVisits(C){const m=new Map(), put=(dt,src,place)=>{if(dt&&!isNaN(dt)&&!m.has(+dt))m.set(+dt,{src,place});};
+  put(isoToDate($("vdate").value)||C.vdate,"today",$("vplace").value);
+  visitLog.forEach(v=>{const d=isoToDate(v.date); if(d&&d<C.vdate)put(d,"app",v.place||"");});
+  prevVisits.forEach(p=>put(pvDate(p,C.vdate),"past",p.place));
+  return [...m].sort((a,b)=>a[0]-b[0]).map(([k,o])=>{const days=C.lmpEq?dayDiff(k,C.lmpEq):null; return {d:new Date(k),...o,days,slot:ancSlot(days)};});}
+function ancStatus(C){const L=ancVisits(C); if(!C.lmpEq||C.days==null)return {L,undated:true};
+  const met=new Set(L.map(v=>v.slot).filter(Boolean)), cnt=a=>a.filter(x=>met.has(x)).length;
+  const missed=ANC_WIN.map((w,i)=>i+1).filter(x=>C.days>=ANC_WIN[x-1][1]&&!met.has(x)); // window closed, no visit in it
+  return {L,met,missed,n:met.size,t:[cnt([1]),cnt([2,3]),cnt([4,5,6,7,8])],on:!missed.length};}
+const ancTxt=A=>A.undated?null:{t1:`${A.t[0]}/1`,t2:`${A.t[1]}/2`,t3:`${A.t[2]}/5`,anc:`${A.n}/8`+(A.missed.length?` (missed ${A.missed.join(", ")})`:""),on:A.on?"Yes":"No"};
+function buildPV(){ // visits saved in the app (locked), then typed-in ones
+  const vd=$("vdate").value;
+  $("pvBody").innerHTML=visitLog.filter(v=>v.date&&v.date<vd).map(v=>`<tr data-date="${v.date}"><td>${mdy(isoToDate(v.date))}</td><td>${esc(v.place||"—")} <span class="hint">· recorded in app</span></td><td class="pvAog"></td><td class="pvSlot"></td><td></td></tr>`).join("")+
+    prevVisits.map((p,i)=>`<tr data-pv="${i}"><td><input type="text" class="pvd" inputmode="numeric" placeholder="MM/DD/YYYY" value="${esc(p.date||"")}" aria-label="Date of previous visit"><div class="hint pverr"></div></td><td><select class="pvp" aria-label="Place of previous visit">${placeOpts(true,p.place)}</select></td><td class="pvAog"></td><td class="pvSlot"></td><td><button type="button" class="ghost small pvx" aria-label="Remove this visit">✕</button></td></tr>`).join("");
+  if(document.body.classList.contains("viewonly"))applyView();
+}
+function paintPV(C){const A=C.anc; if($("vplace").value)$("vplace").closest("label").style.outline="";
+  [...$("pvBody").children].forEach(tr=>{let dt=null;
+    if(tr.dataset.pv!=null){const p=prevVisits[+tr.dataset.pv], r=parseFlex(p&&p.date), late=r&&r.d&&r.d>=C.vdate;
+      tr.querySelector(".pverr").textContent=r&&r.bad?"Use MM/DD/YYYY or MM/YYYY":late?"Must be before this visit":""; dt=pvDate(p,C.vdate);}
+    else dt=isoToDate(tr.dataset.date);
+    const days=dt&&C.lmpEq?dayDiff(dt,C.lmpEq):null;
+    tr.querySelector(".pvAog").textContent=days==null?"":days<0?"before LMP":wkStr(days);
+    tr.querySelector(".pvSlot").textContent=days==null||days<0?"":(ancSlot(days)||"—");});
+  const T=ancTxt(A);
+  $("pvSum").textContent=T?`With this visit: T1 ${T.t1} · T2 ${T.t2} · T3 ${T.t3} · ANC # ${T.anc} · On schedule: ${T.on}`:"ANC slots need the LMP or a dating ultrasound (section 3).";}
+// ANC Contact # = earlier visits + 1, until the user picks a number
+function autoContact(){const c=$("contact"); if(document.body.classList.contains("viewonly")||!(c.value===""||c.dataset.auto==="1"))return;
+  const vd=isoToDate($("vdate").value)||new Date();
+  const n=new Set([...visitLog.map(v=>isoToDate(v.date)).filter(d=>d&&d<vd),...prevVisits.map(p=>pvDate(p,vd)).filter(Boolean)].map(Number)).size;
+  c.value=String(Math.min(12,n+1)); c.dataset.auto="1";}
+function pvEdit(e){const tr=e.target.closest("[data-pv]"); if(!tr)return; const p=prevVisits[+tr.dataset.pv]; if(!p)return;
+  if(e.target.classList.contains("pvd"))p.date=e.target.value.trim(); else if(e.target.classList.contains("pvp"))p.place=e.target.value;}
+$("pvBody").addEventListener("input",pvEdit); $("pvBody").addEventListener("change",pvEdit);
+$("pvBody").addEventListener("click",e=>{const b=e.target.closest(".pvx"); if(!b)return; prevVisits.splice(+b.closest("[data-pv]").dataset.pv,1); buildPV(); DIRTY=true; render(); saveDraft();});
+$("pvAdd").onclick=()=>{prevVisits.push({date:"",place:""}); buildPV(); DIRTY=true; render(); saveDraft(); $("pvBody").lastElementChild.querySelector(".pvd").focus();};
+buildPV();
 
 /* custom items */
 const customLabs=[], customRx=[]; const unticked=new Set();
@@ -1170,7 +1238,8 @@ function compute(){
 let CUR=null;
 function render(){
   if(typeof markRef==="function")markRef();
-  const C=compute(); CUR=C;
+  autoContact();
+  const C=compute(); CUR=C; C.anc=ancStatus(C); paintPV(C);
   // dating
   const ao=$("aogOut"),eo=$("eddOut");ao.classList.remove("err");
   if(C.lmp.invalid){ao.textContent="Date not recognized. Use MM/DD/YYYY, or ? / NA.";ao.classList.add("err");eo.textContent="";}
@@ -1296,21 +1365,43 @@ function render(){
   // summary
   $("summary").value=summaryText(C);
 }
+// Tagalog sig -> dose and frequency (ODAM/ODNN/ODHS/BID/TID/QID); sig printed as written if it doesn't match
+function medLine(r){const sig=(r.s||"").replace(/^sig:\s*/i,""), t=sig.toUpperCase(), d=r.d.replace(/\s*#\s*\d+\s*$/,"").replace(/\/tab\b/,"");
+  const dose=(sig.match(/\d+\s*tabs?/i)||[""])[0], n=+((t.match(/(\d+)\s*BESES/)||[])[1]||0), q=t.match(/TUWING\s*(\d+)\s*ORAS/);
+  const fr=n===1?(/TANGHALI/.test(t)?"ODNN":/GABI/.test(t)?"ODHS":/UMAGA/.test(t)?"ODAM":"OD"):n===2?"BID":n===3?"TID":n===4?"QID":q?`q${q[1]}h`:"";
+  return fr?[d,dose,fr+(/\bKUNG\b/.test(t)?" PRN":"")].filter(Boolean).join(", "):[d,sig].filter(Boolean).join(", ");} // "kung may lagnat" = as needed
+const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 function summaryText(C){
   const ord=n=>n+(["th","st","nd","rd"][(n%100>10&&n%100<14)?0:(n%10<4?n%10:0)]);
   const lmp=C.lmp.date?mdy(C.lmp.date):(C.lmp.unknown?"Not recalled":"");
-  const hist=C.past.map((p,i)=>{let m=p.manner||"?"; if((p.manner==="Abortion"||p.manner==="Ectopic")&&p.dc)m+=` (${p.dc})`; return `G${i+1} - ${p.raw||"date ?"} - ${m} - ${p.comp==="Yes"?`FMC: ${p.spec||"yes, unspecified"}`:"no FMC"}`}).join("\n");
-  return `OB HISTORY
-Date: ${mdy(C.vdate)}
-Visit: ${C.contact?ord(C.contact)+" prenatal contact":""}
-LMP: ${lmp}
-EDD: ${C.edd?mdy(C.edd)+" by "+C.basis:(C.lmp.unknown?"X":"")}
+  const pdt=p=>p.pd&&p.pd.d?(p.pd.approx?`${MON[p.pd.d.getMonth()]} ${p.pd.d.getFullYear()}`:`${MON[p.pd.d.getMonth()]} ${p.pd.d.getDate()}, ${p.pd.d.getFullYear()}`):(p.raw||"date ?");
+  const hist=C.past.map((p,i)=>{let m=p.manner||"?"; if((p.manner==="Abortion"||p.manner==="Ectopic")&&p.dc)m+=` (${p.dc})`; return `  G${i+1} - ${pdt(p)} - ${m} - ${p.comp==="Yes"?`FMC: ${p.spec||"yes, unspecified"}`:"no FMC"}`}).join("\n");
+  const asp=C.asp?`YES — ${C.asp160?"160 mg (2 × 80 mg)":"80 mg"} at bedtime until 36 weeks`:`${C.aspTxt} — ${C.aspWhy||""}`;
+  // ticked risk items by section (auto-ticked included); the BAPP note on low income is dropped
+  const ticked=g=>{const G=RISK_GROUPS.find(x=>x.g.startsWith(g)); return G?G.items.filter(it=>C.rf.has(it[0])).map(it=>it[1].replace(/\s*\(BAPP[^)]*\)/,"")):[];};
+  const ws=ticked("DOH warning signs");
+  const sec=["Conditions in the current pregnancy","Social and demographic","Past obstetric and surgical history","Pre-existing medical conditions"]
+    .map(g=>{const t=ticked(g);return t.length?`${g}: ${t.join("; ")}`:"";}).filter(Boolean);
+  const meds=[...C.rx.filter(r=>!unticked.has(r.id)).map(medLine),...$("otherMeds").value.split("\n").map(x=>x.trim()).filter(Boolean)];
+  const ev=EPDS.map((_,i)=>radioVal("e"+i)), tot=ev.reduce((t,v)=>t+Number(v||0),0), i10=ev[9]!=null?Number(ev[9]):null;
+  const aasNeeded=(C.epdsDone&&tot>=10&&i10!=null&&i10<=2)||radioVal("aasPrev")==="0";
+  const aas=radioVal("aasPrev")==="1"||AAS.every((_,i)=>radioVal("a"+i)!=null)?"done":aasNeeded?"not done":"not needed";
+  return `Date: ${mdy(C.vdate)}   Visit: ${C.contact?ord(C.contact)+" prenatal contact":""}
+LMP: ${lmp}   EDD: ${C.edd?mdy(C.edd)+" by "+C.basis:(C.lmp.unknown?"X":"")}
 
+Aspirin status (BAPP): ${C.ready?asp:"(pending)"}
 OB score: ${C.GP||""}${hist?"\n"+hist:(C.G===1?" - current pregnancy is the first":"")}
 
 Diagnosis: ${C.dx}
 
-Labs done: ${C.labLines.length?"\n"+C.labLines.map(l=>"  "+l).join("\n"):(C.labsDone==="0"?"None":"")}`;
+DOH warning signs: ${ws.length?ws.join("; "):"none"}
+
+Current Medications:${meds.length?"\n"+meds.map(m=>"  "+m).join("\n"):" none"}
+${sec.length?"\n"+sec.join("\n")+"\n":""}
+Labs done:${C.labLines.length?"\n"+C.labLines.map(l=>"  "+l).join("\n"):(C.labsDone==="0"?" None":"")}
+
+EPDS: ${C.epdsDone||radioVal("epdsPrev")==="1"?"done":"not done"}
+Abuse Screen: ${aas}`;
 }
 function renderEPDS(){
   const vals=EPDS.map((_,i)=>radioVal("e"+i)); const done=vals.every(v=>v!=null);
@@ -1754,11 +1845,13 @@ document.addEventListener("focusin",e=>{
 document.addEventListener("input",e=>{
   if(e.target.classList.contains("dueChk")||e.target.classList.contains("rxChk"))return; // change handler records the untick; re-rendering here would detach the box first
   if(e.target.id==="G")renderPast();
+  if(e.target.id==="vdate")buildPV();
   if(e.target.id==="lmpPick"&&e.target.value){const d=isoToDate(e.target.value);$("lmp").value=`${String(d.getMonth()+1).padStart(2,"0")}/${String(d.getDate()).padStart(2,"0")}/${d.getFullYear()}`;}
   render();
 });
 document.addEventListener("change",e=>{
   const t=e.target;
+  if(t.id==="contact")t.dataset.auto="0";
   if(t.classList.contains("pm")){t.closest("td").querySelector(".pdc").classList.toggle("hidden",!(t.value==="Abortion"||t.value==="Ectopic"));}
   if(t.classList.contains("pc")){t.closest("td").querySelector(".pcs").classList.toggle("hidden",t.value!=="Yes");}
   if(t.classList.contains("rf")&&t.checked)document.querySelector(`.noneG[data-g="${t.dataset.g}"]`).checked=false;
@@ -1796,7 +1889,8 @@ $("clearBtn").onclick=keep=>{ if(keep!==true)dropDraft(); document.querySelector
   $("refNote").value="For evaluation and management."; emExtra.length=0; document.querySelectorAll("[data-given]").forEach(b=>b.textContent="Given");
   document.querySelectorAll("input[type=checkbox],input[type=radio]").forEach(x=>x.checked=false);
   document.querySelectorAll("select").forEach(x=>x.selectedIndex=0);
-  $("lmpPick").value="";$("vdate").value=todayISO();customLabs.length=0;customRx.length=0;unticked.clear();renderPast();render();window.scrollTo(0,0);
+  $("lmpPick").value="";$("vdate").value=todayISO();customLabs.length=0;customRx.length=0;unticked.clear();
+  visitLog=[]; prevVisits=[]; $("contact").dataset.auto="1"; $("vplace").value=SITE; buildPV(); renderPast();render();window.scrollTo(0,0);
 };
 /* ===================== VIEW / UNFINISHED / NEW PATIENT ===================== */
 // Read-only view: every field in the form is disabled; printing and copying stay available.
@@ -1831,19 +1925,18 @@ document.addEventListener("input",e=>{if(e.target.closest&&e.target.closest("mai
 
 /* ===================== SAVE / OPEN / AUTOSAVE ===================== */
 // Controls are saved in document order; G is restored first so the past-pregnancy rows exist.
-const ctrls=()=>[...document.querySelectorAll("main input, main select, main textarea, .side input, .side select")].filter(e=>e.type!=="file"&&!e.closest("#modal")&&!e.classList.contains("summary"));
+const ctrls=()=>[...document.querySelectorAll("main input, main select, main textarea, .side input, .side select")].filter(e=>e.type!=="file"&&!e.closest("#modal")&&!e.closest("#pvWrap")&&!e.classList.contains("summary"));
 // stable key per control: id, radio name=value, or data-* attrs / class, plus occurrence number
 function ctrlKeys(){const seen={};return ctrls().map(e=>{const ds=Object.entries(e.dataset).map(([k,v])=>k+"="+v).join("&");
   let k=e.id?"#"+e.id:e.type==="radio"&&e.name?`r:${e.name}=${e.value}`:(ds||e.className||e.tagName)+"|"+(e.closest("tr")&&e.closest("#pastBody")?"past":"");
   seen[k]=(seen[k]||0)+1;return [k+"~"+seen[k],e];});}
 function snapshot(){return {v:1,saved:new Date().toISOString(),name:$("name").value.trim(),G:$("G").value,
   f:Object.fromEntries(ctrlKeys().map(([k,e])=>[k,e.type==="checkbox"||e.type==="radio"?e.checked:e.value])),
-  customLabs:[...customLabs],customRx:[...customRx],unticked:[...unticked],emExtra:[...emExtra],recId:$("recId").value,visits:[...visitLog]};}
-let visitLog=[];
+  customLabs:[...customLabs],customRx:[...customRx],unticked:[...unticked],emExtra:[...emExtra],recId:$("recId").value,visits:[...visitLog],prev:prevVisits.map(p=>({...p}))};}
 function restore(d){
   $("clearBtn").onclick.call(null,true); $("G").value=d.G||""; renderPast();
   ctrlKeys().forEach(([k,e])=>{if(!(k in d.f))return;const v=d.f[k]; if(e.type==="checkbox"||e.type==="radio")e.checked=!!v; else e.value=v;});
-  visitLog=[...(d.visits||[])];
+  visitLog=[...(d.visits||[])]; prevVisits=(d.prev||[]).map(p=>({...p})); $("contact").dataset.auto=$("contact").value?"0":"1"; buildPV();
   customLabs.push(...(d.customLabs||[])); customRx.push(...(d.customRx||[])); (d.unticked||[]).forEach(x=>unticked.add(x)); emExtra.push(...(d.emExtra||[]));
   document.querySelectorAll(".pm").forEach(t=>t.closest("td").querySelector(".pdc").classList.toggle("hidden",!(t.value==="Abortion"||t.value==="Ectopic")));
   document.querySelectorAll(".pc").forEach(t=>t.closest("td").querySelector(".pcs").classList.toggle("hidden",t.value!=="Yes"));
@@ -1864,6 +1957,7 @@ async function saveFile(){
 function visitEnded(){unfDrop(); dropDraft(); DIRTY=false; CLOUD.list&&(CLOUD.cache=null); setView(`Visit ended ${mdy(CUR.vdate)} — read only. Use New Patient or Search Patient for the next one.`,false);}
 $("endBtn").onclick=()=>{
   if(!$("name").value.trim()){ehrToast("Enter the patient's name first.",true);return;}
+  if(!$("vplace").value){const l=$("vplace").closest("label");l.style.outline="2px solid #c62828";l.scrollIntoView({block:"center"});ehrToast("Choose the place of this visit (section 1).",true);return;}
   if(!CLOUD.on){saveFile(); visitEnded(); if(location.protocol==="file:")ehrToast("Saved on this computer. This copy can't upload; open the installed app to sync."); return;}
   // installed app: consent is required, then a signed-in RHU account (offline saves queue on the device)
   const cl=$("consent").closest("label");
@@ -1942,9 +2036,9 @@ const OBSEQ=["G","Pa","T","Pp","A","L"];
 document.addEventListener("input",e=>{const t=e.target, i=OBSEQ.indexOf(t.id);
   if(i>=0&&i<OBSEQ.length-1&&e.inputType==="insertText"&&/^\d$/.test(t.value)) $(OBSEQ[i+1]).focus();
   // dates typed as digits get their slashes: MMDDYYYY -> MM/DD/YYYY; past rows also MMYYYY -> MM/YYYY
-  if((t.id==="lmp"||t.classList.contains("py"))&&e.inputType==="insertText"&&/^[\d/]+$/.test(t.value)){
+  if((t.id==="lmp"||t.classList.contains("py")||t.classList.contains("pvd"))&&e.inputType==="insertText"&&/^[\d/]+$/.test(t.value)){
     const d=t.value.replace(/\//g,"").slice(0,8); let v;
-    if(t.classList.contains("py")&&d.length===6&&/^(19|20)/.test(d.slice(2))) v=d.slice(0,2)+"/"+d.slice(2);
+    if((t.classList.contains("py")||t.classList.contains("pvd"))&&d.length===6&&/^(19|20)/.test(d.slice(2))) v=d.slice(0,2)+"/"+d.slice(2);
     else v=d.length>4?`${d.slice(0,2)}/${d.slice(2,4)}/${d.slice(4)}`:d.length>2?`${d.slice(0,2)}/${d.slice(2)}`:d;
     if(v!==t.value){t.value=v;render();}
   }},true);
@@ -1955,30 +2049,34 @@ $("lmpQ").onclick=()=>{$("lmp").value="?";$("lmp").dispatchEvent(new Event("inpu
    Scope drive.file: the app sees only the files and the Sheet it created. One shared RHU account. */
 const BRGY_CODE={"Atilano Ricardo":"ARIC","Bagumbayan":"BAGU","Banawang":"BANA","Binuangan":"BINU","Binukawan":"BINK","Ibaba":"IBAB","Ibis":"IBIS","Pag-asa":"PAGA","Parang":"PARA","Paysawan":"PAYS","Quinawan":"QUIN","San Antonio":"SANA","Saysain":"SAYS","Tabing Ilog":"TABI"};
 const colL=n=>{let s="";n++;while(n){const m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=(n-m-1)/26|0;}return s;}; // 0 -> A
-const CONTACT_WK=[12,20,26,30,34,36,38,40]; // WHO 2016 eight-contact schedule
-const TCOLS=["Record ID","Name","Age","Contact no.","Barangay","LMP","EDD","Dating basis","AOG today","Trimester","OB score","Prior CS","1st visit","AOG at 1st visit","Early ANC (≤12 wk)","Visits so far","Last visit","Next visit due","DOH class","Level","Main reasons","HDP / HELLP / GT","Aspirin","Aspirin dose","Aspirin start","Flags","Planned place of delivery","Referral","Physician (last visit)","Drive file","Updated"];
+const TCOLS=["Record ID","Name","Age","Contact no.","Barangay","LMP","EDD","Dating basis","AOG today","Trimester","OB score","Prior CS","1st visit","AOG at 1st visit","Early ANC (≤12 wk)","T1 visits","T2 visits","T3 visits","ANC #","On schedule","Last visit","Next visit due","DOH class","Level","Main reasons","HDP / HELLP / GT","Aspirin","Aspirin dose","Aspirin start","Flags","Planned place of delivery","Referral","Physician (last visit)","Drive file","Updated"];
 const TMANUAL=["Status","Delivery date","Delivery facility","Mode (SVD/CS)","Outcome","Baby weight (g)","Notes"];
-const VCOLS=["Record ID","Visit date","Contact #","AOG","BP","Repeat BP","Weight (kg)","BMI","Weight gain","FHT","Fundic ht","Level","Diagnosis","Labs requested","Prescription","Referral","Emergency protocol","Physician"];
+const VCOLS=["Record ID","Visit date","Place","Contact #","AOG","BP","Repeat BP","Weight (kg)","BMI","Weight gain","FHT","Fundic ht","Level","Diagnosis","Labs requested","Prescription","Referral","Emergency protocol","Physician"];
 const TI=Object.fromEntries(TCOLS.map((h,i)=>[h,i])); const T_LAST=colL(TCOLS.length-1), T_STATUS=colL(TCOLS.length);
 const fmtD=d=>d?mdy(d):"";
 function aogWk(C){return C.days!=null?+(C.days/7).toFixed(1):"";}
 function visitSummary(C){
   const e=emGiven(), dt=$("vdate").value;
-  return {date:dt,contact:C.contact||"",aog:C.aogStr||"",bp:C.sbp!=null?`${C.sbp}/${C.dbp}`:"",bp2:C.sbp2!=null?`${C.sbp2}/${C.dbp2}`:"",
+  return {date:dt,place:$("vplace").value,contact:C.contact||"",aog:C.aogStr||"",bp:C.sbp!=null?`${C.sbp}/${C.dbp}`:"",bp2:C.sbp2!=null?`${C.sbp2}/${C.dbp2}`:"",
     wt:C.wtDisp||"",bmi:C.bmi!=null?C.bmi.toFixed(1):"",wg:C.wg?`${C.wg.g.toFixed(1)} kg (${C.wg.st})`:"",fht:C.fht??"",fh:C.fh??"",
     level:C.ready?C.level:"",dx:C.dx,labs:C.due.filter(d=>!unticked.has(d.id)).map(d=>d.t).join("; "),
     rx:C.rx.filter(r=>!unticked.has(r.id)).map(r=>r.d).join("; "),ref:refNeeded(C)?refUrgency(C):"",em:e.length?e.map(x=>x.d).join("; "):"",doc:C.doc?C.doc.name:"",aogDays:C.days};
 }
 function trackerRow(C,visits){
   const r=new Array(TCOLS.length).fill(""), set=(h,v)=>{r[TI[h]]=v??"";};
-  const first=visits[0]||{}, lr=k=>{const e=document.querySelector(`[data-r="${k}"]`);return e?e.value.trim():""};
+  const A=C.anc||ancStatus(C), first=A.L[0]||{}, T=ancTxt(A);
   set("Name",C.name); set("Age",C.age); set("Contact no.",$("phone").value.trim()); set("Barangay",C.brgy);
   set("LMP",C.lmp.date?fmtD(C.lmp.date):(C.lmp.unknown?"Not recalled":"")); set("EDD",fmtD(C.edd)); set("Dating basis",C.edd?C.basis:"");
   set("OB score",C.GP); set("Prior CS",C.cs||0);
-  set("1st visit",first.date?mdy(isoToDate(first.date)):""); const fw=first.aogDays!=null?first.aogDays/7:""; // weeks as a number; the sheet shows it as "11 3/7"
-  set("AOG at 1st visit",fw); set("Early ANC (≤12 wk)",fw===""?"":(fw<13?"Yes":"No")); set("Visits so far",visits.length);
+  // earliest visit, including typed-in ones before the tracker or outside the RHU
+  set("1st visit",first.d?mdy(first.d):""); const fw=first.days!=null&&first.days>=0?first.days/7:""; // weeks as a number; the sheet shows it as "11 3/7"
+  set("AOG at 1st visit",fw); set("Early ANC (≤12 wk)",fw===""?"":(fw<13?"Yes":"No"));
+  // leading ' keeps "2/5" as text (Sheets would read it as a date)
+  if(T){set("T1 visits","'"+T.t1); set("T2 visits","'"+T.t2); set("T3 visits","'"+T.t3); set("ANC #","'"+T.anc); set("On schedule",T.on);}
+  else ["T1 visits","T2 visits","T3 visits","ANC #"].forEach(h=>set(h,"undated"));
   set("Last visit",mdy(C.vdate));
-  if(C.days!=null){const w=C.days/7, nx=CONTACT_WK.find(k=>k>w+0.5); set("Next visit due",nx?mdy(new Date(+C.vdate+Math.round((nx-w)*7)*864e5)):"");}
+  // next DOH 1-2-5 window not yet reached
+  if(T){const nx=ANC_WIN.find(([a])=>a>C.days); set("Next visit due",nx?mdy(new Date(C.lmpEq.getFullYear(),C.lmpEq.getMonth(),C.lmpEq.getDate()+nx[0])):"");}
   if(C.ready){set("DOH class",C.high?"High-risk":"Low-risk"); set("Level",C.level); set("Main reasons",C.reasons.slice().sort((a,b)=>b.l-a.l).slice(0,3).map(x=>x.t).join("; "));}
   set("HDP / HELLP / GT",[C.hdpTxt,C.hellp,C.gt?"Gestational thrombocytopenia":""].filter(Boolean).join("; "));
   set("Aspirin",C.ready?C.aspTxt:""); set("Aspirin dose",C.asp||C.aspNotYet?(C.asp160?"160 mg":"80 mg"):"");
@@ -1990,7 +2088,11 @@ function trackerRow(C,visits){
   set("Physician (last visit)",C.doc?C.doc.name:""); set("Updated",new Date().toLocaleString("en-US"));
   return r;
 }
-function visitRow(v,recId){return [recId,v.date?mdy(isoToDate(v.date)):"",v.contact,v.aog,v.bp,v.bp2,v.wt,v.bmi,v.wg,v.fht,v.fh,v.level,v.dx,v.labs,v.rx,v.ref,v.em,v.doc];}
+// typed-in earlier visits get their own Visits rows (date, place, contact order, AOG)
+function pastRows(C){const A=C.anc||ancStatus(C);
+  return A.L.map((x,i)=>[x,i]).filter(([x])=>x.src==="past").map(([x,i])=>{const r=new Array(VCOLS.length).fill("");
+    r[1]=mdy(x.d); r[2]=x.place||""; r[3]=i+1; r[4]=x.days!=null&&x.days>=0?`${wkStr(x.days).replace(" wk"," weeks")} AOG by ${C.basis}`:""; return r;});}
+function visitRow(v,recId){return [recId,v.date?mdy(isoToDate(v.date)):"",v.place||"",v.contact,v.aog,v.bp,v.bp2,v.wt,v.bmi,v.wg,v.fht,v.fh,v.level,v.dx,v.labs,v.rx,v.ref,v.em,v.doc];}
 
 // iPhone/iPad Safari tab, not the installed app: it has its own storage, so no device-only saves there
 const IOS_BROWSER=(/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1))&&!(navigator.standalone||matchMedia("(display-mode: standalone)").matches);
@@ -2005,7 +2107,7 @@ const CLOUD={on:location.origin==="https://benbasilio.github.io",CID:"7139168701
   },
   async api(url,opt={}){const r=await fetch(url,{...opt,headers:{Authorization:"Bearer "+this.tok,...(opt.body&&typeof opt.body==="string"?{"Content-Type":"application/json"}:{}),...(opt.headers||{})}});
     if(!r.ok)throw new Error(`${r.status} ${(await r.text()).slice(0,200)}`); return r.status===204?null:(opt.raw?r:r.json());},
-  async who(){try{const a=await this.api("https://www.googleapis.com/drive/v3/about?fields=user(emailAddress)");this.email=a.user.emailAddress;}catch(e){} paintSign();},
+  async who(){try{const a=await this.api("https://www.googleapis.com/drive/v3/about?fields=user(emailAddress)");this.email=a.user.emailAddress;}catch(e){} paintSign(); if(this.email)siteFromEmail(this.email).catch(()=>{});},
   q(s){return encodeURIComponent(s);},
   async folder(name,parent){const p=parent||"root";
     const f=await this.api(`https://www.googleapis.com/drive/v3/files?q=${this.q(`name='${name.replace(/'/g,"\\'")}' and mimeType='application/vnd.google-apps.folder' and '${p}' in parents and trashed=false`)}&fields=files(id)`);
@@ -2030,7 +2132,9 @@ const CLOUD={on:location.origin==="https://benbasilio.github.io",CID:"7139168701
       const older=(await step("find",find(TAG))).find(x=>x.id!==c.id&&x.createdTime<=c.createdTime);
       if(older){await step("remove duplicate",this.api(`https://www.googleapis.com/drive/v3/files/${c.id}`,{method:"PATCH",body:JSON.stringify({trashed:true})})); t=older;} else t=c;
     }
-    if((t.appProperties||{}).setup!=="done"){await step("setup",this.setupTracker(t.id)); await step("finish setup",this.api(`https://www.googleapis.com/drive/v3/files/${t.id}`,{method:"PATCH",body:JSON.stringify({appProperties:{kind:"tracker",setup:"done"}})}));}
+    const ap=t.appProperties||{}, done=()=>this.api(`https://www.googleapis.com/drive/v3/files/${t.id}`,{method:"PATCH",body:JSON.stringify({appProperties:{kind:"tracker",setup:"done",schema:"2"}})});
+    if(ap.setup!=="done"){await step("setup",this.setupTracker(t.id)); await step("finish setup",done());}
+    else if(ap.schema!=="2"){await step("add ANC columns",this.migrate2(t.id)); await step("finish update",done());}
     return t.id;},
   // Tabs, headers, dashboard and formatting. Safe to run again: adds only missing tabs and skips formatting already there.
   async setupTracker(id){
@@ -2043,17 +2147,7 @@ const CLOUD={on:location.origin==="https://benbasilio.github.io",CID:"7139168701
     reqs.push({updateSpreadsheetProperties:{properties:{locale:"en_US",timeZone:"Asia/Manila"},fields:"locale,timeZone"}});
     await this.api(`https://sheets.googleapis.com/v4/spreadsheets/${id}:batchUpdate`,{method:"POST",body:JSON.stringify({requests:reqs})});
     const hasRules=(sh.find(x=>x.properties.title==="Tracker")||{}).conditionalFormats?.length>0;
-    const B=Object.keys(BRGY_CODE), act=`,Tracker!$${T_STATUS}:$${T_STATUS},"<>Delivered",Tracker!$${T_STATUS}:$${T_STATUS},"<>Lost to follow-up",Tracker!$${T_STATUS}:$${T_STATUS},"<>Pregnancy loss",Tracker!$${T_STATUS}:$${T_STATUS},"<>Referred-transferred"`;
-    const L=h=>colL(TI[h]);
-    const dash=[["Bagac Pregnancy Tracker — active pregnancies by barangay and level","","","","",""],["Barangay","Level 1","Level 2","Level 3","Level 4","Total"],
-      ...B.map((b,i)=>[b,...[1,2,3,4].map(l=>`=COUNTIFS(Tracker!$E:$E,$A${i+3},Tracker!$${L("Level")}:$${L("Level")},${l}${act})`),`=SUM(B${i+3}:E${i+3})`]),
-      ["Total",..."BCDEF".split("").map(c=>`=SUM(${c}3:${c}${B.length+2})`)],[],
-      ["Due this month (EDD)",`=COUNTIFS(Tracker!$G:$G,">="&(EOMONTH(TODAY(),-1)+1),Tracker!$G:$G,"<="&EOMONTH(TODAY(),0))`],
-      ["Due next month (EDD)",`=COUNTIFS(Tracker!$G:$G,">="&(EOMONTH(TODAY(),0)+1),Tracker!$G:$G,"<="&EOMONTH(TODAY(),1))`],
-      ["Overdue visits",`=COUNTIFS(Tracker!$${L("Next visit due")}:$${L("Next visit due")},"<"&TODAY()${act})`],
-      ["Level 3–4 not yet referred",`=COUNTIFS(Tracker!$${L("Level")}:$${L("Level")},">=3",Tracker!$${L("Referral")}:$${L("Referral")},""${act})`],
-      ["Early ANC (≤12 wk), % of all",`=IFERROR(COUNTIF(Tracker!$${L("Early ANC (≤12 wk)")}:$${L("Early ANC (≤12 wk)")},"Yes")/COUNTA(Tracker!$A$2:$A),"")`],
-      ["4+ ANC visits, % of all",`=IFERROR(COUNTIF(Tracker!$${L("Visits so far")}:$${L("Visits so far")},">=4")/COUNTA(Tracker!$A$2:$A),"")`]];
+    const dash=this.dash();
     await this.api(`https://sheets.googleapis.com/v4/spreadsheets/${id}/values:batchUpdate`,{method:"POST",body:JSON.stringify({valueInputOption:"USER_ENTERED",data:[
       {range:"Tracker!A1",values:[[...TCOLS,...TMANUAL]]},{range:"Visits!A1",values:[VCOLS]},{range:"Dashboard!A1",values:dash}]})});
     const lv=TI["Level"], nx=TI["Next visit due"], ed=TI["EDD"], st=TCOLS.length, rng=(c,n=1)=>({sheetId:0,startRowIndex:1,startColumnIndex:c,endColumnIndex:c+n});
@@ -2068,12 +2162,37 @@ const CLOUD={on:location.origin==="https://benbasilio.github.io",CID:"7139168701
       ...["AOG today","AOG at 1st visit"].map(h=>({repeatCell:{range:{sheetId:0,startRowIndex:1,startColumnIndex:TI[h],endColumnIndex:TI[h]+1},cell:{userEnteredFormat:{numberFormat:{type:"NUMBER",pattern:"# ?/7"}}},fields:"userEnteredFormat.numberFormat"}})),
       ...[0,1,2].map(s=>({repeatCell:{range:{sheetId:s,startRowIndex:s===2?1:0,endRowIndex:s===2?2:1},cell:{userEnteredFormat:{textFormat:{bold:true},backgroundColor:{red:.88,green:.94,blue:.92}}},fields:"userEnteredFormat(textFormat,backgroundColor)"}})),
       {repeatCell:{range:{sheetId:2,startRowIndex:0,endRowIndex:1},cell:{userEnteredFormat:{textFormat:{bold:true,fontSize:13}}},fields:"userEnteredFormat.textFormat"}},
-      {repeatCell:{range:{sheetId:2,startRowIndex:B.length+8,endRowIndex:B.length+10,startColumnIndex:1,endColumnIndex:2},cell:{userEnteredFormat:{numberFormat:{type:"PERCENT",pattern:"0%"}}},fields:"userEnteredFormat.numberFormat"}}]})});
+      this.pctFmt()]})});
     // Tracker and Visits as Sheets tables (styled header, banding, per-column filter); fall back to a plain filter if the API refuses
     if(!hasRules){const tb=(sid,name,n)=>({addTable:{table:{name,range:{sheetId:sid,startRowIndex:0,endRowIndex:500,startColumnIndex:0,endColumnIndex:n}}}});
       try{await this.api(`https://sheets.googleapis.com/v4/spreadsheets/${id}:batchUpdate`,{method:"POST",body:JSON.stringify({requests:[tb(0,"Pregnancies",TCOLS.length+TMANUAL.length),tb(1,"Visits",VCOLS.length)]})});}
       catch(e){await this.api(`https://sheets.googleapis.com/v4/spreadsheets/${id}:batchUpdate`,{method:"POST",body:JSON.stringify({requests:[{setBasicFilter:{filter:{range:{sheetId:0,startRowIndex:0,startColumnIndex:0,endColumnIndex:TCOLS.length+TMANUAL.length}}}}]})}).catch(()=>{});}}
     },
+  pctFmt(){return {repeatCell:{range:{sheetId:2,startRowIndex:Object.keys(BRGY_CODE).length+8,endRowIndex:Object.keys(BRGY_CODE).length+11,startColumnIndex:1,endColumnIndex:2},cell:{userEnteredFormat:{numberFormat:{type:"PERCENT",pattern:"0%"}}},fields:"userEnteredFormat.numberFormat"}};},
+  dash(){
+    const B=Object.keys(BRGY_CODE), act=`,Tracker!$${T_STATUS}:$${T_STATUS},"<>Delivered",Tracker!$${T_STATUS}:$${T_STATUS},"<>Lost to follow-up",Tracker!$${T_STATUS}:$${T_STATUS},"<>Pregnancy loss",Tracker!$${T_STATUS}:$${T_STATUS},"<>Referred-transferred"`;
+    const L=h=>colL(TI[h]), on=`Tracker!$${L("On schedule")}:$${L("On schedule")}`, st=`Tracker!$${T_STATUS}:$${T_STATUS}`;
+    return [["Bagac Pregnancy Tracker — active pregnancies by barangay and level","","","","",""],["Barangay","Level 1","Level 2","Level 3","Level 4","Total"],
+      ...B.map((b,i)=>[b,...[1,2,3,4].map(l=>`=COUNTIFS(Tracker!$E:$E,$A${i+3},Tracker!$${L("Level")}:$${L("Level")},${l}${act})`),`=SUM(B${i+3}:E${i+3})`]),
+      ["Total",..."BCDEF".split("").map(c=>`=SUM(${c}3:${c}${B.length+2})`)],[],
+      ["Due this month (EDD)",`=COUNTIFS(Tracker!$G:$G,">="&(EOMONTH(TODAY(),-1)+1),Tracker!$G:$G,"<="&EOMONTH(TODAY(),0))`],
+      ["Due next month (EDD)",`=COUNTIFS(Tracker!$G:$G,">="&(EOMONTH(TODAY(),0)+1),Tracker!$G:$G,"<="&EOMONTH(TODAY(),1))`],
+      ["Overdue visits",`=COUNTIFS(Tracker!$${L("Next visit due")}:$${L("Next visit due")},"<"&TODAY()${act})`],
+      ["Level 3–4 not yet referred",`=COUNTIFS(Tracker!$${L("Level")}:$${L("Level")},">=3",Tracker!$${L("Referral")}:$${L("Referral")},""${act})`],
+      ["Early ANC (≤12 wk), % of all",`=IFERROR(COUNTIF(Tracker!$${L("Early ANC (≤12 wk)")}:$${L("Early ANC (≤12 wk)")},"Yes")/COUNTA(Tracker!$A$2:$A),"")`],
+      ["On schedule (DOH 1-2-5), % of active",`=IFERROR(COUNTIFS(${on},"Yes"${act})/(COUNTIFS(${on},"Yes"${act})+COUNTIFS(${on},"No"${act})),"")`],
+      ["All 8 ANC contacts met, % of delivered",`=IFERROR(COUNTIFS(Tracker!$${L("ANC #")}:$${L("ANC #")},"8/8*",${st},"Delivered")/COUNTIF(${st},"Delivered"),"")`]];},
+  // tracker made before the DOH 1-2-5 columns: insert them in place (manual columns and formats move with them), rewrite headers and dashboard
+  async migrate2(id){const S=`https://sheets.googleapis.com/v4/spreadsheets/${id}`;
+    const h=((await this.api(`${S}/values/Tracker!1:1`)).values||[[]])[0]||[], vh=((await this.api(`${S}/values/Visits!1:1`)).values||[[]])[0]||[], reqs=[];
+    const old=h.indexOf("Visits so far");
+    if(old>=0&&!h.includes("ANC #"))reqs.push({insertDimension:{range:{sheetId:0,dimension:"COLUMNS",startIndex:old+1,endIndex:old+5},inheritFromBefore:true}});
+    if(vh.length&&!vh.includes("Place"))reqs.push({insertDimension:{range:{sheetId:1,dimension:"COLUMNS",startIndex:2,endIndex:3},inheritFromBefore:true}});
+    reqs.push(this.pctFmt());
+    await this.api(`${S}:batchUpdate`,{method:"POST",body:JSON.stringify({requests:reqs})});
+    if(old>=0&&!h.includes("ANC #"))await this.api(`${S}/values/Tracker!${colL(old)}2:${colL(old)}:clear`,{method:"POST",body:"{}"}); // old visit counts; refilled at each patient's next End Visit
+    await this.api(`${S}/values:batchUpdate`,{method:"POST",body:JSON.stringify({valueInputOption:"USER_ENTERED",data:[
+      {range:"Tracker!A1",values:[[...TCOLS,...TMANUAL]]},{range:"Visits!A1",values:[VCOLS]},{range:"Dashboard!A1",values:this.dash()}]})});},
   // one save: Drive file + tracker row + visits row
   async push(job){
     const root=await this.folder("Bagac Prenatal Records"), yr=await this.folder(job.year,root), br=await this.folder(job.brgy||"No barangay",yr);
@@ -2093,8 +2212,10 @@ const CLOUD={on:location.origin==="https://benbasilio.github.io",CID:"7139168701
     job.file.f["#driveId~1"]=up.id;
     const row=ids.indexOf(rec)+1||ids.length+1, tr=[...job.trow]; tr[0]=rec; tr[TI["Drive file"]]=`=HYPERLINK("https://benbasilio.github.io/prenatal/?open=${up.id}&rec=${rec}","Open")`;
     tr[TI["AOG today"]]=`=IF(G${row}="","",(TODAY()-G${row}+280)/7)`; tr[TI["Trimester"]]=`=IF(I${row}="","",IF(I${row}<14,"1st",IF(I${row}<28,"2nd","3rd")))`;
-    const vr=((await this.api(`${S}/Visits!A:B`)).values||[]); const vrow=vr.findIndex(r=>r[0]===rec&&r[1]===job.vrow[1])+1||vr.length+1;
-    await this.api(`${S}:batchUpdate`,{method:"POST",body:JSON.stringify({valueInputOption:"USER_ENTERED",data:[{range:`Tracker!A${row}:${T_LAST}${row}`,values:[tr]},{range:`Visits!A${vrow}`,values:[[rec,...job.vrow.slice(1)]]}]})});
+    const vr=((await this.api(`${S}/Visits!A:B`)).values||[]); let nxt=vr.length+1; const at=v=>vr.findIndex(r=>r[0]===rec&&r[1]===v[1])+1||nxt++;
+    // shortcut: a typed-in visit later removed from the form keeps its Visits row; delete it in the sheet by hand
+    const vis=[job.vrow,...(job.prows||[])].map(v=>({range:`Visits!A${at(v)}`,values:[[rec,...v.slice(1)]]}));
+    await this.api(`${S}:batchUpdate`,{method:"POST",body:JSON.stringify({valueInputOption:"USER_ENTERED",data:[{range:`Tracker!A${row}:${T_LAST}${row}`,values:[tr]},...vis]})});
     return {rec,id:up.id};},
   queue(){try{return JSON.parse(localStorage.getItem("prenatalQueue")||"[]")}catch(e){return []}},
   setQueue(q){try{localStorage.setItem("prenatalQueue",JSON.stringify(q))}catch(e){} paintSign();},
@@ -2110,7 +2231,7 @@ const CLOUD={on:location.origin==="https://benbasilio.github.io",CID:"7139168701
   save(tokP){ // called from the Save click
     const C=CUR, v=visitSummary(C); visitLog=visitLog.filter(x=>x.date!==v.date); visitLog.push(v); visitLog.sort((a,b)=>a.date<b.date?-1:1);
     const job={name:C.name,age:C.age,eddFull:C.edd?mdy(C.edd):"",brgy:C.brgy,year:String(C.vdate.getFullYear()),edd:C.edd?`${String(C.edd.getMonth()+1).padStart(2,"0")}-${C.edd.getFullYear()}`:"",date:v.date,
-      recId:$("recId").value,driveId:$("driveId").value,saved:Date.now(),file:snapshot(),trow:trackerRow(C,visitLog),vrow:visitRow(v,"")};
+      recId:$("recId").value,driveId:$("driveId").value,saved:Date.now(),file:snapshot(),trow:trackerRow(C,visitLog),vrow:visitRow(v,""),prows:pastRows(C)};
     // a queued job for the same patient is replaced by this newer save
     const q=this.queue().filter(x=>!(x.name===job.name&&x.edd===job.edd)); q.push(job); this.setQueue(q);
     tokP.then(()=>this.flush()).catch(()=>ehrToast("Saved on device; sign in to RHU Drive to upload.",true));
@@ -2129,6 +2250,27 @@ function paintSign(){const b=$("signBtn"); if(!b)return; const q=CLOUD.queue().l
   const old=new Date(Math.min(...Q.map(j=>j.saved||+isoToDate(j.date)||Date.now())));
   bn.innerHTML=`<span style="flex:1"><b>${Q.length} saved form${Q.length>1?"s":""} waiting to sync</b> (oldest ${mdy(old)}). Sign in to upload to the RHU Drive and the Pregnancy Tracker.</span><button class="small" id="syncGo">Sign in</button>`;
   $("syncGo").onclick=()=>CLOUD.token().catch(e=>ehrToast(e.message==="offline"?"No internet right now; try again when online.":"Sign-in failed: "+e.message,true));}
+/* Device site: the RHU account means RHU; any other account is a BHS, its barangay picked once per account on this device.
+   Only a SHA-256 of the RHU email is in this public file. */
+const RHU_HASH="0ed95199634aa8b0bdc8b464f3d58f5c67065b90114e6761e7802813a958ac54";
+const SITEK="prenatalSite", siteGet=()=>{try{return JSON.parse(localStorage.getItem(SITEK)||"{}")||{}}catch(e){return {}}}, siteSave=o=>{try{localStorage.setItem(SITEK,JSON.stringify(o))}catch(e){}};
+let SITE=siteGet().last||"", SITE_H="", PICK_LATER=false;
+async function siteFromEmail(email){
+  const b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(email.trim().toLowerCase()));
+  SITE_H=[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join(""); const by=siteGet().by||{};
+  if(SITE_H===RHU_HASH)setSite("RHU"); else if(by[SITE_H])setSite(by[SITE_H]); else pickSite();}
+function setSite(v){SITE=v; const o=siteGet(); o.last=v; if(SITE_H&&SITE_H!==RHU_HASH)(o.by=o.by||{})[SITE_H]=v; siteSave(o); paintSite();
+  if(!VIEW&&!$("vplace").value){$("vplace").value=v; render(); saveDraft();}}
+function paintSite(){const h=$("siteHint"); if(!h)return;
+  h.innerHTML=SITE?`This device: <b>${esc(SITE)}</b>${SITE_H===RHU_HASH?" (RHU account)":` · <a href="#" id="siteChg">Change</a>`}`:`<a href="#" id="siteChg">Set this device's Barangay Health Station</a>`;
+  const a=$("siteChg"); if(a)a.onclick=e=>{e.preventDefault();pickSite();};}
+function pickSite(){
+  if(!$("modal").classList.contains("hidden")){PICK_LATER=true;return;} // another window is open: ask when it closes
+  MODE="drive"; $("modal").classList.add("drive"); $("mTitle").textContent="Which Barangay Health Station is this?";
+  $("mSheet").innerHTML=`<p>This account is not the RHU account, so its visits are recorded as BHS visits. Choose this device's BHS (asked once).</p>`+
+    BRGYS.map(b=>`<button class="ghost" data-site="BHS – Brgy ${esc(b)}" style="display:block;width:100%;text-align:left;margin:4px 0">BHS – Brgy ${esc(b)}</button>`).join("");
+  $("mMsg").textContent="You can change it later under Place of this visit (section 1)."; $("modal").classList.remove("hidden");
+  $("mSheet").onclick=e=>{const b=e.target.closest("[data-site]"); if(!b)return; setSite(b.dataset.site); closeModal();};}
 // start a new visit from a returning patient's last record
 function newVisit(){
   if(visitLog.length&&visitLog[visitLog.length-1].date===todayISO())return;
@@ -2140,7 +2282,7 @@ function newVisit(){
   $("refNote").value="For evaluation and management."; $("refUrg").value="auto"; unticked.clear();
   document.querySelectorAll('#epdsCard input[type=radio],#aasQs input').forEach(x=>{if(x.type==="radio")x.checked=false;else x.value="";});
   [["epdsPrev","1"],["aasPrev","1"]].forEach(([n,v])=>{const r=document.querySelector(`input[name="${n}"][value="${v}"]`);if(r)r.checked=true;});
-  const c=num("contact"); if(c)$("contact").value=String(Math.min(12,c+1));
+  $("contact").dataset.auto="1"; if(SITE)$("vplace").value=SITE; buildPV();
   const prevW=CUR&&CUR.w; syncVis(); render();
   // a "done" EPDS from before 28 weeks doesn't count for the third-trimester screen
   if(CUR.w!=null&&CUR.w>=28&&!(prevW>=28)){const r=document.querySelector('input[name="epdsPrev"]:checked'); if(r){r.checked=false; render();}}
@@ -2187,13 +2329,14 @@ async function checkMatch(){
   $("mSheet").onclick=async e=>{const b=e.target.closest("[data-ret]"); if(!b)return; b.disabled=true; DIRTY=false; try{await loadDrive(b.dataset.ret); closeModal(); $("mSheet").onclick=null;}catch(err){b.disabled=false; ehrToast("Could not open: "+err.message,true);}};
 }
 $("name").addEventListener("change",checkMatch);
-function closeModal(){$("modal").classList.add("hidden");$("modal").classList.remove("drive");$("mSheet").onclick=null;}
+function closeModal(){$("modal").classList.add("hidden");$("modal").classList.remove("drive");$("mSheet").onclick=null; if(PICK_LATER){PICK_LATER=false;setTimeout(pickSite,0);}}
 if(CLOUD.on){
   document.querySelectorAll(".cloudOnly").forEach(x=>x.classList.remove("hidden"));
   const g=document.createElement("script"); g.src="https://accounts.google.com/gsi/client"; g.async=true; document.head.appendChild(g);
   $("signBtn").onclick=()=>CLOUD.token().then(()=>CLOUD.flush()).catch(e=>ehrToast("Sign-in failed: "+e.message,true));
   $("searchBtn").onclick=openFromDrive; $("openBtn").classList.add("hidden"); // in the app, saved files open from the search window
-  addEventListener("online",()=>CLOUD.flush()); paintSign();
+  addEventListener("online",()=>CLOUD.flush()); paintSign(); paintSite();
+  if(SITE&&!$("vplace").value){$("vplace").value=SITE; render();}
   try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist();}catch(e){} // keep the waiting list from being evicted
   // link from the Tracker sheet: ?open=<Drive file id>&rec=<Record ID>; signing in needs a tap, so offer a button
   const P=new URLSearchParams(location.search), fid=P.get("open"), rec=P.get("rec")||"";
