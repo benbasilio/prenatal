@@ -461,8 +461,6 @@ body.viewonly main .card{background:#fafbfa}
     <input type="text" id="addSig" aria-label="Sig" placeholder="Sig (e.g., 1 tab tuwing 4 oras kung may lagnat)">
     <span class="btnPair"><button class="ghost small addBtn" id="addRxBtn">Add</button><button id="printRx">Print</button></span>
   </div>
-  <label class="f" style="margin-top:10px">Other current medicines (not prescribed today) <span class="hint">one per line: medicine, dose, frequency (e.g., Methyldopa 250 mg, 1 tab, TID)</span>
-    <textarea id="otherMeds" rows="2"></textarea></label>
 </section>
 
 <!-- EMERGENCY PROTOCOL -->
@@ -1298,9 +1296,9 @@ function compute(){
   if(C.pp){
     if(C.pp===1) rx.push({id:"fe",d:"Ferrous Sulfate + Folic Acid Tablet #90",s:"Sig: 1 tab 1 beses sa 1 araw sa TANGHALI (3 buwan)"});
     // BAPP ch. 7: treat postpartum BP at 150/100 or higher; amlodipine (breastfeeding-compatible) replaces methyldopa
-    const om=$("otherMeds").value;
+    const om=customRx.map(r=>r.d).join("\n"); // medicines added with the Add box
     if(C.bpU&&(C.bpU[0]>=150||C.bpU[1]>=100)){ C.notes.push("For BP monitoring");
-      if(!/amlodipine|nifedipine/i.test(om)){ if(/methyldopa/i.test(om))C.notes.push("Methyldopa switched to Amlodipine");
+      if(!/amlodipine|nifedipine/i.test(om)){ if(/methyldopa/i.test(om)){C.notes.push("Methyldopa switched to Amlodipine"); C.noMethyldopa=true;}
         rx.push({id:"aml",d:"Amlodipine 5 mg/tab #30",s:"Sig: 1 tab 1 beses sa 1 araw sa UMAGA"});}}
   } else {
   // iron and calcium last until the next DOH 1-2-5 window opens (minimum 30 days); the supply that reaches the EDD completes it
@@ -1317,7 +1315,10 @@ function compute(){
   if(!C.pp&&C.ready&&(C.asp||C.aspNotYet)){ const st=C.aspNotYet?`SIMULAN LAMANG SA ${mdy(C.aspStart)}`:"";
     if(C.asp160) rx.push({id:"asa",d:"Aspirin 80 mg/tab #60",s:"Sig: 2 tabs 1 beses sa 1 araw sa GABI hanggang sa mag 36 weeks AOG",start:st});
     else rx.push({id:"asa",d:"Aspirin 80 mg/tab #30",s:"Sig: 1 tab 1 beses sa 1 araw sa GABI hanggang sa mag 36 weeks AOG",start:st});}
-  customRx.forEach((r,i)=>rx.push({id:"cr"+i,d:r.d,s:r.s,custom:i}));
+  // BP monitoring confirmed HPN or chronic hypertension: start methyldopa for 7 days, then dose adjustment (skipped if a BP medicine is already added)
+  if(!C.pp&&(C.htnConf||C.chronic)&&!customRx.some(r=>/methyldopa|nifedipine|amlodipine/i.test(r.d)))
+    rx.push({id:"mdp",d:"Methyldopa 250mg/tab #14",s:"Sig: 1 tab 2 beses sa 1 araw (umaga-gabi) sa loob ng 7 araw habang nagmo-monitor ng BP. Bumalik pagkatapos ng 7 araw para sa dose adjustment kung kinakailangan."});
+  customRx.forEach((r,i)=>{if(!(C.noMethyldopa&&/methyldopa/i.test(r.d)))rx.push({id:"cr"+i,d:r.d,s:r.s,custom:i});});
   C.rx=rx; C.bpNote=!C.pp&&!!(C.bpU&&(C.bpU[0]>=130||C.bpU[1]>=80));
   return C;
 }
@@ -1476,7 +1477,7 @@ function summaryText(C){
   const ws=ticked("DOH warning signs");
   const sec=["Conditions in the current pregnancy","Social and demographic","Past obstetric and surgical history","Pre-existing medical conditions"]
     .map(g=>{const t=ticked(g);return t.length?`${g}: ${t.join("; ")}`:"";}).filter(Boolean);
-  const meds=[...C.rx.filter(r=>!unticked.has(r.id)).map(medLine),...$("otherMeds").value.split("\n").map(x=>x.trim()).filter(Boolean)];
+  const meds=C.rx.filter(r=>!unticked.has(r.id)).map(medLine);
   const ev=EPDS.map((_,i)=>radioVal("e"+i)), tot=ev.reduce((t,v)=>t+Number(v||0),0), i10=ev[9]!=null?Number(ev[9]):null;
   const aasNeeded=(C.epdsDone&&tot>=10&&i10!=null&&i10<=2)||radioVal("aasPrev")==="0";
   const aas=radioVal("aasPrev")==="1"||AAS.every((_,i)=>radioVal("a"+i)!=null)?"done":aasNeeded?"not done":"not needed";
