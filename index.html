@@ -2703,6 +2703,7 @@ window.addEventListener("prenatal-ehr",e=>{
   syncVis(); render(); saveDraft();
   const warn=[...(c.warn||[])]; if(!b)warn.push(`Barangay "${p.brgy||"?"}" is not in Bagac; select it manually`);
   ehrToast(`Loaded from EHR: ${p.name}`+(got.length?` (+${got.length} chart fields)`:"")+(warn.length?". ⚠ "+warn.join("; "):""),warn.length>0);
+  checkMatch(); // code-set name fires no "change": look for her saved record here
 });
 renderPast(); render();
 </script>
