@@ -362,7 +362,7 @@ body.viewonly main .card{background:#fafbfa}
   </div>
   <div id="bmiOut" class="calc"></div>
   <div id="mapOut" class="calc"></div>
-  <div class="row" style="font-weight:600;margin-top:6px">Hypertension confirmed by BP monitoring? <span class="yn"><label class="chk"><input type="radio" name="htnConfR" value="1"> Yes</label><label class="chk"><input type="radio" name="htnConfR" value="0"> No</label></span></div><label class="chk hidden"><input type="checkbox" id="htnConf"></label>
+  <div class="row" style="font-weight:600;margin-top:6px">BP monitoring result: <span class="yn"><label class="chk"><input type="radio" name="htnConfR" value="1"> HPN</label><label class="chk"><input type="radio" name="htnConfR" value="0"> no HPN</label></span></div><label class="chk hidden"><input type="checkbox" id="htnConf"></label>
   <div id="bpOut"></div>
   <div id="vsOut"></div>
 </section>
@@ -1629,7 +1629,7 @@ function refBlocks(){
   if(C.pp&&C.emProto)B.push({t:"p",text:"Postpartum: please rule out cerebral venous thrombosis / stroke — urgent CT head with CT venography, or MRI with MR venography."});
   B.push({t:"h",text:"Vital signs at referral"});
   const T=C.tempRaw!=null?`${C.tempRaw} ${$("tU").value}`:"";
-  B.push({t:"grid",items:[["BP",C.sbp!=null?`${C.sbp}/${C.dbp} mmHg`:""],["Repeat BP",C.sbp2!=null?`${C.sbp2}/${C.dbp2} mmHg`:""],["MAP",C.map!=null?C.map.toFixed(1)+" mmHg":""],["HR",C.hr!=null?C.hr+"/min":""],["RR",C.rr!=null?C.rr+"/min":""],["Temp",T],["SpO₂",C.spo2!=null?C.spo2+"%":""],["FHT",C.fht!=null?C.fht+" bpm"+($("fhtLoc").value?", "+$("fhtLoc").value:""):""],["Fundic height",C.fh!=null?C.fh+" cm":""],["Weight",C.wtDisp],["BMI",C.bmi!=null?C.bmi.toFixed(1)+" ("+asianBMI(C.bmi)+")":""],["HPN confirmed by monitoring",C.htnConf?"Yes":"No"]]});
+  B.push({t:"grid",items:[["BP",C.sbp!=null?`${C.sbp}/${C.dbp} mmHg`:""],["Repeat BP",C.sbp2!=null?`${C.sbp2}/${C.dbp2} mmHg`:""],["MAP",C.map!=null?C.map.toFixed(1)+" mmHg":""],["HR",C.hr!=null?C.hr+"/min":""],["RR",C.rr!=null?C.rr+"/min":""],["Temp",T],["SpO₂",C.spo2!=null?C.spo2+"%":""],["FHT",C.fht!=null?C.fht+" bpm"+($("fhtLoc").value?", "+$("fhtLoc").value:""):""],["Fundic height",C.fh!=null?C.fh+" cm":""],["Weight",C.wtDisp],["BMI",C.bmi!=null?C.bmi.toFixed(1)+" ("+asianBMI(C.bmi)+")":""],["BP monitoring result",{"1":"HPN","0":"no HPN"}[radioVal("htnConfR")]||""]]});
   B.push({t:"h",text:"Laboratory results"});
   if(C.labRows.length)B.push({t:"table",head:["Test","Result","Date done"],rows:C.labRows.map(r=>[r.name,r.val,r.date||"—"])}); else B.push({t:"p",text:C.labsDone==="0"?"No laboratory tests done yet.":"—"});
   if(C.hdp||C.elevUnconf||C.hellpScreen){
@@ -1994,7 +1994,10 @@ $("mClose").onclick=()=>closeModal();
 $("modal").addEventListener("click",e=>{if(e.target===$("modal")&&$("modal").classList.contains("drive"))closeModal();}); // tap outside a small window closes it
 $("mPdf").onclick=savePDF;
 $("mPrint").onclick=()=>{try{window.print()}catch(e){$("mMsg").textContent="Direct printing is blocked here. Use Save PDF."}};
-$("copyBtn").onclick=async()=>{const t=$("summary").value;try{await navigator.clipboard.writeText(t);$("copyMsg").textContent="Copied."}catch(e){$("summary").select();try{document.execCommand("copy");$("copyMsg").textContent="Copied."}catch(_){$("copyMsg").textContent="Select the text and press Ctrl+C."}}};
+// EHR bridge 1.7+: sends name + ticked labs due to the EMR; the bridge answers with "prenatal-labs-ok"
+window.addEventListener("prenatal-labs-ok",e=>{$("copyMsg").textContent+=` Labs sent to the EMR (${e.detail}).`;});
+$("copyBtn").onclick=async()=>{const t=$("summary").value;try{await navigator.clipboard.writeText(t);$("copyMsg").textContent="Copied."}catch(e){$("summary").select();try{document.execCommand("copy");$("copyMsg").textContent="Copied."}catch(_){$("copyMsg").textContent="Select the text and press Ctrl+C."}}
+  window.dispatchEvent(new CustomEvent("prenatal-labs",{detail:JSON.stringify({name:$("name").value.trim(),labs:CUR?CUR.due.filter(d=>!unticked.has(d.id)).map(d=>d.t):[],ts:Date.now()})}));};
 $("clearBtn").onclick=keep=>{ if(keep!==true)dropDraft(); document.querySelectorAll("input[type=hidden]").forEach(x=>x.value=""); document.querySelectorAll(".bad").forEach(x=>x.classList.remove("bad"));
   document.querySelectorAll("input[type=text]:not([readonly]),input[type=tel],input[type=number],input[type=time],input[type=date]:not(#vdate),textarea:not(.summary)").forEach(x=>x.value="");
   $("refNote").value="For evaluation and management."; emExtra.length=0; document.querySelectorAll("[data-given]").forEach(b=>b.textContent="Given");
