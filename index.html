@@ -319,7 +319,7 @@ body.viewonly main .card{background:#fafbfa}
   </div>
   <div id="pvWrap" style="margin-top:12px">
     <div style="font-weight:600;margin:4px 0">Previous prenatal visits <span class="hint" style="font-weight:400">before this visit, including visits outside the RHU</span></div>
-    <table><thead><tr><th style="width:130px">Date<br><span class="hint">MM/DD/YYYY or MM/YYYY</span></th><th>Place</th><th style="width:90px">AOG</th><th style="width:60px">ANC slot</th><th style="width:44px"></th></tr></thead><tbody id="pvBody"></tbody></table>
+    <table><thead><tr><th style="width:130px">Date</th><th>Place</th><th style="width:90px">AOG</th><th style="width:60px">ANC slot</th><th style="width:44px"></th></tr></thead><tbody id="pvBody"></tbody></table>
     <div class="row" style="margin-top:6px;gap:10px"><button type="button" class="ghost small" id="pvAdd">+ Add previous visit</button><span class="hint" id="pvSum" style="flex:1"></span></div>
   </div>
 </section>
@@ -357,7 +357,7 @@ body.viewonly main .card{background:#fafbfa}
     <label class="f">Temperature
       <div class="row"><input type="number" id="temp" step="0.1" style="flex:1"><select id="tU" style="width:64px"><option>°C</option><option>°F</option></select></div></label>
     <label class="f">O₂ saturation (%)<input type="number" id="spo2"></label>
-    <label class="f">Fetal heart tone (bpm) <span class="hint">required from 20 wk</span><input type="number" id="fht"></label>
+    <label class="f">Fetal heart tone (bpm) <span class="hint">required from 20 wk; where heard</span><span class="row" style="gap:6px"><input type="number" id="fht" style="flex:1;min-width:0"><select id="fhtLoc" aria-label="Where the FHT was heard" style="width:96px"><option value="">Site</option><option>LLQ</option><option>RLQ</option><option>LUQ</option><option>RUQ</option><option>Midline</option></select></span></label>
     <label class="f hidden" id="fhWrap">Fundic height (cm) <span class="hint">20–36 weeks; size-date rule ±2 cm</span><input type="number" id="fh" step="0.5"></label>
   </div>
   <div id="bmiOut" class="calc"></div>
@@ -1629,7 +1629,7 @@ function refBlocks(){
   if(C.pp&&C.emProto)B.push({t:"p",text:"Postpartum: please rule out cerebral venous thrombosis / stroke — urgent CT head with CT venography, or MRI with MR venography."});
   B.push({t:"h",text:"Vital signs at referral"});
   const T=C.tempRaw!=null?`${C.tempRaw} ${$("tU").value}`:"";
-  B.push({t:"grid",items:[["BP",C.sbp!=null?`${C.sbp}/${C.dbp} mmHg`:""],["Repeat BP",C.sbp2!=null?`${C.sbp2}/${C.dbp2} mmHg`:""],["MAP",C.map!=null?C.map.toFixed(1)+" mmHg":""],["HR",C.hr!=null?C.hr+"/min":""],["RR",C.rr!=null?C.rr+"/min":""],["Temp",T],["SpO₂",C.spo2!=null?C.spo2+"%":""],["FHT",C.fht!=null?C.fht+" bpm":""],["Fundic height",C.fh!=null?C.fh+" cm":""],["Weight",C.wtDisp],["BMI",C.bmi!=null?C.bmi.toFixed(1)+" ("+asianBMI(C.bmi)+")":""],["HPN confirmed by monitoring",C.htnConf?"Yes":"No"]]});
+  B.push({t:"grid",items:[["BP",C.sbp!=null?`${C.sbp}/${C.dbp} mmHg`:""],["Repeat BP",C.sbp2!=null?`${C.sbp2}/${C.dbp2} mmHg`:""],["MAP",C.map!=null?C.map.toFixed(1)+" mmHg":""],["HR",C.hr!=null?C.hr+"/min":""],["RR",C.rr!=null?C.rr+"/min":""],["Temp",T],["SpO₂",C.spo2!=null?C.spo2+"%":""],["FHT",C.fht!=null?C.fht+" bpm"+($("fhtLoc").value?", "+$("fhtLoc").value:""):""],["Fundic height",C.fh!=null?C.fh+" cm":""],["Weight",C.wtDisp],["BMI",C.bmi!=null?C.bmi.toFixed(1)+" ("+asianBMI(C.bmi)+")":""],["HPN confirmed by monitoring",C.htnConf?"Yes":"No"]]});
   B.push({t:"h",text:"Laboratory results"});
   if(C.labRows.length)B.push({t:"table",head:["Test","Result","Date done"],rows:C.labRows.map(r=>[r.name,r.val,r.date||"—"])}); else B.push({t:"p",text:C.labsDone==="0"?"No laboratory tests done yet.":"—"});
   if(C.hdp||C.elevUnconf||C.hellpScreen){
@@ -2180,7 +2180,7 @@ function manualCells(C){const o={}; Object.entries(T_DERIVED).forEach(([h,f])=>o
   if(C.dlv){const res=$("dlvRes").value; Object.assign(o,{"Status":res==="Abortion"?"Pregnancy loss":"Delivered","Delivery date":mdy(C.dlv),"Place of delivery":$("dlvPlace").value,"Facility name":$("dlvFac").value.trim(),
     "Birth attendant":$("dlvAtt").value,"Mode":$("dlvMode").value,"Outcome":res,"Birth weight (g)":$("dlvWt").value});}
   return Object.entries(o).map(([h,v])=>[TCOLS.length+TMANUAL.indexOf(h),v]);}
-const VCOLS=["Record ID","Visit date","Place","Contact #","AOG","SBP","DBP","Repeat SBP","Repeat DBP","Weight (kg)","BMI","Weight gain (kg)","Weight gain status","FHT","Fundic ht","Risk","Diagnosis","Labs requested","Prescription","Referral","Emergency protocol","Physician"];
+const VCOLS=["Record ID","Visit date","Place","Contact #","AOG","SBP","DBP","Repeat SBP","Repeat DBP","Weight (kg)","BMI","Weight gain (kg)","Weight gain status","FHT","FHT location","Fundic ht","Risk","Diagnosis","Labs requested","Prescription","Referral","Emergency protocol","Physician"];
 const TI=Object.fromEntries(TCOLS.map((h,i)=>[h,i]));
 const RCx=(from,to)=>`INDIRECT("RC[${TI[to]!=null?TI[to]-TI[from]:TCOLS.length+TMANUAL.indexOf(to)-TI[from]}]",FALSE)`;
 const T_AOG=`=IFERROR(IF(OR(${RCx("AOG today","EDD")}="",${RCx("AOG today","Status")}="Delivered",${RCx("AOG today","Status")}="Pregnancy loss"),"",(TODAY()-(${RCx("AOG today","EDD")}-280))/7),"")`;
@@ -2190,7 +2190,7 @@ function aogWk(C){return C.days!=null?+(C.days/7).toFixed(1):"";}
 function visitSummary(C){
   const e=emGiven(), dt=$("vdate").value;
   const ei=epdsInfo(); return {epds:ei&&ei.complete?ei.total:"",aas:ei&&ei.aas?(/^POS/.test(ei.aas)?"POS":"neg"):"",date:dt,place:SITE,contact:C.pp?"PP"+C.pp:(C.contact||""),ifaTo:!unticked.has("fe")&&C.ifaTo?iso(C.ifaTo):"",caTo:!unticked.has("ca")&&C.caTo?iso(C.caTo):"",aog:C.aogStr||"",bp:C.sbp!=null?`${C.sbp}/${C.dbp}`:"",bp2:C.sbp2!=null?`${C.sbp2}/${C.dbp2}`:"",
-    wt:C.wtDisp||"",bmi:C.bmi!=null?C.bmi.toFixed(1):"",wg:C.wg?`${C.wg.g.toFixed(1)} kg (${C.wg.st})`:"",fht:C.fht??"",fh:C.fh??"",
+    wt:C.wtDisp||"",bmi:C.bmi!=null?C.bmi.toFixed(1):"",wg:C.wg?`${C.wg.g.toFixed(1)} kg (${C.wg.st})`:"",fht:C.fht??"",fhtLoc:C.fht!=null?$("fhtLoc").value:"",fh:C.fh??"",
     level:C.ready?riskLbl(C.level):"",dx:C.dx,labs:C.due.filter(d=>!unticked.has(d.id)).map(d=>d.t).join("; "),
     rx:C.rx.filter(r=>!unticked.has(r.id)).map(r=>r.d).join("; "),ref:refNeeded(C)?refUrgency(C):"",em:e.length?e.map(x=>x.d).join("; "):"",doc:C.doc?C.doc.name:"",aogDays:C.days};
 }
@@ -2238,7 +2238,7 @@ function pastRows(C){const A=C.anc||ancStatus(C);
   return A.L.map((x,i)=>[x,i]).filter(([x])=>x.src==="past").map(([x,i])=>{const r=new Array(VCOLS.length).fill("");
     r[1]=mdy(x.d); r[2]=x.place||""; r[3]=i+1; r[4]=x.days!=null&&x.days>=0?`${wkStr(x.days).replace(" wk"," weeks")} AOG by ${C.basis}`:""; return r;});}
 function visitRow(v,recId){const bp=x=>(String(x||"").match(/(\d+)\s*\/\s*(\d+)/)||[,"",""]).slice(1).map(n=>n===""?"":+n), wg=String(v.wg||"").match(/(-?[\d.]+)\s*kg\s*\((.*)\)/)||[,"",""];
-  return [recId,v.date?mdy(isoToDate(v.date)):"",v.place||"",v.contact,v.aog,...bp(v.bp),...bp(v.bp2),(String(v.wt||"").match(/([\d.]+)\s*kg/)||[,v.wt])[1]===""?"":+((String(v.wt||"").match(/([\d.]+)\s*kg/)||[,v.wt])[1])||v.wt||"",v.bmi,wg[1]===""?"":+wg[1],wg[2],v.fht,v.fh,/^\d$/.test(String(v.level))?riskLbl(v.level):v.level,v.dx,v.labs,v.rx,v.ref,v.em,v.doc];}
+  return [recId,v.date?mdy(isoToDate(v.date)):"",v.place||"",v.contact,v.aog,...bp(v.bp),...bp(v.bp2),(String(v.wt||"").match(/([\d.]+)\s*kg/)||[,v.wt])[1]===""?"":+((String(v.wt||"").match(/([\d.]+)\s*kg/)||[,v.wt])[1])||v.wt||"",v.bmi,wg[1]===""?"":+wg[1],wg[2],v.fht,v.fhtLoc||"",v.fh,/^\d$/.test(String(v.level))?riskLbl(v.level):v.level,v.dx,v.labs,v.rx,v.ref,v.em,v.doc];}
 
 // iPhone/iPad Safari tab, not the installed app: it has its own storage, so no device-only saves there
 const IOS_BROWSER=(/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1))&&!(navigator.standalone||matchMedia("(display-mode: standalone)").matches);
@@ -2278,9 +2278,9 @@ const CLOUD={on:location.origin==="https://benbasilio.github.io",CID:"7139168701
       const older=(await step("find",find(TAG))).find(x=>x.id!==c.id&&x.createdTime<=c.createdTime);
       if(older){await step("remove duplicate",this.api(`https://www.googleapis.com/drive/v3/files/${c.id}`,{method:"PATCH",body:JSON.stringify({trashed:true})})); t=older;} else t=c;
     }
-    const ap=t.appProperties||{}, done=()=>this.api(`https://www.googleapis.com/drive/v3/files/${t.id}`,{method:"PATCH",body:JSON.stringify({appProperties:{kind:"tracker",setup:"done",schema:"6"}})});
+    const ap=t.appProperties||{}, done=()=>this.api(`https://www.googleapis.com/drive/v3/files/${t.id}`,{method:"PATCH",body:JSON.stringify({appProperties:{kind:"tracker",setup:"done",schema:"7"}})});
     if(ap.setup!=="done"){await step("setup",this.setupTracker(t.id)); await step("finish setup",done());}
-    else if(ap.schema!=="6"){await step("update columns",this.migrate(t.id)); await step("finish update",done());}
+    else if(ap.schema!=="7"){await step("update columns",this.migrate(t.id)); await step("finish update",done());}
     return t.id;},
   // Tabs, headers, dashboard and formatting. Safe to run again: adds only missing tabs and skips formatting already there.
   async setupTracker(id){
@@ -2562,7 +2562,7 @@ async function siteFromEmail(email){
 function newVisit(){
   if(visitLog.length&&visitLog[visitLog.length-1].date===todayISO())return;
   $("vdate").value=todayISO();
-  ["bp","bp2","sbp","dbp","sbp2","dbp2","hr","rr","temp","spo2","fht","fh","wt"].forEach(k=>$(k).value="");
+  ["bp","bp2","sbp","dbp","sbp2","dbp2","hr","rr","temp","spo2","fht","fhtLoc","fh","wt"].forEach(k=>$(k).value="");
   const wg=RISK_GROUPS.findIndex(g=>/warning signs/i.test(g.g));
   document.querySelectorAll(`.rf[data-g="${wg}"],.noneG[data-g="${wg}"]`).forEach(x=>x.checked=false);
   document.querySelectorAll("[data-emt],[data-emn]").forEach(x=>x.value=""); document.querySelectorAll("[data-given]").forEach(b=>b.textContent="Given"); emExtra.length=0;
