@@ -2657,7 +2657,7 @@ if(CLOUD.on){
 }
 
 /* EHR import: emr-prenatal-bridge.user.js (Tampermonkey, local file only) dispatches this event. */
-const brgyKey=s=>String(s||"").toLowerCase().replace(/\(.*?\)/g,"").replace(/[^a-z]/g,"");
+const brgyKey=s=>String(s||"").toLowerCase().replace(/\(.*?\)/g,"").replace(/\b[a-z]\.\s*/g,"").replace(/[^a-z]/g,""); // "Atilano L. Ricardo" = "Atilano Ricardo"
 function ehrToast(msg,warn){let t=$("ehrToast");if(!t){t=document.createElement("div");t.id="ehrToast";t.style.cssText="position:fixed;top:calc(12px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:9999;padding:8px 14px;border-radius:8px;font:600 14px system-ui;color:#fff;box-shadow:0 2px 8px #0004";document.body.appendChild(t);}
   t.style.background=warn?"#c62828":"#1565c0";t.textContent=msg;t.style.display="block";clearTimeout(t._h);t._h=setTimeout(()=>t.style.display="none",6000);}
 window.addEventListener("prenatal-ehr",e=>{
