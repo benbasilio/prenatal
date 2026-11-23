@@ -1270,8 +1270,8 @@ function compute(){
   if(C.rf.has("sti_risk")&&w!=null&&w>=28&&w<=30){due.push({id:"rpr_re",t:"VDRL/RPR Screening (repeat, 3rd trimester)"});due.push({id:"hiv_re",t:"HIV screening (repeat, 3rd trimester)"});}
   if(!C.us){
     if(unk) due.push({id:"utz",t:"Ultrasound for dating (transvaginal if 1st trimester)"});
-    else if(w<14) due.push({id:"utz",t:"Transvaginal ultrasound (TVS) for dating and viability"});
-    else if(w<18) due.push({id:"utz",t:"Pelvic ultrasound (UTZ) for dating"});
+    else if(w<14) due.push({id:"utz",t:"Ultrasound for dating (transvaginal)"});
+    else if(w<18) due.push({id:"utz",t:"Ultrasound for dating (pelvic)"});
     else if(w>22&&!C.lu) due.push({id:"utz",t:"Pelvic ultrasound (UTZ): biometry, placenta, amniotic fluid"});
   } else if(loc==="none"&&(unk||w<14)) due.push({id:"utz",t:"Transvaginal ultrasound (TVS) to confirm intrauterine location"});
   if(C.rescan32) due.push({id:"utz32",t:"Repeat placental ultrasound (UTZ) at 32 weeks: placental edge to internal os"});
