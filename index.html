@@ -97,6 +97,8 @@ textarea.summary{font-family:Consolas,monospace;font-size:12.5px;min-height:130p
 .row:has(>#lmp){align-items:stretch}.row:has(>#lmp)>#lmpQ{min-height:0;height:auto}
 body.pp #s3,body.pp #s6,body.pp label.f:has(#fht),body.pp #fhWrap,body.pp .panel:has(#aspBox),body.pp #tdWrap,body.pp #dwWrap{display:none!important}
 .sub{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:10px}
+#tdWrap.carried table,#tdWrap.carried #tdAdd,#tdWrap.carried>.hint{display:none}
+#tdSum{display:none}#tdWrap.carried #tdSum{display:inline}
 #tdBody td{padding:3px 6px 3px 0}#tdBody input{width:110px}
 .calbtn{position:relative;display:inline-grid;place-items:center;width:38px;height:auto;min-height:36px;border:1px solid #c8cfcb;border-radius:6px;color:var(--accent);background:#fff;cursor:pointer;flex:none}
 .calbtn input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;padding:0;border:0}
@@ -426,7 +428,7 @@ body.viewonly main .card{background:#fafbfa}
 <!-- 7 LABS DONE -->
 <section class="card" id="s7">
   <h2><span class="n">7</span>Laboratory results</h2>
-  <div class="row">Have any labs been done in this pregnancy?
+  <div class="row">Have any (or more recent) labs been done?
     <span class="yn"><label class="chk"><input type="radio" name="labsdone" value="1"> Yes</label>
     <label class="chk"><input type="radio" name="labsdone" value="0"> No</label></span></div>
   <div id="labsWrap" class="hidden" style="margin-top:8px"><table><tbody id="labsBody"></tbody></table></div>
@@ -446,7 +448,7 @@ body.viewonly main .card{background:#fafbfa}
 <!-- 9 PRESCRIPTION -->
 <section class="card" id="s9">
   <h2><span class="n">9</span>Prescription</h2>
-  <div class="sub" id="tdWrap"><b>Td / Tdap doses received</b> <span class="hint">all pregnancies, any facility; MM/DD/YYYY or MM/YYYY. None listed = no doses.</span>
+  <div class="sub" id="tdWrap"><b>Td / Tdap doses received</b> <span id="tdSum"><span id="tdSumT"></span> <button type="button" class="ghost small" id="tdEdit">Edit</button></span> <span class="hint">all pregnancies, any facility; MM/DD/YYYY or MM/YYYY. None listed = no doses.</span>
     <table><tbody id="tdBody"></tbody></table>
     <button type="button" class="ghost small" id="tdAdd">+ Add dose</button><div id="tdOut" class="hint" style="margin-top:4px"></div></div>
   <div class="sub" id="dwWrap"><b>Deworming</b> <span id="dwTxt" class="hint"></span>
@@ -850,10 +852,12 @@ function ancStatus(C){const L=ancVisits(C); if(!C.lmpEq||C.days==null)return {L,
   return {L,met,missed,n:met.size,t:[cnt([1]),cnt([2,3]),cnt([4,5,6,7,8])],on:!missed.length};}
 const ancTxt=A=>A.undated?null:{t1:`${A.t[0]}/1`,t2:`${A.t[1]}/2`,t3:`${A.t[2]}/5`,anc:`${A.n}/8`+(A.missed.length?` (missed ${A.missed.join(", ")})`:""),on:A.on?"Yes":"No"};
 /* Td/Tdap doses (all pregnancies); kept with the patient's file */
-let tdDoses=[];
+let tdDoses=[], CARRIED="";
 function buildTD(){$("tdBody").innerHTML=tdDoses.map((t,i)=>`<tr data-td="${i}"><td class="hint">#${i+1}</td><td><select class="tdt" aria-label="Vaccine"><option${t.type==="Td"?" selected":""}>Td</option><option${t.type==="Tdap"?" selected":""}>Tdap</option></select></td><td><input type="text" class="tdd pvd" inputmode="numeric" placeholder="MM/DD/YYYY" value="${esc(t.date||"")}" aria-label="Date given"></td><td><button type="button" class="ghost small tdx" aria-label="Remove dose">✕</button></td></tr>`).join("");}
 function tdEdit(e){const tr=e.target.closest("[data-td]"); if(!tr)return; const t=tdDoses[+tr.dataset.td]; if(e.target.classList.contains("tdd"))t.date=e.target.value.trim(); else if(e.target.classList.contains("tdt"))t.type=e.target.value;}
+$("tdEdit").onclick=()=>$("tdWrap").classList.remove("carried");
 function renderTD(C){
+  $("tdSumT").textContent=`Carried from ${CARRIED||"last visit"} · ${tdDoses.length?tdDoses.length+" dose"+(tdDoses.length>1?"s":"")+(tdDoses.at(-1).date?", last "+tdDoses.at(-1).type+" "+tdDoses.at(-1).date:""):"none recorded"}`;
   $("tdOut").textContent=C.pp?"":(C.tdDue==="Tdap"?`Tdap due now (27–36 weeks, every pregnancy): added to the prescription as dose ${C.tdN+1}.`
     :C.tdDue==="Td"?`Td${C.tdN+1} due now: added to the prescription.`:C.tdN>=5?"5 doses: lifetime protection. Tdap still due at 27–36 weeks.":"No Td due today (interval not yet reached).")+(C.tdWarn?" ⚠ "+C.tdWarn:"");
   const before=C.w!=null&&C.w<14;
@@ -1869,7 +1873,7 @@ async function savePDF(){
 /* ===================== SECTION JUMP BAR + FOLDING ===================== */
 // Which section each required item belongs to (labels from the COMPLETENESS list in compute()).
 const REQ_SEC=l=>/^Age|^ANC Contact/.test(l)?"s1":/Blood pressure|Repeat BP|Fetal heart|Height and weight/.test(l)?"s2":/^LMP|eUTZ/.test(l)?"s3":/^G and T-P|Past pregnancy/.test(l)?"s4":/^Risk factors/.test(l)?"s5":/^Labs/.test(l)?"s7":/EPDS|Abuse/.test(l)?"epdsCard":null;
-const FOLDABLE=["s1","s2","s3","s4","s5","s7"]; // emergency, referral and screening never fold
+const FOLDABLE=["s1","s2","s3","s4","s5","s6","s7"]; // emergency, referral and screening never fold
 const SECS=[...document.querySelectorAll("main>section.card")];
 SECS.forEach(sec=>{
   const n=sec.dataset.n||sec.querySelector("h2 .n").textContent;
@@ -1884,7 +1888,9 @@ SECS.forEach(sec=>{
 });
 const secDone={};
 function foldSummary(id,C){
-  const v=k=>($(k)&&$(k).value||"").trim();
+  const v=k=>($(k)&&$(k).value||"").trim(), cf=CARRIED&&["s3","s4","s6","s7"].includes(id)?`Carried from ${CARRIED} · `:"";
+  if(id==="s6") return cf+`Aspirin ${C.aspTxt||"—"}`;
+  if(cf){const t=CARRIED; CARRIED=""; const r=cf+foldSummary(id,C); CARRIED=t; return r;}
   if(id==="s1") return [v("name"),C.age!=null?C.age+" y":"",v("brgy")&&("Brgy. "+v("brgy")),C.pp?"PP "+C.pp:C.contact!=null?"ANC "+C.contact:""].filter(Boolean).join(" · ");
   if(id==="s2") return [v("bp")&&"BP "+v("bp")+(v("bp2")?" → "+v("bp2"):""),$("mapOut").textContent.split(/[.;]/)[0],v("wt")&&"Wt "+v("wt")+" "+v("wU")].filter(Boolean).join(" · ");
   if(id==="s3") return $("aogOut").textContent||("LMP "+v("lmp"));
@@ -1908,7 +1914,7 @@ function updateNav(C){
     a.setAttribute("aria-label",`Section ${a.textContent}${red?", alert":done[sec.id]?", complete":""}`);
     secDone[sec.id]=!!done[sec.id]&&!red;
     if(sec.classList.contains("foldable")){
-      if(!secDone[sec.id]) sec.classList.remove("fold");
+      if(!secDone[sec.id]&&sec.id!=="s6") sec.classList.remove("fold"); // BAPP has nothing required; it stays as the user left it
       sec.querySelector(".fsum").textContent=foldSummary(sec.id,C);
     }
   });
@@ -1916,7 +1922,7 @@ function updateNav(C){
 (()=>{let c=false; addEventListener("scroll",()=>{const y=scrollY; if(!c&&y>80){c=true;document.body.classList.add("compact");} else if(c&&y<10){c=false;document.body.classList.remove("compact");}},{passive:true});})();
 // A finished section folds once you leave its last field (focus moves out, or a tick/radio/select change completes it).
 // Labs stay open while results are being entered ("labs done: Yes"); they fold only for "No".
-const canAutoFold=sec=>sec.classList.contains("foldable")&&secDone[sec.id]&&!(sec.id==="s7"&&radioVal("labsdone")==="1");
+const canAutoFold=sec=>sec.classList.contains("foldable")&&sec.id!=="s6"&&secDone[sec.id]&&!(sec.id==="s7"&&radioVal("labsdone")==="1");
 function foldIfDone(sec,next){
   if(!sec||!canAutoFold(sec)||sec.classList.contains("fold"))return;
   if(next&&sec.contains(next))return;
@@ -1995,7 +2001,7 @@ $("clearBtn").onclick=keep=>{ if(keep!==true)dropDraft(); document.querySelector
   document.querySelectorAll("input[type=checkbox],input[type=radio]").forEach(x=>x.checked=false);
   document.querySelectorAll("select").forEach(x=>x.selectedIndex=0);
   $("lmpPick").value="";$("dobPick").value="";$("vdate").value=todayISO();customLabs.length=0;customRx.length=0;unticked.clear();
-  visitLog=[]; prevVisits=[]; tdDoses=[]; buildTD(); $("contact").dataset.auto="1"; buildPV(); renderPast();render();window.scrollTo(0,0);
+  visitLog=[]; prevVisits=[]; tdDoses=[]; CARRIED=""; $("tdWrap").classList.remove("carried"); $("s6").classList.remove("fold"); buildTD(); $("contact").dataset.auto="1"; buildPV(); renderPast();render();window.scrollTo(0,0);
 };
 /* ===================== VIEW / UNFINISHED / NEW PATIENT ===================== */
 // Read-only view: every field in the form is disabled; printing and copying stay available.
@@ -2564,7 +2570,11 @@ function newVisit(){
   document.querySelectorAll('#epdsCard input[type=radio],#aasQs input').forEach(x=>{if(x.type==="radio")x.checked=false;else x.value="";});
   [["epdsPrev","1"],["aasPrev","1"]].forEach(([n,v])=>{const r=document.querySelector(`input[name="${n}"][value="${v}"]`);if(r)r.checked=true;});
   $("contact").dataset.auto="1"; buildPV();
+  { const last=visitLog.length?visitLog[visitLog.length-1].date:""; CARRIED=last?mdy(isoToDate(last)):"earlier visit"; }
   const prevW=CUR&&CUR.w; syncVis(); render();
+  ["s3","s4","s6","s7"].forEach(id=>{const sec=$(id); if(secDone[id]||id==="s6"||id==="s7")sec.classList.add("fold");});
+  document.querySelectorAll("details.grp").forEach((d,i)=>d.open=RISK_GROUPS[i]&&/warning signs/i.test(RISK_GROUPS[i].g));
+  $("tdWrap").classList.add("carried"); render();
   // a "done" EPDS from before 28 weeks doesn't count for the third-trimester screen
   if(CUR.w!=null&&CUR.w>=28&&!(prevW>=28)){const r=document.querySelector('input[name="epdsPrev"]:checked'); if(r){r.checked=false; render();}}
   saveDraft();
