@@ -1995,9 +1995,12 @@ $("modal").addEventListener("click",e=>{if(e.target===$("modal")&&$("modal").cla
 $("mPdf").onclick=savePDF;
 $("mPrint").onclick=()=>{try{window.print()}catch(e){$("mMsg").textContent="Direct printing is blocked here. Use Save PDF."}};
 // EHR bridge 1.7+: sends name + ticked labs due to the EMR; the bridge answers with "prenatal-labs-ok"
-window.addEventListener("prenatal-labs-ok",e=>{$("copyMsg").textContent+=` Labs sent to the EMR (${e.detail}).`;});
+window.addEventListener("prenatal-labs-ok",e=>{const d=typeof e.detail==="object"?e.detail:{labs:e.detail,meds:0};$("copyMsg").textContent+=` Labs (${d.labs}) and meds (${d.meds}) sent to the EMR.`;});
+// "Ferrous Sulfate + Folic Acid #30" + "Sig: 1 tab …" -> {name, qty:"30", iq:"1 tab", sig:"1 tab …"}; Td/Tdap: qty 1, qty instruction a space
+const emrMed=r=>{const m=/^(.*?)\s*#\s*(\d+)\s*$/.exec(r.d),sig=r.s.replace(/^Sig:\s*/i,""),td=r.id==="td"||r.id==="tdap",n=/^(\d+)\s+tabs\b/i.exec(sig);
+  return {name:m?m[1]:r.d,qty:m?m[2]:"1",iq:td?" ":n?n[1]+" tabs":"1 tab",sig};};
 $("copyBtn").onclick=async()=>{const t=$("summary").value;try{await navigator.clipboard.writeText(t);$("copyMsg").textContent="Copied."}catch(e){$("summary").select();try{document.execCommand("copy");$("copyMsg").textContent="Copied."}catch(_){$("copyMsg").textContent="Select the text and press Ctrl+C."}}
-  window.dispatchEvent(new CustomEvent("prenatal-labs",{detail:JSON.stringify({name:$("name").value.trim(),labs:CUR?CUR.due.filter(d=>!unticked.has(d.id)).map(d=>d.t):[],ts:Date.now()})}));};
+  window.dispatchEvent(new CustomEvent("prenatal-labs",{detail:JSON.stringify({name:$("name").value.trim(),labs:CUR?CUR.due.filter(d=>!unticked.has(d.id)).map(d=>d.t):[],meds:CUR?CUR.rx.filter(r=>!unticked.has(r.id)).map(emrMed):[],ts:Date.now()})}));};
 $("clearBtn").onclick=keep=>{ if(keep!==true)dropDraft(); document.querySelectorAll("input[type=hidden]").forEach(x=>x.value=""); document.querySelectorAll(".bad").forEach(x=>x.classList.remove("bad"));
   document.querySelectorAll("input[type=text]:not([readonly]),input[type=tel],input[type=number],input[type=time],input[type=date]:not(#vdate),textarea:not(.summary)").forEach(x=>x.value="");
   $("refNote").value="For evaluation and management."; emExtra.length=0; document.querySelectorAll("[data-given]").forEach(b=>b.textContent="Given");
