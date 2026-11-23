@@ -42,7 +42,10 @@ table{border-collapse:collapse;width:100%}
 th,td{border-bottom:1px solid var(--line);padding:6px;text-align:left;vertical-align:top;font-size:13px}
 th{font-size:12px;color:var(--muted)}
 details.grp{border:1px solid var(--line);border-radius:8px;margin-bottom:8px}
-details.grp summary{cursor:pointer;padding:8px 12px;font-weight:600;font-size:13px}
+details.grp summary{cursor:pointer;padding:8px 12px;font-weight:600;font-size:13px;display:flex;align-items:center;gap:6px;list-style:none}
+details.grp summary::-webkit-details-marker{display:none}
+details.grp summary::before{content:"▸";flex:none;width:10px}details.grp[open]>summary::before{content:"▾"}
+details.grp summary .badge{flex:none;margin-left:auto;white-space:nowrap}
 details.grp .items{padding:4px 12px 10px;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:4px 16px}
 .chk{display:flex;gap:8px;align-items:flex-start;font-size:13px;padding:3px 0}
 .chk input{margin-top:3px;flex:none} /* never squeeze the tick box; the label wraps instead */
@@ -197,10 +200,15 @@ body.viewonly main .card{background:#fafbfa}
   .wrap{padding:10px;gap:10px}
   .card{padding:12px;border-radius:8px;margin-bottom:10px}
   input,select,textarea{font-size:16px!important;min-height:40px}
+  input:not([type=checkbox]):not([type=radio]),select{height:40px} /* one box height on phones (date boxes ran 41 px) */
+  .calbtn{min-height:40px;height:40px}
+  .row:has(>input:not([type=checkbox]):not([type=radio])) > button,.row:has(>select) > button{min-height:40px;height:40px} /* a button beside a box matches its 40 px */
+  .addRow:has(>input) .btnPair button{min-height:40px;height:40px}
+  details.grp summary{min-height:54px} /* same header height whether the title takes 1 or 2 lines */
   input[type=checkbox],input[type=radio]{width:22px;height:22px;min-height:0}
   .chk{min-height:36px;align-items:center}
   button{min-height:44px}
-  .grid{grid-template-columns:1fr 1fr!important}
+  .grid{grid-template-columns:1fr 1fr!important;align-items:end} /* boxes in a row line up even when one label wraps */
   .grid>label.f:has(textarea),.grid>label.f:has(#name),.grid>label.f:has(#doc){grid-column:1/-1}
   .grid>label.f:has(#sbp2){grid-column:1/-1}
   .grid>label.f:has(#lmp){grid-column:1/-1}
@@ -230,7 +238,7 @@ body.viewonly main .card{background:#fafbfa}
   #pvBody .pvAog:not(:empty)::before{content:"AOG "}#pvBody .pvSlot:not(:empty)::before{content:"ANC slot "}#pvBody .pvAog,#pvBody .pvSlot{font-size:13px;color:var(--muted);white-space:nowrap}
   #signBtn{font-size:12px;padding:6px 8px;min-height:32px;max-width:72px;white-space:nowrap}#signBtn .sbFull{display:none}#signBtn .sbShort{display:inline}
   #h1row #vdateWrap{font-size:0;margin:0}
-  #h1row #vdate{font-size:13px!important;min-height:30px;padding:3px 6px;width:auto}
+  #h1row #vdate{padding:3px 6px;width:auto}
   .grid>label.f:has(#dob),.grid>label.f:has(#age),.grid>label.f:has(#pin){order:1}.grid>label.f:has(#sex){order:2}.grid>label.f:has(#phone){order:3}.grid>label.f:has(#brgy){order:4}
   .grid>label.f:has(#contact){order:4}.grid>label.f:has(#doc),.grid>label.f:has(#loc){order:5;grid-column:1/-1}
   /* vitals: weight+unit and height+unit on one line */
@@ -711,7 +719,11 @@ const RISK_GROUPS=[
 ];
 const RISK_INDEX={};RISK_GROUPS.forEach(g=>g.items.forEach(it=>RISK_INDEX[it[0]]={id:it[0],label:it[1],lvl:it[2],emerg:!!it[3]}));
 
-const AUTO_IDS=new Set(["ipi18","malnut","prior_preterm","sizedate","mc_twins","breech","oligo_early","oligo_term","previa","lowlying","aph_stable","fgr","macrosomia","anomaly","poly","poly_sev"]);
+// scan k ("eu"/"lu") shows more than one fetus: Number = Multiple gestation, or twin words in its findings
+const MULTI_RE=/twin|triplet|quadruplet|multiple gest|multi-?fetal|multi-?gestation|di-?amniotic|mono-?amniotic|di-?chorionic|mono-?chorionic|\b(di|mc|dc)[ -\/]?(di|da|ma)\b/i;
+const multiK=k=>(document.querySelector(`[data-r="${k}_num"]`)||{}).value==="Multiple gestation"||[...document.querySelectorAll(`input[type=text][data-r^="${k}_"]`)].some(x=>MULTI_RE.test(x.value));
+const AUTO_IDS=new Set(["ipi18","malnut","prior_preterm","stillbirth","ght","pe_nosev","pe_sev","sizedate","dc_twins","mc_twins","breech","oligo_early","oligo_term","previa","lowlying","aph_stable","fgr","macrosomia","anomaly","poly","poly_sev"]);
+RISK_GROUPS.forEach(g=>g.items.sort((x,y)=>AUTO_IDS.has(y[0])-AUTO_IDS.has(x[0]))); // filled-in items first in each group
 const LABS=[
  {id:"eutz",name:"Earliest ultrasound (eUTZ)",kind:"eutz"},
  {id:"lutz",name:"Latest ultrasound (lUTZ)",kind:"lutz"},
@@ -813,7 +825,7 @@ RISK_GROUPS.forEach((g,gi)=>{
 
 const BAPP_MANUAL_MOD=[["fam_pe","Family history of preeclampsia (mother or sister)"],["prior_lbw","Previous low birth weight or SGA baby"],["ivf","In vitro fertilization"]];
 $("bappMod").innerHTML=`<div id="bappModAuto"></div>`+BAPP_MANUAL_MOD.map(([id,l])=>`<label class="chk"><input type="checkbox" class="bm" data-id="${id}"> ${l}</label>`).join("");
-const CONTRA=[["already","Already on aspirin (started at 12–28 wk); continue to 36 wk"],["c_allergy","Aspirin or NSAID allergy (incl. NSAID-exacerbated asthma, nasal polyps)"],["c_pud","Active peptic ulcer or GI bleeding"],["c_bleed","Known bleeding disorder"],["c_thrombo","Platelet below 100,000"],["c_liver","Severe liver disease"]];
+const CONTRA=[["c_thrombo","Platelet below 100,000"],["already","Already on aspirin (started at 12–28 wk); continue to 36 wk"],["c_allergy","Aspirin or NSAID allergy (incl. NSAID-exacerbated asthma, nasal polyps)"],["c_pud","Active peptic ulcer or GI bleeding"],["c_bleed","Known bleeding disorder"],["c_liver","Severe liver disease"]];
 $("bappContra").innerHTML=CONTRA.map(([id,l])=>`<label class="chk"><input type="checkbox" class="bc" data-id="${id}"><span>${l}${id==="c_thrombo"?'':""}</span></label>`).join("");
 
 const uSel=(k,opts)=>`<select data-u="${k}" style="width:auto">${opts.map(o=>`<option>${o}</option>`).join("")}</select>`;
@@ -831,7 +843,7 @@ LABS.forEach(l=>{
     box=`<div class="row"><input type="text" data-r="ua_rbc" placeholder="RBC /hpf" style="width:90px"><input type="text" data-r="ua_wbc" placeholder="WBC / pus cells /hpf" style="width:150px">${dsel("ua_pro")}${dsel("ua_glu")}</div>
      <input type="text" data-r="ua" placeholder="Other findings" style="margin-top:4px">`;}
   else if(l.kind==="eutz"||l.kind==="lutz"){const k=l.kind==="eutz"?"eu":"lu", sel=(f,ph,o)=>`<select data-r="${k}_${f}" style="width:auto"><option value="">${ph}</option>${o.map(x=>`<option>${x}</option>`).join("")}</select>`;
-    box=`<div class="row">${sel("loc","Location",["Intrauterine","Extrauterine"])}${sel("viab","Live / demise",["Live","Fetal demise"])}${sel("num","Number",["Singleton","Multiple gestation"])}</div>
+    box=`<div class="row">${sel("loc","Location",["Intrauterine","Extrauterine"])}${sel("viab","Live / demise",["Live","Fetal demise"])}${sel("num","Number",["Singleton","Multiple gestation"])}<span class="chorW hidden" data-k="${k}">${sel("chor","Chorionicity",["Dichorionic","Monochorionic","Unknown"])}</span></div>
      <div class="row" style="margin-top:4px"><span class="hint">AOG by fetal biometry</span><input type="number" data-r="${k}_w" min="4" max="42" placeholder="wk" style="width:64px"><input type="number" data-r="${k}_d" min="0" max="6" placeholder="days" style="width:64px">${k==="eu"?`<span class="hint">EDD: <b id="euEdd">—</b></span>`:""}</div>`+
      (k==="lu"?`<div class="row" style="margin-top:4px">${sel("pres","Presentation",["Cephalic","Breech","Transverse","Variable"])}<input type="number" data-r="lu_fhr" placeholder="FHR bpm" style="width:90px">${sel("af","Amniotic fluid",["Adequate","Inadequate"])}</div>
      <input type="text" data-r="lu_plac" placeholder="Placenta (e.g., posterior, high-lying, grade II)" style="margin-top:4px">
@@ -1090,7 +1102,12 @@ function compute(){
   C.sdWhy=[C.sdFHwhy,C.sdUSwhy].filter(Boolean).join("; ");
   // from ultrasound (latest scan wins)
   const fw=C.w;
-  auto.mc_twins=C.scanNum==="Multiple gestation"?!document.querySelector('.rf[data-id="dc_twins"]:checked'):null;
+  // twins: "Multiple gestation" or twin words in the findings; chorionicity from the scan (Unknown counts as monochorionic)
+  C.multi=(C.lu&&multiK("lu"))||(C.usDone==="1"&&multiK("eu")); C.chor=scanPick("chor");
+  auto.dc_twins=C.multi?C.chor==="Dichorionic":null; auto.mc_twins=C.multi?C.chor!=="Dichorionic":null;
+  // stillbirth / neonatal death named in a past pregnancy's complications; all past pregnancies "no complications" = not
+  const SB=/still ?birth|stillborn|iufd|intra-?uterine fetal (death|demise)|fetal (death|demise)|neonatal death|\bnnd\b|died after birth|namatay/i;
+  auto.stillbirth=C.past.some(p=>p.comp==="Yes"&&SB.test(p.spec||""))?true:(C.G===1||(C.past.length&&C.past.length>=C.G-1&&C.past.every(p=>p.comp==="No"&&(p.manner||p.raw)))?false:null);
   // breech at term: presentation on the latest scan taken at 36 0/7 wk or more (Field Manual: presentation check at 36 wk; refer breech for ECV counseling)
   const luGA=luExp!=null?luExp:luBio;
   auto.breech=C.lu&&C.lu.pres&&luGA!=null&&luGA>=252?C.lu.pres==="Breech":null;
@@ -1174,6 +1191,9 @@ function compute(){
     else if(!C.chronic){C.hdp="Gestational hypertension"+timing2;hl=3;}
   }
   if(C.hdp)add(C.hdp,hl,C.hdpSevere);
+  if(!C.pp&&C.hdp&&!/^Chronic hypertension \(/.test(C.hdp)){const pe=/preeclampsia|eclampsia/i.test(C.hdp)&&!C.hdpSevere, ps=C.hdpSevere, gh=!pe&&!ps;
+    Object.assign(C.auto,{ght:gh,pe_nosev:pe,pe_sev:ps}); ["ght","pe_nosev","pe_sev"].forEach(id=>C.auto[id]?C.rf.add(id):C.rf.delete(id));
+    C.groupsDone=RISK_GROUPS.map((g,gi)=>document.querySelector(`.noneG[data-g="${gi}"]`).checked||g.items.some(it=>C.rf.has(it[0])));}
   C.elevUnconf=C.hypNow&&b2&&!C.hypertensive;
   if(C.elevUnconf)add(`Elevated BP ${C.bpU[0]}/${C.bpU[1]}, for confirmation`,3);
   C.sameDay=(C.elevUnconf&&after20)||(!!C.hdp&&!C.hdpSevere);
@@ -1195,7 +1215,7 @@ function compute(){
   if(C.fbs!=null){ if(C.fbs>=126)add(`FBS ${C.fbs} mg/dL — overt diabetes`,4); else if(C.fbs>=92&&!C.rf.has("gdm_diet")&&!C.rf.has("gdm_ins"))add(`FBS ${C.fbs} mg/dL — gestational diabetes`,3);}
   if(C.a1c!=null&&C.a1c>=6.5)add(`HbA1c ${C.a1c}% — overt diabetes`,4); // Field Manual Ch. 9: HbA1c 6.5% or more = overt diabetes
   if(C.ogtt){const [f,h1,h2]=C.ogtt; if((f!=null&&f>=92)||(h1!=null&&h1>=180)||(h2!=null&&h2>=153)){ if(!C.rf.has("gdm_diet")&&!C.rf.has("gdm_ins"))add("75 g OGTT positive (IADPSG) — gestational diabetes",3);}}
-  C.rf.forEach(id=>{if(id==="malnut"&&C.auto.malnut)return; const r=RISK_INDEX[id]; const l=typeof r.lvl==="function"?r.lvl(C):r.lvl; if(l>0)add(r.label.replace(" (EMERGENCY)","")+(id==="sizedate"&&C.auto.sizedate&&C.sdWhy?` (${C.sdWhy})`:""),l,r.emerg);});
+  C.rf.forEach(id=>{if((id==="malnut"&&C.auto.malnut)||(["ght","pe_nosev","pe_sev"].includes(id)&&C.auto[id]))return; const r=RISK_INDEX[id]; const l=typeof r.lvl==="function"?r.lvl(C):r.lvl; if(l>0)add(r.label.replace(" (EMERGENCY)","")+(id==="sizedate"&&C.auto.sizedate&&C.sdWhy?` (${C.sdWhy})`:""),l,r.emerg);});
   C.reasons=R.sort((x,y)=>y.l-x.l);
   C.high=R.length>0; C.level=R.length?Math.max(...R.map(r=>r.l)):1; C.emerg=R.some(r=>r.e);
 
@@ -1427,6 +1447,7 @@ function render(){
   if(C.lu&&C.lu.fhr&&(+C.lu.fhr<110||+C.lu.fhr>160)) gw+=`<div class="alert red"><b>Fetal heart rate ${esc(C.lu.fhr)} bpm on the latest ultrasound</b> (normal 110–160).</div>`;
   if(C.ectopic&&C.loc==="none") gw+=`<div class="alert red"><b>Prior ectopic pregnancy and site not yet confirmed:</b> request early TVS to confirm intrauterine location.</div>`;
   $("gpWarn").innerHTML=gw;
+  document.querySelectorAll(".chorW").forEach(w=>w.classList.toggle("hidden",!multiK(w.dataset.k)));
   // auto items
   document.querySelectorAll(".rf").forEach(x=>{const id=x.dataset.id; if(!AUTO_IDS.has(id))return; const v=C.auto[id];
     if(v!=null){x.checked=v;x.disabled=true;x.dataset.wasAuto="1";}
@@ -1519,7 +1540,7 @@ function summaryText(C){
   const aasNeeded=(C.epdsDone&&tot>=10&&i10!=null&&i10<=2)||radioVal("aasPrev")==="0";
   const aas=radioVal("aasPrev")==="1"||AAS.every((_,i)=>radioVal("a"+i)!=null)?"done":aasNeeded?"not done":"not needed";
   return `Date: ${mdy(C.vdate)}   Visit: ${C.pp?"Postpartum "+C.pp:C.contact?ord(C.contact)+" prenatal contact":""}
-LMP: ${lmp}   EDD: ${C.edd?mdy(C.edd)+" by "+C.basis:(C.lmp.unknown?"X":"")}
+LMP: ${lmp}   EDD: ${C.edd?mdy(C.edd)+" by "+C.basis:(C.lmp.unknown?"X":"")}${C.fht!=null||C.fh!=null?"\n":""}${C.fht!=null?`\nFHT: ${C.fht} bpm${$("fhtLoc").value?` (${$("fhtLoc").value})`:""}`:""}${C.fh!=null?`\nFundic height: ${C.fh} cm`:""}
 
 Aspirin status (BAPP): ${C.ready?asp:"(pending)"}
 OB score: ${C.GP||""}${hist?"\n"+hist:(C.G===1?" - current pregnancy is the first":"")}
