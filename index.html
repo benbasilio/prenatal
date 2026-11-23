@@ -2647,7 +2647,7 @@ window.addEventListener("prenatal-ehr",e=>{
   const cur=$("name").value.trim();
   if(cur&&cur.toLowerCase()!==p.name.toLowerCase()){if(!confirm(`Replace ${cur} with ${p.name}?\nThe form will be cleared.`))return; $("clearBtn").click();}
   $("name").value=p.name;
-  if(p.dob)$("dob").value=p.dob; if(p.pin)$("pin").value=pinFmt(String(p.pin).replace(/\D/g,"").slice(0,12));
+  if(p.dob)$("dob").value=p.dob; if(p.phone)$("phone").value=p.phone; if(p.pin)$("pin").value=pinFmt(String(p.pin).replace(/\D/g,"").slice(0,12));
   const b=BRGYS.find(x=>brgyKey(x)===brgyKey(p.brgy));
   $("brgy").value=b||"";
   // Chart (vitals + HPI): EHR value replaces the form value; blanks are skipped.
