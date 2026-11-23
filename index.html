@@ -1266,7 +1266,7 @@ function compute(){
   const dmRisk=(C.bmi!=null&&C.bmi>=30)||C.rf.has("prior_gdm")||C.rf.has("fam_dm")||(C.ageRisk!=null&&C.ageRisk>=35)||(C.bmi!=null&&C.bmi>=23&&dmRF)||(C.uaGlu&&(unk||w<24));
   const knownDM=C.rf.has("pgdm")||C.rf.has("gdm_diet")||C.rf.has("gdm_ins")||(C.fbs!=null&&C.fbs>=92);
   if(dmRisk&&!C.lab.fbs&&!knownDM&&(unk||w<24)) due.push({id:"fbs",t:"Fasting blood sugar (FBS)"});
-  if(!C.lab.ogtt&&!knownDM&&w!=null&&((w>=21&&w<=28)||(C.uaGlu&&w>=24))) due.push({id:"ogtt",t:w>28?"75 g OGTT (glucosuria)":"75 g OGTT (at 24–28 weeks AOG)"});
+  if(!C.lab.ogtt&&!knownDM&&w!=null&&((w>=24&&w<=28)||(C.uaGlu&&w>=24))) due.push({id:"ogtt",t:w>28?"75 g OGTT (glucosuria)":"75 g OGTT (at 24–28 weeks AOG)"});
   if(C.rf.has("sti_risk")&&w!=null&&w>=28&&w<=30){due.push({id:"rpr_re",t:"VDRL/RPR Screening (repeat, 3rd trimester)"});due.push({id:"hiv_re",t:"HIV screening (repeat, 3rd trimester)"});}
   if(!C.us){
     if(unk) due.push({id:"utz",t:"Ultrasound for dating (transvaginal if 1st trimester)"});
@@ -1276,7 +1276,7 @@ function compute(){
   } else if(loc==="none"&&(unk||w<14)) due.push({id:"utz",t:"Transvaginal ultrasound (TVS) to confirm intrauterine location"});
   if(C.rescan32) due.push({id:"utz32",t:"Repeat placental ultrasound (UTZ) at 32 weeks: placental edge to internal os"});
   if(C.rf.has("sizedate")&&!due.some(d=>d.id==="utz")) due.push({id:"utz_sd",t:"Pelvic ultrasound (UTZ): fetal growth and amniotic fluid (size-date discrepancy)"});
-  if(!C.lab.cas&&w!=null&&w>=14&&w<=22) due.push({id:"cas",t:"Congenital anomaly scan (CAS) at 18–22 weeks AOG"});
+  if(!C.lab.cas&&w!=null&&w>=18&&w<=22) due.push({id:"cas",t:"Congenital anomaly scan (CAS) at 18–22 weeks AOG"});
   if(C.pp)due.splice(0);
   customLabs.forEach((t,i)=>due.push({id:"cl"+i,t,custom:i}));
   C.due=due;
