@@ -2537,19 +2537,21 @@ const CLOUD={on:location.origin==="https://benbasilio.github.io",CID:"7139168701
     return new Promise((ok,no)=>{this.tc.callback=r=>{if(r.error)return no(new Error(r.error));this.tok=r.access_token;this.exp=Date.now()+r.expires_in*1000;this.who();ok(this.tok);setTimeout(()=>this.flush(),0);};
       this.tc.error_callback=e=>no(new Error(e.type||"signin"));this.tc.requestAccessToken({prompt:""});});
   },
-  async api(url,opt={}){const r=await fetch(url,{...opt,headers:{Authorization:"Bearer "+this.tok,...(opt.body&&typeof opt.body==="string"?{"Content-Type":"application/json"}:{}),...(opt.headers||{})}});
-    if(!r.ok)throw new Error(`${r.status} ${(await r.text()).slice(0,200)}`); return r.status===204?null:(opt.raw?r:r.json());},
+  async api(url,opt={}){for(let a=0;;a++){const r=await fetch(url,{...opt,headers:{Authorization:"Bearer "+this.tok,...(opt.body&&typeof opt.body==="string"?{"Content-Type":"application/json"}:{}),...(opt.headers||{})}});
+    if(r.status===429&&a<3){await new Promise(k=>setTimeout(k,(a+1)*15000));continue;}
+    if(!r.ok)throw new Error(`${r.status} ${(await r.text()).slice(0,200)}`); return r.status===204?null:(opt.raw?r:r.json());}},
   async who(){try{const a=await this.api("https://www.googleapis.com/drive/v3/about?fields=user(emailAddress)");this.email=a.user.emailAddress;}catch(e){} paintSign(); if(this.email)siteFromEmail(this.email).catch(()=>{});},
   q(s){return encodeURIComponent(s);},
-  async folder(name,parent){const p=parent||"root";
+  async folder(name,parent){const p=parent||"root", ck=`${p}/${name}`; this._fc=this._fc||{}; if(this._fc[ck])return this._fc[ck];
     const f=await this.api(`https://www.googleapis.com/drive/v3/files?q=${this.q(`name='${name.replace(/'/g,"\\'")}' and mimeType='application/vnd.google-apps.folder' and '${p}' in parents and trashed=false`)}&fields=files(id)`);
-    if(f.files.length)return f.files[0].id;
-    return (await this.api("https://www.googleapis.com/drive/v3/files?fields=id",{method:"POST",body:JSON.stringify({name,mimeType:"application/vnd.google-apps.folder",parents:[p]})})).id;},
+    if(f.files.length)return (this._fc[ck]=f.files[0].id);
+    return (this._fc[ck]=(await this.api("https://www.googleapis.com/drive/v3/files?fields=id",{method:"POST",body:JSON.stringify({name,mimeType:"application/vnd.google-apps.folder",parents:[p]})})).id);},
   async upload(id,meta,obj,parent){const b="pnb"+Math.random().toString(36).slice(2);
     const body=`--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(id?meta:{...meta,parents:[parent]})}\r\n--${b}\r\nContent-Type: application/json\r\n\r\n${JSON.stringify(obj)}\r\n--${b}--`;
     return this.api(`https://www.googleapis.com/upload/drive/v3/files${id?"/"+id:""}?uploadType=multipart&fields=id,webViewLink`,{method:id?"PATCH":"POST",body,headers:{"Content-Type":"multipart/related; boundary="+b}});},
   // Find the one tracker sheet, or create it already tagged inside the folder (one Drive call), then make sure its setup is complete.
   async tracker(root){
+    if(this._tid)return this._tid;
     const step=(n,p)=>p.catch(e=>{throw new Error(`Tracker (${n}): ${e.message}`)});
     const TAG="appProperties has { key='kind' and value='tracker' } and trashed=false";
     const find=q=>this.api(`https://www.googleapis.com/drive/v3/files?q=${this.q(q)}&orderBy=createdTime&fields=files(id,createdTime,appProperties)`).then(r=>r.files||[]);
@@ -2567,7 +2569,7 @@ const CLOUD={on:location.origin==="https://benbasilio.github.io",CID:"7139168701
     const ap=t.appProperties||{}, done=()=>this.api(`https://www.googleapis.com/drive/v3/files/${t.id}`,{method:"PATCH",body:JSON.stringify({appProperties:{kind:"tracker",setup:"done",schema:"7"}})});
     if(ap.setup!=="done"){await step("setup",this.setupTracker(t.id)); await step("finish setup",done());}
     else if(ap.schema!=="7"){await step("update columns",this.migrate(t.id)); await step("finish update",done());}
-    return t.id;},
+    return (this._tid=t.id);},
   // Tabs, headers, dashboard and formatting. Safe to run again: adds only missing tabs and skips formatting already there.
   async setupTracker(id){
     const info=await this.api(`https://sheets.googleapis.com/v4/spreadsheets/${id}?fields=sheets(properties(sheetId,title),conditionalFormats)`);
@@ -2770,26 +2772,34 @@ const CLOUD={on:location.origin==="https://benbasilio.github.io",CID:"7139168701
   async push(job){
     const root=await this.folder("Bagac Prenatal Records"), yr=await this.folder(job.year,root), br=await this.folder(job.brgy||"No barangay",yr);
     const sid=await this.tracker(root), S=`https://sheets.googleapis.com/v4/spreadsheets/${sid}/values`;
+    const normD=s=>{const p=parseFlex(s);return p&&p.d?iso(p.d):String(s||"").trim();};
     // a waiting save older than the Drive record (e.g. saved later on another phone) only adds its Visits row
     if(job.driveId&&job.recId){let last="";try{const m=await this.api(`https://www.googleapis.com/drive/v3/files/${job.driveId}?fields=appProperties`);last=(m.appProperties||{}).last||"";}catch(e){}
-      if(last&&last>job.date){const vr=((await this.api(`${S}/Visits!A:B`)).values||[]); const vrow=vr.findIndex(r=>r[0]===job.recId&&r[1]===job.vrow[1])+1||vr.length+1;
+      if(last&&last>job.date){const vr=((await this.api(`${S}/Visits!A:B`)).values||[]); const vd=normD(job.vrow[1]), vrow=vr.findIndex(r=>r[0]===job.recId&&normD(r[1])===vd)+1||vr.length+1;
         await this.api(`${S}:batchUpdate`,{method:"POST",body:JSON.stringify({valueInputOption:"USER_ENTERED",data:[{range:`Visits!A${vrow}`,values:[[job.recId,...job.vrow.slice(1)]]}]})});
         return {rec:job.recId,id:job.driveId,stale:true};}}
     const ids=((await this.api(`${S}/Tracker!A:A`)).values||[]).map(r=>r[0]);
+    if(!this._hdrs)this._hdrs=((await this.api(`${S}/Tracker!1:1`)).values||[[]])[0]||[];
     let rec=job.recId;
     if(!rec){const pre=`${BRGY_CODE[job.brgy]||"BAGC"}-${job.year}-`; const n=ids.filter(x=>x&&x.startsWith(pre)).map(x=>+x.slice(pre.length)||0);
-      rec=pre+String((n.length?Math.max(...n):0)+1).padStart(3,"0");
-      if(!(job.mcells||[]).some(([c])=>c===TCOLS.length))job.mcells=[...(job.mcells||[]),[TCOLS.length,"Active"]];} // new record starts Active
+      rec=pre+String((n.length?Math.max(...n):0)+1).padStart(3,"0");}
+    const isNew=!ids.includes(rec);
+    if(isNew&&!(job.mcells||[]).some(([c])=>c===TCOLS.length))job.mcells=[...(job.mcells||[]),[TCOLS.length,"Active"]]; // new record starts Active
     job.file.recId=rec; job.file.f["#recId~1"]=rec;
     const meta={name:`${job.name||"Unnamed"} – EDD ${job.edd||"unknown"}.json`,mimeType:"application/json",appProperties:{app:"prenatal",recId:rec,name:job.name,brgy:job.brgy||"",edd:job.edd||"",eddFull:job.eddFull||"",age:String(job.age??""),last:job.date}};
     const up=await this.upload(job.driveId,meta,job.file,br);
     job.file.f["#driveId~1"]=up.id;
-    const row=ids.indexOf(rec)+1||ids.length+1, tr=[...job.trow]; tr[0]=rec; tr[TI["Drive file"]]=`=HYPERLINK("https://benbasilio.github.io/prenatal/?open=${up.id}&rec=${rec}","Open")`;
-    tr[TI["AOG today"]]=`=IF(G${row}="","",(TODAY()-G${row}+280)/7)`; tr[TI["Trimester"]]=`=IF(I${row}="","",IF(I${row}<14,"1st",IF(I${row}<28,"2nd","3rd")))`;
-    const vr=((await this.api(`${S}/Visits!A:B`)).values||[]); let nxt=vr.length+1; const at=v=>vr.findIndex(r=>r[0]===rec&&r[1]===v[1])+1||nxt++;
+    const url=`https://benbasilio.github.io/prenatal/?open=${up.id}&rec=${rec}`, hl=`=HYPERLINK("${url}","Open")`;
+    const row=ids.indexOf(rec)+1||ids.length+1, tr=[...job.trow]; tr[0]=rec; tr[TI["Drive file"]]=hl;
+    // keep T_AOG and T_TRI relative formulas from trackerRow() (never overwrite with stale column letters)
+    // also keep optional Dashboard link columns (Drive file ID, Record URL, App Link) in sync if present
+    const extraCols=[["Drive file ID",up.id],["Record URL",url],["App Link",hl]].map(([h,v])=>[this._hdrs.indexOf(h),v]).filter(([i])=>i>=TCOLS.length);
+    const vr=((await this.api(`${S}/Visits!A:B`)).values||[]); let nxt=vr.length+1;
+    const seenV=new Set(), allV=[...(job.allv||[job.vrow]),...(job.prows||[])].filter(v=>{const d=normD(v[1]);if(!d||seenV.has(d))return false;seenV.add(d);return true;});
+    const at=v=>{const d=normD(v[1]);return vr.findIndex(r=>r[0]===rec&&normD(r[1])===d)+1||nxt++;};
     // shortcut: a typed-in visit later removed from the form keeps its Visits row; delete it in the sheet by hand
-    const vis=[job.vrow,...(job.prows||[])].map(v=>({range:`Visits!A${at(v)}`,values:[[rec,...v.slice(1)]]}));
-    await this.api(`${S}:batchUpdate`,{method:"POST",body:JSON.stringify({valueInputOption:"USER_ENTERED",data:[{range:`Tracker!A${row}:${T_LAST}${row}`,values:[tr]},...(job.mcells||[]).map(([c,v])=>({range:`Tracker!${colL(c)}${row}`,values:[[v]]})),...vis]})});
+    const vis=allV.map(v=>({range:`Visits!A${at(v)}`,values:[[rec,...v.slice(1)]]}));
+    await this.api(`${S}:batchUpdate`,{method:"POST",body:JSON.stringify({valueInputOption:"USER_ENTERED",data:[{range:`Tracker!A${row}:${T_LAST}${row}`,values:[tr]},...[...(job.mcells||[]),...extraCols].map(([c,v])=>({range:`Tracker!${colL(c)}${row}`,values:[[v]]})),...vis]})});
     return {rec,id:up.id};},
   queue(){try{return JSON.parse(localStorage.getItem("prenatalQueue")||"[]")}catch(e){return []}},
   setQueue(q){try{localStorage.setItem("prenatalQueue",JSON.stringify(q))}catch(e){} paintSign();},
@@ -2926,6 +2936,59 @@ if(CLOUD.on){
     $("topbar").after(bn);
     if(rec)$("linkCopy").onclick=()=>navigator.clipboard.writeText(rec).then(()=>ehrToast("Record ID copied")).catch(()=>{const r=document.createRange();r.selectNodeContents($("linkRec"));getSelection().removeAllRanges();getSelection().addRange(r);ehrToast("Select and copy the Record ID",true);});
     if(fid)$("linkGo").onclick=linkOpen=()=>CLOUD.token().then(()=>loadDrive(fid)).then(ok=>{if(!ok)return; linkOpen=null; /* later re-sign-ins must not reload it */ if(!IOS_BROWSER)bn.remove(); history.replaceState(null,"",location.pathname);}).catch(e=>ehrToast(e.message==="offline"?"No internet right now.":"Could not open: "+e.message,true));}
+  // batch JSON import (?import=1): creates app-owned Drive files (with appProperties) and upserts Tracker + Visits
+  if(P.get("import")==="1"){
+    const ib=document.createElement("div");ib.className="alert blue";ib.id="impBar";ib.style.cssText="margin:8px auto;max-width:1280px;display:flex;gap:10px;align-items:center;flex-wrap:wrap";
+    ib.innerHTML=`<span style="flex:1 1 260px"><b>Batch import JSON records</b> — uploads to RHU Drive as app-owned files and updates Tracker + Visits.</span>
+      <button type="button" class="small" id="impDirBtn">Choose folder</button>
+      <button type="button" class="ghost small" id="impFilesBtn">Choose JSON files</button>
+      <input type="file" id="impDir" webkitdirectory multiple class="hidden">
+      <input type="file" id="impFiles" accept=".json,application/json" multiple class="hidden">
+      <div id="impStat" style="flex:1 1 100%;font-size:13px"></div>`;
+    $("topbar").after(ib);
+    $("impDirBtn").onclick=()=>$("impDir").click(); $("impFilesBtn").onclick=()=>$("impFiles").click();
+    const runImport=async flist=>{
+      if(!signedIn()){$("impStat").textContent="Sign in to RHU Drive first, then choose the folder or JSON files again.";gateShow();return;}
+      const files=[...flist].filter(f=>/\.json$/i.test(f.name));
+      if(!files.length){$("impStat").textContent="No .json files found in selection.";return;}
+      const items=[];
+      for(const f of files){try{const d=JSON.parse(await f.text()); if(d&&typeof d.f==="object")items.push({fn:f.name,d});}catch(_){}}
+      if(!items.length){$("impStat").textContent="No valid Prenatal Screening Form JSON files found.";return;}
+      items.sort((a,b)=>String(a.d.recId||a.d.name||a.fn).localeCompare(String(b.d.recId||b.d.name||b.fn)));
+      $("impDirBtn").disabled=$("impFilesBtn").disabled=true;
+      let ok=0, fail=[];
+      try{
+        await CLOUD.token();
+        $("impStat").textContent="Checking existing app-owned Drive records…";
+        const ex=await CLOUD.list().catch(()=>[]);
+        const byRec=Object.fromEntries(ex.filter(x=>x.appProperties&&x.appProperties.recId).map(x=>[x.appProperties.recId,x.id]));
+        for(let i=0;i<items.length;i++){
+          const {fn,d}=items[i];
+          $("impStat").textContent=`Importing ${i+1} / ${items.length}: ${d.name||fn}${d.recId?" ("+d.recId+")":""}…`;
+          try{
+            setView(null); restore(d); $("consent").checked=true; render();
+            const C=CUR, v=visitSummary(C);
+            visitLog=visitLog.filter(x=>x.date!==v.date); visitLog.push(v); visitLog.sort((a,b)=>a.date<b.date?-1:1);
+            const rec=d.recId||$("recId").value||"";
+            const job={name:C.name,age:C.age,eddFull:C.edd?mdy(C.edd):"",brgy:C.brgy,year:String(C.vdate.getFullYear()),
+              edd:C.edd?`${String(C.edd.getMonth()+1).padStart(2,"0")}-${C.edd.getFullYear()}`:"",date:v.date,
+              recId:rec,driveId:byRec[rec]||"",saved:Date.now(),file:snapshot(),
+              trow:trackerRow(C,visitLog),mcells:manualCells(C),vrow:visitRow(v,""),
+              allv:visitLog.map(x=>visitRow(x,"")),prows:pastRows(C)};
+            const res=await CLOUD.push(job);
+            if(res&&res.rec)byRec[res.rec]=res.id;
+            ok++;
+            if(i+1<items.length)await new Promise(k=>setTimeout(k,1200)); // stay under Sheets 60 reads/min quota
+          }catch(err){fail.push(`${d.recId||fn}: ${err.message}`);}
+        }
+        CLOUD.cache=null; $("clearBtn").onclick.call(null,true); dropDraft(); DIRTY=false;
+        $("impStat").innerHTML=`<b>Done: ${ok} imported, ${fail.length} failed.</b>`+(fail.length?`<br><span style="color:#c62828">${esc(fail.join(" · "))}</span>`:" Search Patient, Probable matching records, and Tracker Open links are now live.");
+      }catch(e){$("impStat").textContent="Import stopped: "+e.message;}
+      finally{$("impDirBtn").disabled=$("impFilesBtn").disabled=false; $("impDir").value=$("impFiles").value="";}
+    };
+    $("impDir").onchange=e=>runImport(e.target.files);
+    $("impFiles").onchange=e=>runImport(e.target.files);
+  }
 }
 
 /* EHR import: emr-prenatal-bridge.user.js (Tampermonkey, local file only) dispatches this event. */
