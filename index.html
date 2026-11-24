@@ -869,6 +869,7 @@ const LABS=[
  {id:"rpr",name:"VDRL/RPR Screening",kind:"rx"},
  {id:"hbsag",name:"HBsAg",kind:"rx"},
  {id:"fbs",name:"Fasting blood sugar (FBS)",kind:"fbs"},
+ {id:"fbs2",name:"Repeat fasting blood sugar (FBS)",kind:"fbs"},
  {id:"a1c",name:"HbA1c",kind:"num",units:["%"]},
  {id:"ogtt",name:"75 g OGTT",kind:"ogtt"},
  {id:"upro",name:"Urine protein (dipstick)",kind:"dip"},
@@ -972,7 +973,7 @@ LABS.forEach(l=>{
   else if(l.kind==="bt") box=`<select data-r="${l.id}" style="width:120px"><option value="">Type</option>${["A+","B+","AB+","O+","A−","B−","AB−","O−"].map(x=>`<option>${x}</option>`).join("")}</select>`;
   else if(l.kind==="rx") box=`<select data-r="${l.id}" style="width:160px"><option value="">Result</option><option>Nonreactive</option><option>Reactive</option></select>`;
   else if(l.kind==="pn") box=`<select data-r="${l.id}" style="width:160px"><option value="">Result</option><option>Negative</option><option>Positive</option></select>`;
-  else if(l.kind==="fbs") box=`<div class="row"><input type="number" step="0.1" data-r="${l.id}" style="width:90px">${uSel("fbs",["mg/dL","mmol/L"])}</div>`;
+  else if(l.kind==="fbs") box=`<div class="row"><input type="number" step="0.1" data-r="${l.id}" style="width:90px">${uSel(l.id,["mg/dL","mmol/L"])}</div>`;
   else if(l.kind==="ogtt") box=`<div class="row"><input type="number" step="0.1" data-r="ogtt0" placeholder="Fasting" style="width:76px"><input type="number" step="0.1" data-r="ogtt1" placeholder="1 h" style="width:66px"><input type="number" step="0.1" data-r="ogtt2" placeholder="2 h" style="width:66px">${uSel("ogtt",["mg/dL","mmol/L"])}</div>`;
   else if(l.kind==="ua"){const dsel=k=>`<select data-r="${k}" style="width:110px"><option value="">${k==="ua_pro"?"Protein":"Glucose"}</option>${["Negative","Trace","1+","2+","3+","4+"].map(x=>`<option>${x}</option>`).join("")}</select>`;
     box=`<div class="row"><input type="text" data-r="ua_rbc" placeholder="RBC /hpf" style="width:90px"><input type="text" data-r="ua_wbc" placeholder="WBC / pus cells /hpf" style="width:150px">${dsel("ua_pro")}${dsel("ua_glu")}</div>
@@ -1193,6 +1194,7 @@ function compute(){
   C.rpr=C.lab.rpr?lr("rpr"):"";C.hbsag=C.lab.hbsag?lr("hbsag"):"";C.hivr=C.lab.hiv?lr("hiv"):"";
   const gk=k=>unitOf(k)==="mmol/L"?18:1;
   C.fbs=C.lab.fbs&&lr("fbs")!==""?Number(lr("fbs"))*gk("fbs"):null;
+  C.fbs2=C.lab.fbs2&&lr("fbs2")!==""?Number(lr("fbs2"))*gk("fbs2"):null;
   const nv=k=>C.lab[k]&&lr(k)!==""?Number(lr(k)):null;
   C.crea=nv("crea"); if(C.crea!=null&&unitOf("crea")==="µmol/L")C.crea=C.crea/88.4;
   C.bili=nv("bili"); if(C.bili!=null&&unitOf("bili")==="µmol/L")C.bili=C.bili/17.1;
@@ -1207,7 +1209,7 @@ function compute(){
     else if(l.id==="lutz"){}
     else if(l.id==="ogtt"){const o=[lr("ogtt0"),lr("ogtt1"),lr("ogtt2")];v=o.some(x=>x)?`${o.map(x=>x||"—").join(" / ")} ${unitOf("ogtt")} (F/1h/2h)`:"";}
     else if(l.id==="ua"){const p=[];[["ua_rbc","RBC"],["ua_wbc","WBC"],["ua_pro","protein"],["ua_glu","glucose"]].forEach(([k,n])=>{if(lr(k))p.push(`${n} ${lr(k)}`)});if(lr("ua"))p.push(lr("ua"));v=p.join(", ");}
-    else if(l.id==="fbs"){v=lr("fbs")?`${lr("fbs")} ${unitOf("fbs")}`:"";}
+    else if(l.kind==="fbs"){v=lr(l.id)?`${lr(l.id)} ${unitOf(l.id)}`:"";}
     else if(l.kind==="num"){v=lr(l.id)?`${lr(l.id)} ${l.units.length>1?unitOf(l.id):l.units[0]}`:"";}
     else v=lr(l.id);
     const dd=document.querySelector(`[data-d="${l.id}"]`).value; const dt=dd?mdy(isoToDate(dd)):"";
@@ -1347,7 +1349,13 @@ function compute(){
   if(C.rpr==="Reactive"&&!C.rf.has("sti"))add("Syphilis screen reactive",2);
   if(C.hbsag==="Reactive"&&!C.rf.has("hepb")&&!C.rf.has("hepb_av"))add("HBsAg reactive",2);
   if(C.hivr==="Reactive"&&!C.rf.has("hiv"))add("HIV reactive",3);
-  if(C.fbs!=null){ if(C.fbs>=126)add(`FBS ${C.fbs} mg/dL — overt diabetes`,4); else if(C.fbs>=92&&!C.rf.has("gdm_diet")&&!C.rf.has("gdm_ins"))add(`FBS ${C.fbs} mg/dL — gestational diabetes`,3);}
+  const fbsHi=(C.fbs!=null&&C.fbs>=126)||(C.fbs2!=null&&C.fbs2>=126);
+  C.overtDM=fbsHi;
+  C.gdmRO=!fbsHi&&C.fbs!=null&&C.fbs>=92&&C.fbs<126&&C.fbs2==null&&!C.rf.has("gdm_diet")&&!C.rf.has("gdm_ins")&&!C.rf.has("pgdm");
+  C.gdmConf=!fbsHi&&C.fbs2!=null&&C.fbs2>=92&&C.fbs2<126;
+  C.gdmRuledOut=!fbsHi&&C.fbs!=null&&C.fbs>=92&&C.fbs<126&&C.fbs2!=null&&C.fbs2<92;
+  if(C.overtDM){const v=C.fbs2!=null&&C.fbs2>=126?C.fbs2:C.fbs; add(`FBS ${v} mg/dL — overt diabetes`,4);}
+  else if(C.gdmConf&&!C.rf.has("gdm_diet")&&!C.rf.has("gdm_ins")) add(`Repeat FBS ${C.fbs2} mg/dL — gestational diabetes`,3);
   if(C.a1c!=null&&C.a1c>=6.5)add(`HbA1c ${C.a1c}% — overt diabetes`,4); // Field Manual Ch. 9: HbA1c 6.5% or more = overt diabetes
   if(C.ogtt){const [f,h1,h2]=C.ogtt; if((f!=null&&f>=92)||(h1!=null&&h1>=180)||(h2!=null&&h2>=153)){ if(!C.rf.has("gdm_diet")&&!C.rf.has("gdm_ins"))add("75 g OGTT positive (IADPSG) — gestational diabetes",3);}}
   C.rf.forEach(id=>{if((id==="malnut"&&C.auto.malnut)||(["ght","pe_nosev","pe_sev"].includes(id)&&C.auto[id]))return; const r=RISK_INDEX[id]; const l=typeof r.lvl==="function"?r.lvl(C):r.lvl; if(l>0)add(r.label.replace(" (EMERGENCY)","")+(id==="sizedate"&&C.auto.sizedate&&C.sdWhy?` (${C.sdWhy})`:""),l,r.emerg);});
@@ -1383,7 +1391,7 @@ function compute(){
   C.req=req; C.missing=req.filter(r=>!r[1]).map(r=>r[0]); C.progress=(req.length-C.missing.length)/req.length; C.ready=C.missing.length===0;
 
   /* ---- BAPP ---- */
-  const hi=[["Previous preeclampsia",C.rf.has("prior_pe_term")||C.rf.has("prior_pe_early")],["Multifetal gestation",C.rf.has("dc_twins")||C.rf.has("mc_twins")],["Chronic hypertension",C.rf.has("cht_ctrl")||C.rf.has("cht_unc")],["Pregestational diabetes",C.rf.has("pgdm")||(C.fbs!=null&&C.fbs>=126)],["Kidney disease",C.rf.has("ckd")],["SLE or antiphospholipid syndrome",C.rf.has("sle")]];
+  const hi=[["Previous preeclampsia",C.rf.has("prior_pe_term")||C.rf.has("prior_pe_early")],["Multifetal gestation",C.rf.has("dc_twins")||C.rf.has("mc_twins")],["Chronic hypertension",C.rf.has("cht_ctrl")||C.rf.has("cht_unc")],["Pregestational diabetes",C.rf.has("pgdm")||C.overtDM],["Kidney disease",C.rf.has("ckd")],["SLE or antiphospholipid syndrome",C.rf.has("sle")]];
   const bm=new Set([...document.querySelectorAll(".bm:checked")].map(x=>x.dataset.id));
   const modAuto=[["Nulliparity",C.tpalDone&&C.par===0],["BMI 30 or more",C.bmi!=null&&C.bmi>=30],["Age 35 or older",a!=null&&a>=35],["Interpregnancy interval over 10 years",C.ipi10],["Previous adverse outcome (stillbirth / neonatal death)",C.rf.has("stillbirth")],["Low socioeconomic status / low income",C.rf.has("low_income")]];
   const modMan=[["Family history of preeclampsia",bm.has("fam_pe")],["Previous LBW / SGA baby",bm.has("prior_lbw")],["IVF",bm.has("ivf")]];
@@ -1420,14 +1428,15 @@ function compute(){
   let hdpTxt=C.hdp||(C.elevUnconf?"Elevated BP, for confirmation":"");
   if(!hdpTxt){ if(C.rf.has("pe_sev"))hdpTxt="Preeclampsia with severe features"; else if(C.rf.has("pe_nosev"))hdpTxt="Preeclampsia without severe features"; else if(C.rf.has("ght"))hdpTxt="Gestational hypertension"; }
   C.hdpTxt=hdpTxt;
-  C.dx=`${C.GP||"G_P_ (____)"} ${locStr}, ${aog};${hdpTxt?" "+hdpTxt+";":""}${C.hellp?" "+C.hellp+";":""}${C.gt?" Gestational Thrombocytopenia;":""} ${risk}`;
+  C.dmDx=C.overtDM?"Overt DM":C.gdmConf?"GDM":C.gdmRO?"r/o GDM":"";
+  C.dx=`${C.GP||"G_P_ (____)"} ${locStr}, ${aog};${hdpTxt?" "+hdpTxt+";":""}${C.hellp?" "+C.hellp+";":""}${C.gt?" Gestational Thrombocytopenia;":""}${C.dmDx?" "+C.dmDx+";":""} ${risk}`;
   C.cbcNote=C.gt?(w!=null&&w>=36?"For CBC monitoring every week":(w!=null&&w>=32?"For CBC monitoring every 2 weeks":"For CBC monitoring every 4 weeks")):null;
   if(C.pp){const pd=C.dlv?dayDiff(C.vdate,C.dlv):null; C.cbcNote=null;
     // postpartum wording (ACOG; BAPP ch. 7): no pregnancy timing labels; this visit's findings first, else the pregnancy diagnosis marked (postpartum)
     const bpH=!!(C.bpU&&(C.bpU[0]>=140||C.bpU[1]>=90)), prior=C.rf.has("pe_sev")?"Preeclampsia with severe features":C.rf.has("pe_nosev")?"Preeclampsia without severe features":C.rf.has("ght")?"Gestational hypertension":(C.rf.has("cht_ctrl")||C.rf.has("cht_unc"))?"Chronic hypertension":"";
     const ppH=C.sevConf||(bpH&&C.SF.length)?"Postpartum preeclampsia with severe features":bpH&&C.prot?"Postpartum preeclampsia without severe features":prior?prior+" (postpartum)":bpH?"Postpartum hypertension":"";
     C.hdpTxt=ppH;
-    C.dx=`${C.GP||"G_P_ (____)"} Postpartum${pd!=null&&pd>=0?`, day ${pd}`:""}${C.dlv?` (${$("dlvMode").value||"delivered"} ${mdy(C.dlv)})`:""}`+[ppH,C.hellp].filter(Boolean).map(x=>"; "+x).join("");}
+    C.dx=`${C.GP||"G_P_ (____)"} Postpartum${pd!=null&&pd>=0?`, day ${pd}`:""}${C.dlv?` (${$("dlvMode").value||"delivered"} ${mdy(C.dlv)})`:""}`+[ppH,C.hellp,C.dmDx].filter(Boolean).map(x=>"; "+x).join("");}
   C.loc=loc;
 
   /* ---- LABS DUE ---- */
@@ -1455,7 +1464,7 @@ function compute(){
   // early glucose test: Module 2 slides algorithm + Field Manual Ch. 9 (BMI 23 Asian cut-off); fam_dm at any BMI per RHU decision
   const dmRF=["fam_dm","pcos","inactive","acanthosis","prediab","prior_gdm","cht_ctrl","cht_unc","hiv"].some(k=>C.rf.has(k))||C.chronic||C.hypertensive||C.hypNow||C.hivr==="Reactive";
   const dmRisk=(C.bmi!=null&&C.bmi>=30)||C.rf.has("prior_gdm")||C.rf.has("fam_dm")||(C.ageRisk!=null&&C.ageRisk>=35)||(C.bmi!=null&&C.bmi>=23&&dmRF)||(C.uaGlu&&(unk||w<24));
-  const knownDM=C.rf.has("pgdm")||C.rf.has("gdm_diet")||C.rf.has("gdm_ins")||(C.fbs!=null&&C.fbs>=92);
+  const knownDM=C.rf.has("pgdm")||C.rf.has("gdm_diet")||C.rf.has("gdm_ins")||C.overtDM||C.gdmConf||C.gdmRO;
   if(dmRisk&&!C.lab.fbs&&!knownDM&&(unk||w<24)) due.push({id:"fbs",t:"Fasting blood sugar (FBS)"});
   if(!C.lab.ogtt&&!knownDM&&w!=null&&((w>=24&&w<=28)||(C.uaGlu&&w>=24))) due.push({id:"ogtt",t:w>28?"75 g OGTT (glucosuria)":"75 g OGTT (at 24–28 weeks AOG)"});
   if(C.rf.has("sti_risk")&&w!=null&&w>=28&&w<=30){due.push({id:"rpr_re",t:"VDRL/RPR Screening (repeat, 3rd trimester)"});due.push({id:"hiv_re",t:"HIV screening (repeat, 3rd trimester)"});}
@@ -1469,6 +1478,10 @@ function compute(){
   if(C.rf.has("sizedate")&&!due.some(d=>d.id==="utz")) due.push({id:"utz_sd",t:"Pelvic ultrasound (UTZ): fetal growth and amniotic fluid (size-date discrepancy)"});
   if(!C.lab.cas&&w!=null&&w>=18&&w<=22) due.push({id:"cas",t:"Congenital anomaly scan (CAS) at 18–22 weeks AOG"});
   if(C.pp)due.splice(0);
+  // RHU FBS follow-up orders (apply to both prenatal and postpartum)
+  if(C.gdmRO){ due.push({id:"fbs2",t:"Repeat Fasting Blood Sugar (FBS)"});
+    if(!C.lab.crea&&!due.some(d=>d.id==="hl_crea")) due.push({id:"dm_crea",t:"Serum creatinine"}); }
+  if(C.overtDM&&!C.lab.a1c) due.push({id:"dm_a1c",t:"HbA1c"});
   customLabs.forEach((t,i)=>due.push({id:"cl"+i,t,custom:i}));
   C.due=due;
 
@@ -1510,6 +1523,10 @@ function compute(){
   // BP monitoring confirmed HPN or chronic hypertension: start methyldopa for 7 days, then dose adjustment (skipped if a BP medicine is already added)
   if(!C.pp&&(C.htnConf||C.chronic)&&!customRx.some(r=>/methyldopa|nifedipine|amlodipine/i.test(r.d)))
     rx.push({id:"mdp",d:"Methyldopa 250mg/tab #14",s:"Sig: 1 tab 2 beses sa 1 araw (umaga-gabi) sa loob ng 7 araw habang nagmo-monitor ng BP. Bumalik pagkatapos ng 7 araw para sa dose adjustment kung kinakailangan."});
+  // RHU FBS follow-up Rx & notes (apply to both prenatal and postpartum)
+  if(C.gdmConf&&!customRx.some(r=>/metformin/i.test(r.d)))
+    rx.push({id:"met",d:"Metformin 500 mg/tab #30",s:"Sig: 1 tab 2 beses sa 1 araw (umaga-gabi) pagkatapos kumain"});
+  if((C.gdmConf||C.overtDM)&&!C.notes.includes("For OB-gyne consult")) C.notes.push("For OB-gyne consult");
   customRx.forEach((r,i)=>{if(!(C.noMethyldopa&&/methyldopa/i.test(r.d)))rx.push({id:"cr"+i,d:r.d,s:r.s,custom:i});});
   C.rx=rx; C.bpNote=!C.pp&&!!(C.bpU&&(C.bpU[0]>=130||C.bpU[1]>=80));
   return C;
@@ -1620,7 +1637,10 @@ function render(){
   else if(C.gt) lo+=`<div class="alert amber">Platelets ${C.plt.toLocaleString()}/µL (100,000–149,999): gestational thrombocytopenia. ${esc(C.cbcNote)} (note added to request and prescription).</div>`;
   if(C.ict==="Positive") lo+=`<div class="alert red">Indirect Coombs positive: Rh isoimmunization, refer (Level 4).</div>`;
   if(C.a1c!=null&&C.a1c>=6.5) lo+=`<div class="alert red">HbA1c 6.5% or higher: overt diabetes, refer to BGHMC (Level 4).</div>`;
-  if(C.fbs!=null&&C.fbs>=126) lo+=`<div class="alert red">FBS 126 mg/dL or higher: overt diabetes, refer to BGHMC (Level 4).</div>`;
+  if(C.overtDM) lo+=`<div class="alert red">FBS 126 mg/dL or higher: Overt DM (Level 4). HbA1c added to request; refer to OB-GYN / BGHMC.</div>`;
+  else if(C.gdmRO) lo+=`<div class="alert amber">Initial FBS ${C.fbs} mg/dL (92–125): r/o GDM. Repeat FBS and Serum creatinine added to diagnostic request; escalate to Level 3 only if confirmed on repeat.</div>`;
+  else if(C.gdmConf) lo+=`<div class="alert amber">Repeat FBS ${C.fbs2} mg/dL (92–125): GDM confirmed (Level 3). Interim Metformin 500 mg BID added with “For OB-gyne consult” note.${C.crea!=null&&C.crea>1.1?" <b>Check creatinine ("+C.crea.toFixed(2)+" mg/dL) before starting Metformin.</b>":""}</div>`;
+  else if(C.gdmRuledOut) lo+=`<div class="alert green">Repeat FBS ${C.fbs2} mg/dL (below 92): r/o GDM cleared.</div>`;
   $("labOut").innerHTML=lo;
   // due list
   $("dueList").innerHTML=(C.cbcNote?`<li class="hint" style="order:9"><i>Note on request: “${C.cbcNote}”</i></li>`:"")+(C.due.length?C.due.map(d=>`<li class="row"><label class="chk"><input type="checkbox" class="dueChk" data-id="${d.id}" ${unticked.has(d.id)?"":"checked"}> <span class="${isUTZ(d.t)?"red":""}">${esc(d.t)}</span></label>${d.custom!=null?`<button class="ghost small" data-rmlab="${d.custom}">Remove</button>`:""}</li>`).join(""):`<li class="hint">No labs due by the rules for this AOG and contact.</li>`);
@@ -2490,8 +2510,8 @@ function trackerRow(C,visits){
   // earliest visit, including typed-in ones before the tracker or outside the RHU
   set("1st visit",first.d?mdy(first.d):""); const fw=first.days!=null&&first.days>=0?first.days/7:""; // weeks as a number; the sheet shows it as "11 3/7"
   set("AOG at 1st visit",fw); set("Early ANC (≤12 wk)",fw===""?"":(fw<13?"Yes":"No"));
-  // leading ' keeps "2/5" as text (Sheets would read it as a date)
-  if(T){set("T1 visits",A.t[0]); set("T2 visits",A.t[1]); set("T3 visits",A.t[2]); set("ANC #",A.n); set("Missed contacts",A.missed.join(", ")); set("On schedule",T.on);}
+  // leading ' keeps comma-separated lists like "2, 4, 6" as text (Sheets would parse them as a date)
+  if(T){set("T1 visits",A.t[0]); set("T2 visits",A.t[1]); set("T3 visits",A.t[2]); set("ANC #",A.n); set("Missed contacts",A.missed.length?"'"+A.missed.join(", "):""); set("On schedule",T.on);}
   else set("Missed contacts","undated");
   set("AOG today",T_AOG); set("Trimester",T_TRI); set("BMI",C.bmi!=null?+C.bmi.toFixed(1):"");
   set("Last visit",mdy(C.vdate));
@@ -2501,12 +2521,13 @@ function trackerRow(C,visits){
   set("HDP",C.hdpTxt||""); set("HELLP",C.hellp||""); set("Gestational thrombocytopenia",yn(C.gt));
   set("Hb",C.hb??""); set("Anemia",C.hb!=null?(C.hb<11?"Yes":"No"):""); set("Rh-negative",C.bt?(C.rhNeg?"Yes":"No"):"");
   set("Syphilis (RPR)",lab3(C.rpr)); set("Hepatitis B (HBsAg)",lab3(C.hbsag)); set("HIV",lab3(C.hivr));
-  const og=C.ogtt||[], gdm=(C.fbs!=null&&C.fbs>=92)||(og[0]!=null&&og[0]>=92)||(og[1]!=null&&og[1]>=180)||(og[2]!=null&&og[2]>=153); // IADPSG
-  set("GDM screen",C.fbs!=null||og.some(x=>x!=null)?(gdm?"Positive":"Negative"):"");
+  const og=C.ogtt||[], ogPos=(og[0]!=null&&og[0]>=92)||(og[1]!=null&&og[1]>=180)||(og[2]!=null&&og[2]>=153); // IADPSG
+  const gdmPos=C.overtDM||C.gdmConf||ogPos, hasDmTest=C.fbs!=null||C.fbs2!=null||og.some(x=>x!=null);
+  set("GDM screen",hasDmTest?(gdmPos?"Positive":C.gdmRO?"Pending repeat":"Negative"):"");
   const vs=visits||[]; set("EPDS ≥10",yn(vs.some(v=>+v.epds>=10))); set("Abuse screen +",yn(vs.some(v=>v.aas==="POS")));
   set("Aspirin",C.ready?C.aspTxt:""); set("Aspirin dose",C.asp||C.aspNotYet?(C.asp160?"160 mg":"80 mg"):"");
   const fl=[]; if(C.rhNeg)fl.push("Rh-negative"); if(C.hb!=null&&C.hb<11)fl.push(`Hb ${C.hb}`); if(C.plt!=null&&C.plt<150000)fl.push("Low platelets");
-  if(C.rpr==="Reactive")fl.push("VDRL/RPR reactive"); if(C.hbsag==="Reactive")fl.push("HBsAg reactive"); if(C.fbs!=null&&C.fbs>=92)fl.push("FBS ≥92");
+  if(C.rpr==="Reactive")fl.push("VDRL/RPR reactive"); if(C.hbsag==="Reactive")fl.push("HBsAg reactive"); if(C.overtDM)fl.push("FBS ≥126"); else if(C.gdmConf||C.gdmRO)fl.push("FBS ≥92");
   set("Flags",fl.join("; "));
   set("Planned place of delivery",C.ready?String(LEVEL_PLACE[C.level]).replace(/<[^>]+>/g,"").split(".")[0]:"");
   set("Referral",refNeeded(C)?`${refUrgency(C)} ${mdy(C.vdate)}`:"");
