@@ -2483,7 +2483,8 @@ function trackerRow(C,visits){
   const r=new Array(TCOLS.length).fill(""), set=(h,v)=>{r[TI[h]]=v??"";};
   const A=C.anc||ancStatus(C), first=A.L[0]||{}, T=ancTxt(A);
   set("Name",C.name); set("Date of birth",C.dob?mdy(C.dob):""); set("Age",'=IFERROR(DATEDIF(INDIRECT("RC[-1]",FALSE),TODAY(),"Y"),"")'); // live age from the DOB cell to its left
-  set("Contact no.",$("phone").value.trim()?"'"+$("phone").value.trim():""); // ' keeps the leading 0 set("PhilHealth PIN",C.pin?"'"+C.pinTxt:""); set("Barangay",C.brgy);
+  set("Contact no.",$("phone").value.trim()?"'"+$("phone").value.trim():""); // ' keeps the leading 0
+  set("PhilHealth PIN",C.pin?"'"+C.pinTxt:""); set("Barangay",C.brgy);
   set("LMP",C.lmp.date?fmtD(C.lmp.date):(C.lmp.unknown?"Not recalled":"")); set("EDD",fmtD(C.edd)); set("Dating basis",C.edd?C.basis:"");
   set("OB score",C.GP); set("Prior CS",C.cs||0);
   // earliest visit, including typed-in ones before the tracker or outside the RHU
