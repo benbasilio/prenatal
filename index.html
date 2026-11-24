@@ -30,6 +30,7 @@ header.top p{margin:2px 0 0;font-size:12px;opacity:.85}
 .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin-bottom:16px}
 .card h2{font-size:15px;margin:0 0 12px;display:flex;align-items:center;gap:8px}
 .card h2 .n{background:var(--accent);color:#fff;border-radius:50%;width:22px;height:22px;display:inline-grid;place-items:center;font-size:12px}
+.obrow{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;max-width:600px;align-items:end}.obrow input{text-align:center}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
 label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);font-weight:600}
 input[type=text],input[type=number],input[type=date],input[type=tel],select,textarea{font:inherit;color:var(--ink);padding:7px 9px;border:1px solid #c8cfcb;border-radius:6px;background:#fff;width:100%}
@@ -566,8 +567,7 @@ td:has(>.dwrap){min-width:150px} /* room for MM/DD/YYYY plus the calendar */
 <!-- 4 OB SCORE -->
 <section class="card" id="s4">
   <h2><span class="n">4</span>Obstetric score (G P T-P-A-L)</h2>
-  <label class="f" style="max-width:280px">OB score <span class="hint">e.g. G2P1 1001 (last 4 digits = T-P-A-L)</span><input type="text" id="obs" placeholder="G2P1 1001" autocomplete="off" autocapitalize="characters"></label>
-  <span class="hidden"><input type="number" id="G"><input type="number" id="Pa"><input type="number" id="T"><input type="number" id="Pp"><input type="number" id="A"><input type="number" id="L"></span>
+  <div class="obrow"><label class="f">G <span class="hint">gravida</span><input type="number" id="G" min="0" max="20"></label><label class="f">P <span class="hint">parity</span><input type="number" id="Pa" min="0" max="20"></label><label class="f">T <span class="hint">term</span><input type="number" id="T" min="0" max="20"></label><label class="f">P <span class="hint">preterm</span><input type="number" id="Pp" min="0" max="20"></label><label class="f">A <span class="hint">abortion</span><input type="number" id="A" min="0" max="20"></label><label class="f">L <span class="hint">living</span><input type="number" id="L" min="0" max="20"></label></div>
   <div class="calc" id="gpOut"></div>
   <div id="pastWrap" class="hidden" style="margin-top:10px">
     <table>
@@ -2172,7 +2172,7 @@ function foldSummary(id,C){
   if(id==="s1") return [v("name"),C.age!=null?C.age+" y":"",v("brgy")&&("Brgy. "+v("brgy")),C.pp?"PP "+C.pp:C.contact!=null?"ANC "+C.contact:""].filter(Boolean).join(" · ");
   if(id==="s2") return [v("bp")&&"BP "+v("bp")+(v("bp2")?" → "+v("bp2"):""),$("mapOut").textContent.split(/[.;]/)[0],v("wt")&&"Wt "+v("wt")+" "+v("wU")].filter(Boolean).join(" · ");
   if(id==="s3") return $("aogOut").textContent||("LMP "+v("lmp"));
-  if(id==="s4") return v("obs");
+  if(id==="s4") return C.GP||"";
   if(id==="s5"){const n=document.querySelectorAll("#riskGroups .rf:checked").length; return n?n+" risk factor"+(n>1?"s":"")+" ticked":"None";}
   if(id==="s7") return radioVal("labsdone")==="1"?"Labs entered":"No labs yet";
   return "";
@@ -2395,15 +2395,10 @@ document.addEventListener("input",saveDraft); document.addEventListener("change"
 /* ===================== BP / OB SCORE SINGLE BOXES ===================== */
 // visible boxes feed the hidden fields the rules already read
 function parseBP(v){const m=String(v).trim().match(/^(\d{2,3})\s*\/\s*(\d{2,3})$/);return m?[m[1],m[2]]:null;}
-function parseOB(v){const t=String(v).toUpperCase().replace(/\s+/g," ").trim();
-  const m=t.match(/^G\s*(\d{1,2})\s*P\s*(\d{1,2})(?:\s*[:(]?\s*(\d)\s*-?\s*(\d)\s*-?\s*(\d)\s*-?\s*(\d)\s*\)?)?$/);
-  return m?{G:m[1],Pa:m[2],T:m[3]??"",Pp:m[4]??"",A:m[5]??"",L:m[6]??""}:null;}
 function applyBP(box,s,d){const v=box.value.trim(),b=parseBP(v);$(s).value=b?b[0]:"";$(d).value=b?b[1]:"";box.classList.toggle("bad",!!v&&!b);}
-function applyOB(){const v=$("obs").value.trim(),o=parseOB(v);["G","Pa","T","Pp","A","L"].forEach(k=>$(k).value=o?o[k]:"");$("obs").classList.toggle("bad",!!v&&!o);renderPast();}
 function syncVis(){
   $("bp").value=$("sbp").value?`${$("sbp").value}/${$("dbp").value}`:$("bp").value;
   $("bp2").value=$("sbp2").value?`${$("sbp2").value}/${$("dbp2").value}`:$("bp2").value;
-  if($("G").value)$("obs").value=`G${$("G").value}P${$("Pa").value||0}`+([$("T").value,$("Pp").value,$("A").value,$("L").value].every(x=>x!=="")?` ${$("T").value}${$("Pp").value}${$("A").value}${$("L").value}`:"");
   const h=document.querySelector(`input[name="htnConfR"][value="${$("htnConf").checked?1:0}"]`); if($("htnConf").checked&&h)h.checked=true;
 }
 document.addEventListener("input",e=>{const t=e.target;
@@ -2411,7 +2406,6 @@ document.addEventListener("input",e=>{const t=e.target;
     // digit keypad has no "/": 3 digits starting 1-2 (or 2 otherwise) get a slash
     if(e.inputType==="insertText"&&/^\d+$/.test(t.value)){const cut=/^[12]/.test(t.value)?3:2; if(t.value.length>cut)t.value=t.value.slice(0,cut)+"/"+t.value.slice(cut,cut+3);}
     t.id==="bp"?applyBP(t,"sbp","dbp"):applyBP(t,"sbp2","dbp2");}
-  if(t.id==="obs")applyOB();
 },true);
 // eUTZ lives in Section 3; Section 7 shows it read-only
 (()=>{const box=document.querySelector('.labres[data-for="eutz"]'); const tr=box.closest("tr");
