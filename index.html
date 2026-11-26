@@ -800,15 +800,16 @@ html[data-theme="dark"] #gate{background:radial-gradient(1100px 620px at 50% -12
 <script>
 /* ===================== DATA ===================== */
 const BRGYS=["Atilano Ricardo","Bagumbayan","Banawang","Binuangan","Binukawan","Ibaba","Ibis","Pag-asa","Parang","Paysawan","Quinawan","San Antonio","Saysain","Tabing Ilog"];
-const DOCS=[{id:"ben",name:"Ben Basilio, MD",lic:"0169519"},{id:"gil",name:"Gil Catalan, MD",lic:"0160631"},{id:"grace",name:"Grace Lachica, MD",lic:"0176739"}];
+const DOCS=[{id:"aileen",name:"Aileen R. Reyes, MD",lic:"104023",title:"Municipal Health Officer"},{id:"ben",name:"Ben Basilio, MD",lic:"0169519"},{id:"gil",name:"Gil Catalan, MD",lic:"0160631"},{id:"grace",name:"Grace Lachica, MD",lic:"0176739"}];
 const LEVEL_COLOR={1:"Green",2:"Blue",3:"Yellow",4:"Red"};
 const LEVEL_LABEL={1:"Routine",2:"Watchful",3:"Specialist OB",4:"Complex / MFM"};
-// Bagac / 3rd District referral pathway (Bagac Community & Medicare Hospital has no OB-GYN; RHU lying-in not yet accredited)
+// Bagac / 3rd District referral pathway (Module 2 facility categories + Bagac's 2 available facilities:
+// Bagac RHU lying-in is not yet accredited; Bagac Community & Medicare Hospital has no OB-GYN)
 const LEVEL_PLACE={
- 1:"Bagac Community and Medicare Hospital",
- 2:"Bataan General Hospital and Medical Center",
- 3:"Bataan General Hospital and Medical Center",
- 4:"Bataan General Hospital and Medical Center"};
+ 1:"Birthing home / BEmONC — Bagac Community and Medicare Hospital",
+ 2:"Hospital with OB-GYN — Bataan General Hospital and Medical Center. OB-GYN review by 20 wk and at 35–36 wk; never a birthing home",
+ 3:"CEmONC hospital — Bataan General Hospital and Medical Center",
+ 4:"Apex hospital (OB-GYN & MFM) — Bataan General Hospital and Medical Center"};
 
 // lvl may be a number or function(ctx)
 const RISK_GROUPS=[
@@ -2192,7 +2193,7 @@ function refBlockHTML(b){
   if(b.t==="list")return `<ol start="${(b.from||0)+1}" style="margin:2px 0;padding-left:20px">${b.items.map(i=>typeof i==="string"?`<li>${esc(i)}</li>`:`<li>${esc(i.t)}<br><b style="color:#c00000">${esc(i.start)}</b></li>`).join("")}</ol>`;
   if(b.t==="grid")return `<table>${chunk(b.items,3).map(r=>`<tr>${r.map(([k,v])=>`<td><b>${esc(k)}:</b> ${esc(v||"—")}</td>`).join("")}</tr>`).join("")}</table>`;
   if(b.t==="table")return `<table><tr>${b.head.map(x=>`<th>${esc(x)}</th>`).join("")}</tr>${b.rows.map(r=>`<tr>${r.map(x=>`<td>${esc(x)}</td>`).join("")}</tr>`).join("")}</table>`;
-  if(b.t==="sig"){const C=CUR;return `<div style="display:flex;justify-content:flex-end;margin-top:36px;break-inside:avoid"><div style="font-size:10pt"><div style="border-top:1px solid #000;width:2.4in;margin-bottom:3px"></div><b>${esc(C.doc.name)}</b><br>Lic. No. ${C.doc.lic}<br>Rural Health Physician</div></div>`;}
+  if(b.t==="sig"){const C=CUR;return `<div style="display:flex;justify-content:flex-end;margin-top:36px;break-inside:avoid"><div style="font-size:10pt"><div style="border-top:1px solid #000;width:2.4in;margin-bottom:3px"></div><b>${esc(C.doc.name)}</b><br>Lic. No. ${C.doc.lic}<br>${esc(C.doc.title||"Rural Health Physician")}</div></div>`;}
   return "";}
 // sections = each heading with what follows it; the signature stays with the last one
 function refSections(){const S=[];refBlocks().forEach(b=>{if(b.t==="h"||!S.length)S.push([]);S[S.length-1].push(b);});S[S.length-1].push({t:"sig"});return S;}
@@ -2263,7 +2264,7 @@ function refPDFRun(k,mode,plan){
       if(it.start){need(LH);doc.setFont("helvetica","bold");doc.setTextColor(192,0,0);doc.text(it.start,M+0.3,y);y+=LH;doc.setTextColor(0,0,0);doc.setFont("helvetica","normal");}});
     else if(b.t==="grid"){chunk(b.items,3).forEach(gridRow);y+=0.06*k;}
     else if(b.t==="table")table(b.head,b.rows,b.head.length===3?[3,3,1.4]:b.head.length===4?[1,1.4,1.6,3]:[0.9,2.6,2.6,0.9,1.6]);
-    else if(b.t==="sig"){y+=0.4*k;need(0.75);fs(10);const sl=[[C.doc.name,"bold"],[`Lic. No. ${C.doc.lic}`,"normal"],["Rural Health Physician","normal"]];
+    else if(b.t==="sig"){y+=0.4*k;need(0.75);fs(10);const sl=[[C.doc.name,"bold"],[`Lic. No. ${C.doc.lic}`,"normal"],[C.doc.title||"Rural Health Physician","normal"]];
       const bw=Math.max(2.4,...sl.map(([t,f])=>{doc.setFont("helvetica",f);return doc.getTextWidth(t)})), sx=W-M-bw;
       doc.setLineWidth(0.01);doc.line(sx,y,W-M,y);y+=0.18;sl.forEach(([t,f])=>{doc.setFont("helvetica",f);doc.text(t,sx,y);y+=0.17;});}
   };
@@ -2384,7 +2385,7 @@ function openPreview(mode){
    <div class="ttl">${title}</div>
    <ol start="${start}">${its.map(i=>`<li class="${i.red?"red":""}">${mode==="rx"?`<b>${esc(i.main)}</b><br>${esc(i.sub)}${i.start?`<br><b style="color:#c00000">${esc(i.start)}</b>`:""}`:esc(i.main)}</li>`).join("")}</ol>
    ${notes?printNotes().map(n=>`<div style="margin-top:4px;font-style:italic">${esc(n)}</div>`).join(""):""}
-   <div class="sig"><div style="display:inline-block;text-align:left"><span class="ln"></span><br><b>${esc(C.doc.name)}</b><br>Lic. No. ${C.doc.lic}<br>Rural Health Physician</div></div></div>`;
+   <div class="sig"><div style="display:inline-block;text-align:left"><span class="ln"></span><br><b>${esc(C.doc.name)}</b><br>Lic. No. ${C.doc.lic}<br>${esc(C.doc.title||"Rural Health Physician")}</div></div></div>`;
   $("modal").classList.remove("hidden"); // shown first so the sheets can be measured
   const out=[]; let i=0;
   do{ let n=items.length-i;
@@ -2434,7 +2435,7 @@ function buildPDF(){
     doc.setFontSize(9.5); };
   // physician block: right side of page, all lines start at the same x; on every page
   const sig=()=>{ doc.setFontSize(8.5);
-    const lines=[[C.doc.name,"bold"],[`Lic. No. ${C.doc.lic}`,"normal"],["Rural Health Physician","normal"]];
+    const lines=[[C.doc.name,"bold"],[`Lic. No. ${C.doc.lic}`,"normal"],[C.doc.title||"Rural Health Physician","normal"]];
     const blockW=Math.max(1.9,...lines.map(([t,f])=>{doc.setFont("helvetica",f);return doc.getTextWidth(t)}));
     const x0=R-blockW; let fy=H-M-0.02-0.15*(lines.length-1);
     doc.setLineWidth(0.01);doc.line(x0,fy-0.17,R,fy-0.17);
@@ -2841,7 +2842,7 @@ function manualCells(C){const o={}; Object.entries(T_DERIVED).forEach(([h,f])=>o
   if(C.dlv){const res=$("dlvRes").value; Object.assign(o,{"Status":res==="Abortion"?"Pregnancy loss":"Delivered","Delivery date":mdy(C.dlv),"Place of delivery":$("dlvPlace").value,"Facility name":$("dlvFac").value.trim(),
     "Birth attendant":$("dlvAtt").value,"Mode":$("dlvMode").value,"Outcome":res,"Birth weight (g)":$("dlvWt").value});}
   return Object.entries(o).map(([h,v])=>[TCOLS.length+TMANUAL.indexOf(h),v]);}
-const VCOLS=["Record ID","Visit date","Place","Contact #","AOG","SBP","DBP","Repeat SBP","Repeat DBP","Weight (kg)","BMI","Weight gain (kg)","Weight gain status","FHT","FHT location","Fundic ht","Risk","Diagnosis","Labs requested","Prescription","Referral","Emergency protocol","Physician"];
+const VCOLS=["Record ID","Visit date","Place","Contact #","AOG","SBP","DBP","Repeat SBP","Repeat DBP","Weight (kg)","BMI","Weight gain (kg)","Weight gain status","FHT","FHT location","Fundic ht","Risk","Diagnosis","Labs requested","Prescription","Referral","Emergency protocol","Physician","Lab results"];
 const TI=Object.fromEntries(TCOLS.map((h,i)=>[h,i]));
 const RCx=(from,to)=>`INDIRECT("RC[${TI[to]!=null?TI[to]-TI[from]:TCOLS.length+TMANUAL.indexOf(to)-TI[from]}]",FALSE)`;
 const T_AOG=`=IFERROR(IF(OR(${RCx("AOG today","EDD")}="",${RCx("AOG today","Status")}="Delivered",${RCx("AOG today","Status")}="Pregnancy loss"),"",(TODAY()-(${RCx("AOG today","EDD")}-280))/7),"")`;
@@ -2853,7 +2854,7 @@ function visitSummary(C){
   const ei=epdsInfo(); return {epds:ei&&ei.complete?ei.total:"",aas:ei&&ei.aas?(/^POS/.test(ei.aas)?"POS":"neg"):"",date:dt,place:SITE,contact:C.pp?"PP"+C.pp:(C.contact||""),ifaTo:!unticked.has("fe")&&C.ifaTo?iso(C.ifaTo):"",caTo:!unticked.has("ca")&&C.caTo?iso(C.caTo):"",aog:C.aogStr||"",bp:C.sbp!=null?`${C.sbp}/${C.dbp}`:"",bp2:C.sbp2!=null?`${C.sbp2}/${C.dbp2}`:"",
     wt:C.wtDisp||"",bmi:C.bmi!=null?C.bmi.toFixed(1):"",wg:C.wg?`${C.wg.g.toFixed(1)} kg (${C.wg.st})`:"",fht:C.fht??"",fhtLoc:C.fht!=null?$("fhtLoc").value:"",fh:C.fh??"",
     level:C.ready?riskLbl(C.level):"",dx:C.dx,labs:C.due.filter(d=>!unticked.has(d.id)).map(d=>d.t).join("; "),
-    rx:C.rx.filter(r=>!unticked.has(r.id)).map(r=>r.d).join("; "),ref:refNeeded(C)?refUrgency(C):"",em:e.length?e.map(x=>x.d).join("; "):"",doc:C.doc?C.doc.name:"",aogDays:C.days};
+    rx:C.rx.filter(r=>!unticked.has(r.id)).map(r=>r.d).join("; "),ref:refNeeded(C)?refUrgency(C):"",em:e.length?e.map(x=>x.d).join("; "):"",doc:C.doc?C.doc.name:"",aogDays:C.days,labRes:(C.labLines||[]).join("; ")};
 }
 function trackerRow(C,visits){
   const r=new Array(TCOLS.length).fill(""), set=(h,v)=>{r[TI[h]]=v??"";};
@@ -2900,7 +2901,7 @@ function pastRows(C){const A=C.anc||ancStatus(C);
   return A.L.map((x,i)=>[x,i]).filter(([x])=>x.src==="past").map(([x,i])=>{const r=new Array(VCOLS.length).fill("");
     r[1]=mdy(x.d); r[2]=x.place||""; r[3]=i+1; r[4]=x.days!=null&&x.days>=0?`${wkStr(x.days).replace(" wk"," weeks")} AOG by ${C.basis}`:""; return r;});}
 function visitRow(v,recId){const bp=x=>(String(x||"").match(/(\d+)\s*\/\s*(\d+)/)||[,"",""]).slice(1).map(n=>n===""?"":+n), wg=String(v.wg||"").match(/(-?[\d.]+)\s*kg\s*\((.*)\)/)||[,"",""];
-  return [recId,v.date?mdy(isoToDate(v.date)):"",v.place||"",v.contact,v.aog,...bp(v.bp),...bp(v.bp2),(String(v.wt||"").match(/([\d.]+)\s*kg/)||[,v.wt])[1]===""?"":+((String(v.wt||"").match(/([\d.]+)\s*kg/)||[,v.wt])[1])||v.wt||"",v.bmi,wg[1]===""?"":+wg[1],wg[2],v.fht,v.fhtLoc||"",v.fh,/^\d$/.test(String(v.level))?riskLbl(v.level):v.level,v.dx,v.labs,v.rx,v.ref,v.em,v.doc];}
+  return [recId,v.date?mdy(isoToDate(v.date)):"",v.place||"",v.contact,v.aog,...bp(v.bp),...bp(v.bp2),(String(v.wt||"").match(/([\d.]+)\s*kg/)||[,v.wt])[1]===""?"":+((String(v.wt||"").match(/([\d.]+)\s*kg/)||[,v.wt])[1])||v.wt||"",v.bmi,wg[1]===""?"":+wg[1],wg[2],v.fht,v.fhtLoc||"",v.fh,/^\d$/.test(String(v.level))?riskLbl(v.level):v.level,v.dx,v.labs,v.rx,v.ref,v.em,v.doc,v.labRes||""];}
 
 // iPhone/iPad Safari tab, not the installed app: it has its own storage, so no device-only saves there
 const IOS_BROWSER=(/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1))&&!(navigator.standalone||matchMedia("(display-mode: standalone)").matches);
@@ -3027,8 +3028,10 @@ const CLOUD={on:location.origin==="https://benbasilio.github.io",CID:"7139168701
       ...[0,1,2,3,4,5].map(i=>[`=EOMONTH(TODAY(),${i-1})+1`,`=${n(M,`(${edd}>=A${E0+i})*(${edd}<=EOMONTH(A${E0+i},0))`)}`])];
     const pctRows=tiles.map((t,i)=>/%/.test(t[0])?R0+i:null).filter(Boolean);
     // ---- Action lists: active pregnancies (Status blank or Active); up to 30 rows each ----
-    const act=`${has}*((${st}="")+(${st}="Active")>0)`, cols=`{${["Name","Barangay","Contact no.","AOG today","Risk"].map(c).join(",")},%K}`;
-    const LISTS=[["Overdue visits",`${filled("Next visit due")}*(${c("Next visit due")}<TODAY())`,"Next visit due"],
+    const act=`${has}*((${st}="")+(${st}="Active")>0)`, baseCols=["Name","Barangay","Contact no.","AOG today","Risk"];
+    const LISTS=[
+      ["Active High-risk Level 4 (all)",`(${risk}="High-risk 4")`,"EDD",["Referral","Main reasons"]],
+      ["Overdue visits",`${filled("Next visit due")}*(${c("Next visit due")}<TODAY())`,"Next visit due"],
       ["EDD within 4 weeks",`(${edd}>=TODAY())*(${edd}<=TODAY()+28)`,"EDD"],
       ["High-risk 3–4 not yet referred",`${hi34}*(${c("Referral")}="")`,"EDD"],
       ["Rh-negative",yes("Rh-negative"),"EDD"],["Anemia (Hb <11)",yes("Anemia"),"EDD"],
@@ -3036,12 +3039,12 @@ const CLOUD={on:location.origin==="https://benbasilio.github.io",CID:"7139168701
       ["Not yet dewormed (14 weeks and above)",`(${c("Dewormed")}="")*(${aog}<>"")*(${aog}>=14)`,"EDD"],
       ["No Td/Tdap yet this pregnancy",`(N(${c("Td doses (this pregnancy)")})=0)`,"EDD"]];
     const lists=[], listHdr=[], listTitle=[];
-    LISTS.forEach(([t,cond,k],i)=>{const r=i*33+1; listTitle.push(r); listHdr.push(r+1);
-      const body=`FILTER(${cols.replace("%K",c(k))},${act}*${cond})`;
-      lists.push([t,"","","","",`=IFERROR(ROWS(${body})&" found","0 found")`],["Name","Barangay","Contact no.","AOG today","Risk",k],[`=IFERROR(ARRAY_CONSTRAIN(SORT(${body},6,TRUE),30,6),"None")`]);
+    LISTS.forEach(([t,cond,k,extra=[]],i)=>{const r=i*33+1, hdrs=[...baseCols,k,...extra], w=hdrs.length; listTitle.push([r,w]); listHdr.push([r+1,w]);
+      const body=`FILTER({${hdrs.map(c).join(",")}},${act}*${cond})`;
+      lists.push([t,"","","","",`=IFERROR(ROWS(${body})&" found","0 found")`],hdrs,[`=IFERROR(ARRAY_CONSTRAIN(SORT(${body},6,TRUE),30,${w}),"None")`]);
       for(let j=0;j<30;j++)lists.push([]);});
     // postpartum within 42 days with fewer than 2 checks
-    const pr=LISTS.length*33+1; listTitle.push(pr); listHdr.push(pr+1);
+    const pr=LISTS.length*33+1; listTitle.push([pr,6]); listHdr.push([pr+1,6]);
     const ppBody=`FILTER({${["Name","Barangay","Contact no.","PP1","PP2","Delivery date"].map(c).join(",")}},${has}*(${st}="Delivered")*(${c("Delivery date")}>=TODAY()-42)*(${c("≥2 PP checks")}<>"Yes"))`;
     lists.push(["Postpartum (last 42 days), fewer than 2 checks","","","","",`=IFERROR(ROWS(${ppBody})&" found","0 found")`],["Name","Barangay","Contact no.","PP1","PP2","Delivery date"],[`=IFERROR(ARRAY_CONSTRAIN(SORT(${ppBody},6,FALSE),30,6),"None")`]);
     // ---- Monthly report (FHSIS M1 maternal care; age from the Age column) ----
@@ -3079,7 +3082,7 @@ const CLOUD={on:location.origin==="https://benbasilio.github.io",CID:"7139168701
     // the Dashboard tab is built and kept by hand (InsightfulPipe build, Nov 2026): the app only creates it when missing, never clears it
     [3,4].forEach(sid=>{pre.push({repeatCell:{range:{sheetId:sid},cell:{},fields:"userEnteredFormat"}},{setDataValidation:{range:{sheetId:sid}}});});
     await this.api(`${S}:batchUpdate`,{method:"POST",body:JSON.stringify({requests:pre})});
-    await this.api(`${S}/values:batchClear`,{method:"POST",body:JSON.stringify({ranges:["Action lists!A1:Z400","Monthly report!A1:Z200"]})});
+    await this.api(`${S}/values:batchClear`,{method:"POST",body:JSON.stringify({ranges:["Action lists!A1:Z450","Monthly report!A1:Z200"]})});
     await this.api(`${S}/values:batchUpdate`,{method:"POST",body:JSON.stringify({valueInputOption:"USER_ENTERED",data:[
       {range:"Action lists!A1",values:P.lists},{range:"Monthly report!A1",values:P.mon}]})});
     const g=(sid,r0,r1,c0,c1)=>({sheetId:sid,startRowIndex:r0,endRowIndex:r1,startColumnIndex:c0,endColumnIndex:c1});
@@ -3092,10 +3095,13 @@ const CLOUD={on:location.origin==="https://benbasilio.github.io",CID:"7139168701
       domains:[{domain:src(r0,r1,0)}],series:Array.from({length:ns},(_,i)=>({series:src(r0,r1,i+1),targetAxis:type==="BAR"?"BOTTOM_AXIS":"LEFT_AXIS",...(colr?{colorStyle:{rgbColor:colr[i]}}:{})}))}},
       position:{overlayPosition:{anchorCell:{sheetId:2,rowIndex:row,columnIndex:7},widthPixels:620,heightPixels:360}}}}});
     const LC=[{red:.30,green:.69,blue:.31},{red:.08,green:.40,blue:.75},{red:1,green:.84,blue:0},{red:.78,green:.16,blue:.16}];
+    const prRow=P.listTitle[P.listTitle.length-1][0];
     const reqs=[
-      ...P.listTitle.map(r=>fmt(g(3,r-1,r,0,6),{textFormat:{bold:true,fontSize:12}},"textFormat")), ...P.listHdr.map(r=>bold(g(3,r-1,r,0,6))),
-      fmt(g(3,0,400,3,4),{numberFormat:{type:"NUMBER",pattern:"# ?/7"}},"numberFormat"), fmt(g(3,0,400,5,6),{numberFormat:{type:"DATE",pattern:"mm/dd/yyyy"}},"numberFormat"),
-      width(3,0,1,220),
+      ...P.listTitle.map(([r,w])=>fmt(g(3,r-1,r,0,w),{textFormat:{bold:true,fontSize:12}},"textFormat")), ...P.listHdr.map(([r,w])=>bold(g(3,r-1,r,0,w))),
+      fmt(g(3,0,prRow-1,3,4),{numberFormat:{type:"NUMBER",pattern:"# ?/7"}},"numberFormat"),
+      fmt(g(3,prRow,prRow+33,3,5),{numberFormat:{type:"DATE",pattern:"mm/dd/yyyy"}},"numberFormat"),
+      fmt(g(3,0,450,5,6),{numberFormat:{type:"DATE",pattern:"mm/dd/yyyy"}},"numberFormat"),
+      width(3,0,1,220), width(3,6,7,145), width(3,7,8,320),
       fmt(g(4,0,1,0,1),{textFormat:{bold:true,fontSize:13}},"textFormat"), fmt(g(4,1,2,1,2),{numberFormat:{type:"DATE",pattern:"mmmm yyyy"},backgroundColor:{red:1,green:.95,blue:.7},textFormat:{bold:true}},"numberFormat,backgroundColor,textFormat"),
       {setDataValidation:{range:g(4,1,2,1,2),rule:{condition:{type:"DATE_IS_VALID"},inputMessage:"Type the first day of the month, e.g. 11/1/2026",strict:true}}},
       bold(g(4,3,4,0,5)), ...P.monSec.map(i=>fmt(g(4,i,i+1,0,5),{textFormat:{bold:true}},"textFormat")), width(4,0,1,330)];
