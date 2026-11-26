@@ -100,7 +100,9 @@ textarea.summary{font-family:Consolas,monospace;font-size:12.5px;min-height:130p
 .sheet .sig .ln{display:inline-block;width:1.9in;border-top:1px solid #000;margin-bottom:2px}
 .sheet .u{text-decoration:underline}
 .row:has(>#lmp){align-items:stretch}.row:has(>#lmp)>#lmpQ{min-height:0;height:auto}
-body.pp #s3,body.pp #s6,body.pp label.f:has(#fht),body.pp #fhWrap,body.pp #fhNoteWrap,body.pp #planPanel,body.pp .panel:has(#aspBox),body.pp #tdWrap,body.pp #dwWrap{display:none!important}
+body.pp #s3,body.pp #s4,body.pp #s5,body.pp #s6,body.pp #epdsCard,body.pp label.f:has(#loc),body.pp #pvWrap,body.pp label.f:has(#wt0),body.pp label.f:has(#htCmRow),body.pp label.f:has(#bmiBox),body.pp #bmiOut,body.pp label.f:has(#fht),body.pp #fhWrap,body.pp #fhNoteWrap,body.pp #planPanel,body.pp .panel:has(#aspBox),body.pp #tdWrap,body.pp #dwWrap,body.pp #labsBody tr:has([data-id="lutz"]),body.pp #labsBody tr:has([data-id="cas"]),body.pp #labsBody tr:has([data-id="ict"]),body.pp #labsBody tr:has(#eutzRo){display:none!important}
+.ppSub{border-top:1px solid var(--line);margin-top:12px;padding-top:10px}
+.ppSub h3{font-size:13.5px;margin:0 0 8px;color:var(--accent-ink);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .sub{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:10px}
 #age{border-color:transparent;background:transparent;box-shadow:none;pointer-events:none;font-weight:600;padding-left:2px}
 #tdWrap.carried table,#tdWrap.carried #tdAdd,#tdWrap.carried>.hint{display:none}
@@ -558,17 +560,18 @@ html[data-theme="dark"] #gate{background:radial-gradient(1100px 620px at 50% -12
   </div>
 </section>
 
-<!-- DELIVERY (shown at postpartum contacts) -->
+<!-- DELIVERY & BIRTH OUTCOME (shown in Postpartum mode) -->
 <section class="card hidden" id="sDlv">
-  <h2><span class="n">PP</span>Delivery details</h2>
+  <h2><span class="n">PP</span>Delivery &amp; birth outcome</h2>
   <div class="grid">
     <label class="f">Date of delivery<input type="date" id="dlvDate"></label>
     <label class="f">Place of delivery<select id="dlvPlace"><option value="">— Select —</option><option>Hospital</option><option>RHU/lying-in</option><option>Home</option><option>En route</option></select></label>
-    <label class="f">Facility name<input type="text" id="dlvFac" placeholder="e.g., BGHMC"></label>
+    <label class="f">Facility name<input type="text" id="dlvFac" list="facList" placeholder="e.g., BGHMC"><datalist id="facList"><option value="Bataan General Hospital and Medical Center"></option><option value="Bagac Community and Medicare Hospital"></option><option value="Jose C. Payumo Jr. Memorial Hospital"></option><option value="Mariveles Mental Wellness and General Hospital"></option><option value="Bataan Peninsula Medical Center"></option></datalist></label>
     <label class="f">Birth attendant<select id="dlvAtt"><option value="">— Select —</option><option>Doctor</option><option>Nurse</option><option>Midwife</option><option>Traditional Birth Attendant</option><option>Others</option><option>None</option></select></label>
-    <label class="f">Mode of delivery<select id="dlvMode"><option value="">— Select —</option><option>SVD</option><option>CS</option></select></label>
+    <label class="f" id="dlvModeWrap">Mode of delivery<select id="dlvMode"><option value="">— Select —</option><option>SVD</option><option>CS</option></select></label>
     <label class="f">Outcome<select id="dlvRes"><option value="">— Select —</option><option>Live birth, term</option><option>Live birth, preterm</option><option>Stillbirth</option><option>Abortion</option></select></label>
-    <label class="f">Birth weight (g)<input type="number" id="dlvWt" min="200" max="6000"></label>
+    <label class="f" id="dlvWtWrap">Birth weight (g)<input type="number" id="dlvWt" min="200" max="6000"></label>
+    <label class="f" style="grid-column:1/-1">Delivery / outcome notes <span class="hint">optional — saved to Tracker Notes</span><input type="text" id="dlvNotes" placeholder="e.g., complications, NICU stay, twin weights, discharge note"></label>
   </div>
 </section>
 
@@ -600,6 +603,44 @@ html[data-theme="dark"] #gate{background:radial-gradient(1100px 620px at 50% -12
   <div class="row" style="font-weight:600;margin-top:6px">BP monitoring result: <span class="yn"><label class="chk"><input type="radio" name="htnConfR" value="1"> HPN</label><label class="chk"><input type="radio" name="htnConfR" value="0"> no HPN</label></span></div><label class="chk hidden"><input type="checkbox" id="htnConf"></label>
   <div id="bpOut"></div>
   <div id="vsOut"></div>
+</section>
+
+<!-- POSTPARTUM CHECK-UP & DANGER SIGNS (shown in Postpartum mode only) -->
+<section class="card hidden" id="sPP">
+  <h2><span class="n">PP</span>Postpartum check-up &amp; danger signs</h2>
+  <div class="grid">
+    <label class="f">Uterine involution / fundus
+      <select id="ppFundus"><option value="">— Select —</option><option>Firm, involuting</option><option>Boggy / subinvoluted</option><option>Tender</option></select></label>
+    <label class="f">Lochia / vaginal bleeding
+      <select id="ppLochia"><option value="">— Select —</option><option>Normal</option><option>Heavy / clots</option><option>Foul-smelling</option></select></label>
+    <label class="f">Perineal / CS wound
+      <select id="ppWound"><option value="">— Select —</option><option>Intact / healing</option><option>Redness / swelling / discharge / open</option><option>N/A</option></select></label>
+    <label class="f">Breasts &amp; breastfeeding
+      <select id="ppBreast"><option value="">— Select —</option><option>Exclusive breastfeeding</option><option>Mixed feeding</option><option>Formula</option><option>Engorged / mastitis / cracked nipples</option></select></label>
+    <label class="f">Pallor check
+      <select id="ppPallor"><option value="">— Select —</option><option>None</option><option>Conjunctival / palmar pallor</option></select></label>
+    <label class="f">Urination / bowel
+      <select id="ppUrine"><option value="">— Select —</option><option>Normal</option><option>Dysuria / retention</option></select></label>
+    <label class="f">Family planning method
+      <select id="ppFP"><option value="">— Select —</option><option>Counseled — undecided</option><option>Progestin-only pills (POP)</option><option>DMPA (injectable)</option><option>Implant</option><option>IUD</option><option>BTL</option><option>Condom</option><option>Declined / N/A</option></select></label>
+  </div>
+  <div class="ppSub" id="ppNbWrap">
+    <h3>Newborn check</h3>
+    <div class="grid">
+      <label class="f">Newborn status
+        <select id="ppNb"><option value="">— Select —</option><option>Well, feeding well</option><option>Needs follow-up / referral</option></select></label>
+      <div class="f" style="justify-content:center;gap:6px">
+        <label class="chk"><input type="checkbox" id="ppNbVac"> BCG &amp; Hep B birth dose given</label>
+        <label class="chk"><input type="checkbox" id="ppNbNbs"> Newborn screening done</label>
+      </div>
+    </div>
+  </div>
+  <div class="ppSub">
+    <h3>Postpartum danger signs <span class="badge" id="ppDsBadge"></span></h3>
+    <div style="margin-bottom:6px"><label class="chk" style="font-weight:600"><input type="checkbox" id="ppDsNone"> None</label></div>
+    <div class="items" id="ppDsList"></div>
+  </div>
+  <div id="ppOut" style="margin-top:8px"></div>
 </section>
 
 <!-- 3 DATING -->
@@ -754,7 +795,7 @@ html[data-theme="dark"] #gate{background:radial-gradient(1100px 620px at 50% -12
 
 <!-- 11 SUMMARY -->
 <section class="card" id="s11">
-  <h2><span class="n">11</span>OB history summary (copy and paste)</h2>
+  <h2><span class="n">11</span><span id="s11Title">OB history summary (copy and paste)</span></h2>
   <textarea class="summary" id="summary" aria-label="OB history summary" readonly></textarea>
   <div class="row" style="margin-top:8px"><button class="ghost" id="copyBtn"><svg class="bi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy</button><span id="copyMsg" class="hint"></span>
     <label class="chk cloudOnly hidden" style="flex:1 1 220px"><input type="checkbox" id="consent" onchange="this.closest('label').style.outline=''"> Patient consents to secure storage of her prenatal record by Bagac RHU (RA 10173)</label><input type="hidden" id="recId"><input type="hidden" id="driveId"></div>
@@ -1008,9 +1049,20 @@ function isUTZ(s){return /ultrasound|\btvs\b|\butz\b|scan|\bcas\b|\bbpp\b|biophy
 /* ===================== BUILD UI ===================== */
 BRGYS.forEach(b=>$("brgy").insertAdjacentHTML("beforeend",`<option>${b}</option>`));
 DOCS.forEach(d=>$("doc").insertAdjacentHTML("beforeend",`<option value="${d.id}">${d.name}</option>`));
-for(let i=1;i<=8;i++)$("contact").insertAdjacentHTML("beforeend",`<option value="${i}">${i}${["st","nd","rd"][i-1]||"th"} contact</option>`);
+for(let i=1;i<=12;i++)$("contact").insertAdjacentHTML("beforeend",`<option value="${i}">${i}${["st","nd","rd"][i-1]||"th"} contact</option>`);
 for(let i=1;i<=4;i++)$("contact").insertAdjacentHTML("beforeend",`<option value="p${i}">Postpartum ${i}</option>`); // not ANC contacts
 $("vdate").value=todayISO();
+
+const PP_DANGER=[
+ ["pp_bleed","Heavy vaginal bleeding / passing clots (PPH)",true],
+ ["pp_fever","Fever ≥38 °C or foul-smelling lochia (puerperal sepsis)",false],
+ ["pp_head","Severe or persistent headache / blurred vision (postpartum PE / CVT)",true],
+ ["pp_seizure","Seizures or loss of consciousness (postpartum eclampsia)",true],
+ ["pp_abd","Severe upper abdominal / epigastric pain (HELLP / endometritis)",true],
+ ["pp_dob","Difficulty of breathing / chest pain / unable to lie flat (pulmonary edema / PPCM)",true],
+ ["pp_dvt","Unilateral calf swelling or pain (suspected DVT)",false]
+];
+$("ppDsList").innerHTML=PP_DANGER.map(([id,l])=>`<label class="chk"><input type="checkbox" class="ppds" data-ppds="${id}"><span>${esc(l)}</span></label>`).join("");
 
 RISK_GROUPS.forEach((g,gi)=>{
   const html=g.items.map(it=>{
@@ -1095,7 +1147,7 @@ function ancStatus(C){const L=ancVisits(C); if(!C.lmpEq||C.days==null)return {L,
   const D=C.dlv?Math.min(C.days,dayDiff(C.dlv,C.lmpEq)):C.days; // windows after delivery never opened
   const missed=ANC_WIN.map((w,i)=>i+1).filter(x=>D>=ANC_WIN[x-1][1]&&!met.has(x)); // window closed, no visit in it
   return {L,met,missed,n:met.size,t:[cnt([1]),cnt([2,3]),cnt([4,5,6,7,8])],on:!missed.length};}
-const ancTxt=A=>A.undated?null:{t1:`${A.t[0]}/1`,t2:`${A.t[1]}/2`,t3:`${A.t[2]}/5`,anc:`${A.n}/8`+(A.missed.length?` (missed ${A.missed.join(", ")})`:""),on:A.on?"Yes":"No"};
+const ancTxt=A=>A.undated?null:{t1:`${A.t[0]}/1`,t2:`${A.t[1]}/2`,t3:`${A.t[2]}/5`,anc:`${A.n}/8`+(A.n>=8?" (Complete)":A.missed.length?` (missed ${A.missed.join(", ")})`:""),on:A.on?"Yes":"No"};
 /* Td/Tdap doses (all pregnancies); kept with the patient's file */
 let tdDoses=[], CARRIED="";
 function buildTD(){$("tdBody").innerHTML=tdDoses.map((t,i)=>`<tr data-td="${i}"><td class="hint">#${i+1}</td><td><select class="tdt" aria-label="Vaccine"><option${t.type==="Td"?" selected":""}>Td</option><option${t.type==="Tdap"?" selected":""}>Tdap</option></select></td><td><span class="dwrap"><input type="text" class="tdd pvd" inputmode="numeric" placeholder="MM/DD/YYYY" value="${esc(t.date||"")}" aria-label="Date given">${CAL}</span></td><td><button type="button" class="ghost small tdx" aria-label="Remove dose">✕</button></td></tr>`).join("");}
@@ -1118,21 +1170,25 @@ function buildPV(){ // visits saved in the app (locked), then typed-in ones
   if(document.body.classList.contains("viewonly"))applyView();
 }
 function paintPV(C){const A=C.anc;
-  [...$("pvBody").children].forEach(tr=>{let dt=null;
+  const rows=[...$("pvBody").children].map(tr=>{let dt=null;
     if(tr.dataset.pv!=null){const p=prevVisits[+tr.dataset.pv], r=parseFlex(p&&p.date), late=r&&r.d&&r.d>=C.vdate;
       tr.querySelector(".pverr").textContent=r&&r.bad?"Use MM/DD/YYYY or MM/YYYY":late?"Must be before this visit":""; dt=pvDate(p,C.vdate);}
     else dt=isoToDate(tr.dataset.date);
-    const days=dt&&C.lmpEq?dayDiff(dt,C.lmpEq):null;
+    return {tr,dt,days:dt&&C.lmpEq?dayDiff(dt,C.lmpEq):null};});
+  const seenSlots=new Set();
+  rows.slice().sort((a,b)=>(a.dt?+a.dt:Infinity)-(b.dt?+b.dt:Infinity)).forEach(({tr,days})=>{
     tr.querySelector(".pvAog").textContent=days==null?"":days<0?"before LMP":wkStr(days);
-    tr.querySelector(".pvSlot").textContent=days==null||days<0?"":(ancSlot(days)||"—");});
-  const T=ancTxt(A);
-  $("pvSum").textContent=T?`With this visit: T1 ${T.t1} · T2 ${T.t2} · T3 ${T.t3} · ANC # ${T.anc} · On schedule: ${T.on}`:"ANC slots need the LMP or a dating ultrasound (section 3).";}
-// ANC Contact # = earlier visits + 1, until the user picks a number
+    const sl=days==null||days<0?null:ancSlot(days);
+    if(sl){const extra=seenSlots.has(sl); seenSlots.add(sl); tr.querySelector(".pvSlot").textContent=extra?`${sl} (extra)`:String(sl);}
+    else tr.querySelector(".pvSlot").textContent=days==null||days<0?"":"—";});
+  const T=ancTxt(A), tot=A&&A.L?A.L.length:0, ex=T&&tot>A.n?` (${tot} total visits; extra visits not counted)`:"";
+  $("pvSum").textContent=T?`With this visit: T1 ${T.t1} · T2 ${T.t2} · T3 ${T.t3} · ANC # ${T.anc}${ex} · On schedule: ${T.on}`:"ANC slots need the LMP or a dating ultrasound (section 3).";}
+// ANC Contact # = earlier visits + 1 (up to 12), until the user picks a number
 function autoContact(){const c=$("contact"); if(document.body.classList.contains("viewonly")||!(c.value===""||c.dataset.auto==="1"))return;
   const vd=isoToDate($("vdate").value)||new Date(), dl=isoToDate($("dlvDate").value);
   if(dl&&vd>=dl){c.value="p"+Math.min(4,visitLog.filter(v=>{const d=isoToDate(v.date);return d&&d>=dl&&d<vd}).length+1); c.dataset.auto="1"; return;}
   const n=new Set([...visitLog.map(v=>isoToDate(v.date)).filter(d=>d&&d<vd),...prevVisits.map(p=>pvDate(p,vd)).filter(Boolean)].map(Number)).size;
-  c.value=String(Math.min(8,n+1)); c.dataset.auto="1";}
+  c.value=String(Math.min(12,n+1)); c.dataset.auto="1";}
 function pvEdit(e){const tr=e.target.closest("[data-pv]"); if(!tr)return; const p=prevVisits[+tr.dataset.pv]; if(!p)return;
   if(e.target.classList.contains("pvd"))p.date=e.target.value.trim(); else if(e.target.classList.contains("pvp"))p.place=e.target.value;}
 $("pvBody").addEventListener("input",pvEdit); $("pvBody").addEventListener("change",pvEdit);
@@ -1379,14 +1435,20 @@ function compute(){
   C.chronic=C.rf.has("cht_ctrl")||C.rf.has("cht_unc");
   const after20=C.w==null||C.w>=20;
   C.prot=PLUS2.includes(C.dip)||PLUS2.includes(C.uaPro)||(C.upcr!=null&&C.upcr>=0.3);
+  C.ppExam={fundus:$("ppFundus")?$("ppFundus").value:"",lochia:$("ppLochia")?$("ppLochia").value:"",wound:$("ppWound")?$("ppWound").value:"",
+    breast:$("ppBreast")?$("ppBreast").value:"",pallor:$("ppPallor")?$("ppPallor").value:"",urine:$("ppUrine")?$("ppUrine").value:"",
+    fp:$("ppFP")?$("ppFP").value:"",nb:$("ppNb")?$("ppNb").value:"",nbVac:!!($("ppNbVac")&&$("ppNbVac").checked),
+    nbNbs:!!($("ppNbNbs")&&$("ppNbNbs").checked),notes:$("dlvNotes")?$("dlvNotes").value.trim():""};
+  C.ppDs=new Set([...document.querySelectorAll(".ppds:checked")].map(x=>x.dataset.ppds));
+  C.ppDsDone=!!(($("ppDsNone")&&$("ppDsNone").checked)||C.ppDs.size>0);
   const ORG=[];
   if(C.plt!=null&&C.plt<100000)ORG.push("platelets below 100,000");
   if((C.ast!=null&&C.ast>=70)||(C.alt!=null&&C.alt>=70))ORG.push("AST/ALT at least 2× upper limit (≥70 U/L)");
   if(C.crea!=null&&C.crea>1.1)ORG.push("creatinine above 1.1 mg/dL");
   if(C.spo2!=null&&C.spo2<95)ORG.push("SpO₂ below 95% (pulmonary edema?)");
-  if(C.rf.has("ws_dob"))ORG.push("difficulty of breathing (pulmonary edema?)");
-  if(C.rf.has("ws_head"))ORG.push("headache unresponsive to medication / visual disturbance");
-  if(C.rf.has("ws_abd"))ORG.push("severe RUQ / epigastric pain");
+  if(C.rf.has("ws_dob")||(C.pp&&C.ppDs.has("pp_dob")))ORG.push("difficulty of breathing (pulmonary edema?)");
+  if(C.rf.has("ws_head")||(C.pp&&C.ppDs.has("pp_head")))ORG.push("headache unresponsive to medication / visual disturbance");
+  if(C.rf.has("ws_abd")||(C.pp&&C.ppDs.has("pp_abd")))ORG.push("severe RUQ / epigastric pain");
   C.SF=(C.sevConf?["severe-range BP confirmed on repeat"]:[]).concat(ORG);
   const timing=C.w==null?"":(C.w<34?", early-onset (preterm)":(C.w<37?", preterm":", term"));
   const timing2=C.w==null?"":(C.w<37?", preterm":", term");
@@ -1395,7 +1457,7 @@ function compute(){
     const prior=C.rf.has("pe_sev")?"Preeclampsia with severe features":C.rf.has("pe_nosev")?"Preeclampsia without severe features":C.rf.has("ght")?"Gestational hypertension":C.chronic?"Chronic Hypertension":"";
     C.ppPriorHdp=prior;
     const ppBpHi=C.hypNow&&(b2||C.htnConf);
-    if(C.rf.has("ws_seizure")){C.hdp="Postpartum eclampsia";C.hdpSevere=true;C.eclampsia=true;hl=4;}
+    if(C.rf.has("ws_seizure")||C.ppDs.has("pp_seizure")){C.hdp="Postpartum eclampsia";C.hdpSevere=true;C.eclampsia=true;hl=4;}
     else if(C.sevConf||(ppBpHi&&C.SF.length)){C.hdp="Postpartum preeclampsia with severe features";C.hdpSevere=true;hl=4;}
     else if(ppBpHi&&C.prot){C.hdp="Postpartum preeclampsia without severe features";hl=3;}
     else if(ppBpHi){C.hdp=prior?prior+" (postpartum)":"Postpartum hypertension";hl=3;}
@@ -1418,7 +1480,7 @@ function compute(){
   if(C.elevUnconf)add(`Elevated BP ${C.bpU[0]}/${C.bpU[1]}, for confirmation`,3);
   C.sameDay=(C.elevUnconf&&after20)||(!!C.hdp&&!C.hdpSevere);
   // HELLP (Tennessee criteria; Mississippi class)
-  C.hellpScreen=(C.pp||after20)&&(C.hypNow||(!C.pp&&C.hypertensive)||C.rf.has("ws_abd")||C.rf.has("ws_nv")||C.rf.has("ws_malaise"));
+  C.hellpScreen=(C.pp||after20)&&(C.hypNow||(!C.pp&&C.hypertensive)||C.rf.has("ws_abd")||C.rf.has("ws_nv")||C.rf.has("ws_malaise")||(C.pp&&C.ppDs.has("pp_abd")));
   const hH=(C.ldh!=null&&C.ldh>=600)||(C.bili!=null&&C.bili>=1.2), hEL=C.ast!=null&&C.ast>=70, hLP=C.plt!=null&&C.plt<=100000;
   C.hellpParts=[hH?"Hemolysis (LDH ≥600 or bilirubin ≥1.2)":null,hEL?"Elevated liver enzymes (AST ≥70)":null,hLP?"Low platelets (≤100,000)":null].filter(Boolean);
   C.hellp=null;
@@ -1457,8 +1519,34 @@ function compute(){
   if(C.epdsEmerg) add("EPDS item 10 = 3 (frequent thoughts of self-harm) — refer to MMWGH ER today",4,true);
   else if(!C.pp&&epdsAns&&epdsTot>=10&&!C.rf.has("mh")&&!C.rf.has("mh_med")) add(`Positive EPDS screen (${epdsTot}/30)`,2);
   C.rf.forEach(id=>{if((id==="malnut"&&C.auto.malnut)||(["cht_ctrl","cht_unc","ght","pe_nosev","pe_sev"].includes(id)&&C.auto[id]))return; const r=RISK_INDEX[id]; const l=typeof r.lvl==="function"?r.lvl(C):r.lvl; const em=typeof r.emerg==="function"?r.emerg(C):!!r.emerg; if(l>0)add(r.label.replace(" (EMERGENCY)","")+(id==="sizedate"&&C.auto.sizedate&&C.sdWhy?` (${C.sdWhy})`:""),l,em);});
-  C.reasons=R.sort((x,y)=>y.l-x.l);
-  C.high=R.length>0; C.level=R.length?Math.max(...R.map(r=>r.l)):1; C.emerg=R.some(r=>r.e);
+  C.ppAlerts=[]; C.ppComps=[]; C.ppEmerg=false; C.ppUrgent=false;
+  if(C.pp){
+    const ppR=[], addPP=(t,l,e,msg)=>{ppR.push({t,l,e:!!e}); if(e)C.ppEmerg=true; else C.ppUrgent=true; if(msg)C.ppAlerts.push({sev:e?"red":"amber",msg});};
+    if(C.hdp) ppR.push({t:C.hdp,l:C.hdpSevere?4:3,e:C.hdpSevere});
+    if(C.hellp) ppR.push({t:C.hellp,l:4,e:true});
+    const pph=C.ppDs.has("pp_bleed")||C.ppExam.lochia==="Heavy / clots"||C.ppExam.fundus==="Boggy / subinvoluted";
+    if(pph){C.ppComps.push("Postpartum hemorrhage / subinvolution"); addPP("Postpartum hemorrhage / uterine subinvolution",4,true,"<b>Postpartum bleeding / boggy uterus:</b> check uterine tone, start IV line, CBC added to request, and transfer urgently to BGHMC ER.");}
+    const sepsis=C.ppDs.has("pp_fever")||C.ppExam.lochia==="Foul-smelling"||C.ppExam.fundus==="Tender"||(C.tempC!=null&&C.tempC>=38);
+    if(sepsis){C.ppComps.push("Suspected puerperal sepsis / endometritis"); addPP("Suspected puerperal sepsis / endometritis",3,false,"<b>Fever, foul-smelling lochia, or uterine tenderness:</b> evaluate for puerperal sepsis / endometritis; CBC &amp; Urinalysis added to request; refer urgently if unstable or persistent.");}
+    if(C.ppExam.wound==="Redness / swelling / discharge / open"){C.ppComps.push("Perineal / CS wound infection or dehiscence"); addPP("Perineal / CS wound infection or dehiscence",3,false,"<b>Wound redness, discharge, or dehiscence:</b> evaluate for wound infection / breakdown; refer for OB-GYN wound care.");}
+    if(C.ppDs.has("pp_head")&&!C.hdpSevere){C.ppComps.push("Postpartum severe headache / visual disturbance"); addPP("Postpartum severe headache / visual disturbance — rule out postpartum PE / CVT",4,true,"<b>Postpartum headache / visual change:</b> rule out delayed postpartum preeclampsia and cerebral venous thrombosis (CVT); refer urgently to BGHMC ER.");}
+    if(C.ppDs.has("pp_dob")&&!C.hdpSevere){C.ppComps.push("Postpartum dyspnea / chest pain"); addPP("Postpartum dyspnea / chest pain — rule out pulmonary edema / PPCM",4,true,"<b>Postpartum shortness of breath / chest pain:</b> sit upright, give O₂ if SpO₂ &lt;95%, 12-lead ECG added to request; transfer urgently to BGHMC ER (rule out pulmonary edema / peripartum cardiomyopathy).");}
+    if(C.ppDs.has("pp_abd")&&!C.hdpSevere&&!C.hellp){C.ppComps.push("Postpartum severe RUQ / epigastric pain"); addPP("Postpartum severe RUQ / epigastric pain — rule out HELLP / endometritis",4,true,"<b>Postpartum severe upper abdominal pain:</b> HELLP panel added to request; transfer urgently to BGHMC ER.");}
+    if(C.ppDs.has("pp_dvt")){C.ppComps.push("Suspected postpartum DVT"); addPP("Suspected postpartum DVT (unilateral calf pain / swelling)",4,false,"<b>Unilateral calf swelling or pain:</b> suspect postpartum DVT; refer urgently to BGHMC ER for venous duplex ultrasound.");}
+    if(C.ppExam.breast==="Engorged / mastitis / cracked nipples") C.ppAlerts.push({sev:"amber",msg:"<b>Breast engorgement / mastitis:</b> support continued breastfeeding/expression, analgesia; treat mastitis if febrile or erythematous."});
+    if(C.ppExam.pallor==="Conjunctival / palmar pallor") C.ppAlerts.push({sev:"amber",msg:"<b>Clinical pallor noted:</b> CBC with platelet count added to request."});
+    if(C.ppExam.urine==="Dysuria / retention") C.ppAlerts.push({sev:"amber",msg:"<b>Dysuria / urinary retention noted:</b> Urinalysis added to request; assess bladder emptying."});
+    if(C.ppExam.nb==="Needs follow-up / referral") addPP("Newborn needs follow-up / referral",3,false,"<b>Newborn needs follow-up / referral:</b> arrange pediatric / hospital assessment.");
+    if(C.ppExam.fp==="DMPA (injectable)"&&(C.sevConf||(C.bpU&&(C.bpU[0]>=160||C.bpU[1]>=100)))) C.ppAlerts.push({sev:"amber",msg:"<b>Contraception safety note (US MEC):</b> DMPA is Category 3 when BP ≥160/100; consider Progestin-only pills (POP), implant, or IUD and confirm with OB-GYN."});
+    if(C.anemic&&C.hb!=null) ppR.push({t:`Postpartum anemia (Hb ${C.hb} g/dL)`,l:C.hb<7?4:C.hb<9?3:2,e:false});
+    C.reasons=ppR.sort((x,y)=>y.l-x.l);
+    C.high=R.length>0||ppR.length>0;
+    C.level=Math.max(R.length?Math.max(...R.map(r=>r.l)):1, ppR.length?Math.max(...ppR.map(r=>r.l)):1);
+    C.emerg=C.hdpSevere||!!C.hellp||C.eclampsia||C.sevConf||C.ppEmerg;
+  } else {
+    C.reasons=R.sort((x,y)=>y.l-x.l);
+    C.high=R.length>0; C.level=R.length?Math.max(...R.map(r=>r.l)):1; C.emerg=R.some(r=>r.e);
+  }
 
   /* ---- COMPLETENESS ---- */
   const req=[
@@ -1476,9 +1564,27 @@ function compute(){
     ...RISK_GROUPS.map((g,gi)=>[`Risk factors: ${g.g} (tick or None)`,C.groupsDone[gi]]),
     ["Labs done? (yes/no)",C.labsDone!=null]
   ];
-  if(C.pp) req.splice(0,req.length,["Date of birth",C.age!=null],["Blood pressure",C.sbp!=null&&C.dbp!=null],
-    ...(C.needRepeat?[["Repeat BP (first reading ≥140/90 or <90/50)",false]]:[]),
-    ["Date of delivery",!!C.dlv],["Place of delivery",!!$("dlvPlace").value],["Birth attendant",!!$("dlvAtt").value],["Mode of delivery",!!$("dlvMode").value],["Outcome",!!$("dlvRes").value]);
+  if(C.pp){
+    const res=$("dlvRes").value, isAb=res==="Abortion", isLive=!res||/^Live birth/.test(res);
+    req.splice(0,req.length,
+      ["Date of birth",C.age!=null],
+      ["Blood pressure",C.sbp!=null&&C.dbp!=null],
+      ...(C.needRepeat?[["Repeat BP (first reading ≥140/90 or <90/50)",false]]:[]),
+      ["Date of delivery",!!C.dlv],
+      ["Place of delivery",!!$("dlvPlace").value],
+      ["Birth attendant",!!$("dlvAtt").value],
+      ...(!isAb?[["Mode of delivery",!!$("dlvMode").value]]:[]),
+      ["Outcome",!!res],
+      ["Uterine involution / fundus",!!C.ppExam.fundus],
+      ["Lochia / vaginal bleeding",!!C.ppExam.lochia],
+      ["Perineal / CS wound",!!C.ppExam.wound],
+      ["Breasts & breastfeeding",!!C.ppExam.breast],
+      ["Pallor check",!!C.ppExam.pallor],
+      ["Urination / bowel",!!C.ppExam.urine],
+      ["Family planning method",!!C.ppExam.fp],
+      ...(isLive?[["Newborn status",!!C.ppExam.nb]]:[]),
+      ["Postpartum danger signs (tick or None)",C.ppDsDone]);
+  }
   // EPDS (Field Manual Step 6 / contact 4): at booking, and again in the third trimester (from 28 wk) unless already done this trimester
   C.epdsT3=!C.pp&&C.w!=null&&C.w>=28;
   C.epdsMand=C.contact===1||(C.epdsT3&&radioVal("epdsPrev")!=="1"); C.epdsShow=C.epdsMand||radioVal("epdsPrev")==="0";
@@ -1553,7 +1659,8 @@ function compute(){
   if(C.pp){const pd=C.dlv?dayDiff(C.vdate,C.dlv):null; C.cbcNote=null;
     const ppH=C.hdp||(C.ppPriorHdp?C.ppPriorHdp+" (postpartum)":"");
     C.hdpTxt=ppH;
-    C.dx=`${C.GP||"G_P_ (____)"} Postpartum${pd!=null&&pd>=0?`, day ${pd}`:""}${C.dlv?` (${$("dlvMode").value||"delivered"} ${mdy(C.dlv)})`:""}`+[ppH,C.hellp,C.dmDx,C.anemic?"Anemia":""].filter(Boolean).map(x=>"; "+x).join("");}
+    const dlvTag=$("dlvRes").value==="Abortion"?"Abortion":($("dlvMode").value||"delivered");
+    C.dx=`${C.GP||"G_P_ (____)"} Postpartum${pd!=null&&pd>=0?`, day ${pd}`:""}${C.dlv?` (${dlvTag} ${mdy(C.dlv)})`:""}`+[ppH,C.hellp,...(C.ppComps||[]),C.dmDx,C.anemic?"Anemia":""].filter(Boolean).map(x=>"; "+x).join("");}
   C.loc=loc;
 
   /* ---- ANTENATAL SURVEILLANCE & TIMING OF DELIVERY (Field Manual Ch. 6–7) ---- */
@@ -1690,7 +1797,20 @@ function compute(){
     if(growthRisk&&!C.emProto&&w!=null&&w>=28&&!C.rf.has("fgr")&&!due.some(d=>["utz","utz_sd","utz32","doppler"].includes(d.id))&&!(luSince!=null&&luSince>=0&&luSince<21))
       due.push({id:"utz_gr",t:"Pelvic ultrasound (UTZ): fetal growth and amniotic fluid (serial every 3–4 weeks)"});
   }
-  if(C.pp){due.splice(0);C.labNotes.splice(0);}
+  if(C.pp){
+    due.splice(0); C.labNotes.splice(0);
+    if(C.hellpScreen){
+      if(!recentPlt) due.push({id:"hl_cbc",t:"CBC with platelet count"});
+      [["ast","AST (SGOT)"],["alt","ALT (SGPT)"],["ldh","LDH"],["bili","Total bilirubin"],["crea","Serum creatinine"]].forEach(([k,t])=>{if(!C.lab[k])due.push({id:"hl_"+k,t});});
+      if(!C.lab.upro&&!C.prot) due.push({id:"hl_upro",t:"Urine protein (dipstick)"});
+      if(!C.lab.upcr&&!C.prot) due.push({id:"hl_upcr",t:"Urine protein/creatinine ratio (UPCR)"});
+    }
+    const needPpCbc=C.ppDs.has("pp_bleed")||C.ppExam.lochia==="Heavy / clots"||C.ppExam.fundus==="Boggy / subinvoluted"||C.ppExam.pallor==="Conjunctival / palmar pallor"||C.ppDs.has("pp_fever")||C.ppExam.lochia==="Foul-smelling"||(C.tempC!=null&&C.tempC>=38);
+    if(needPpCbc&&!due.some(d=>d.id==="hl_cbc"||d.id==="pp_cbc")) due.push({id:"pp_cbc",t:"CBC with platelet count"});
+    const needPpUa=C.ppExam.urine==="Dysuria / retention"||C.ppDs.has("pp_fever")||C.ppExam.lochia==="Foul-smelling"||(C.tempC!=null&&C.tempC>=38);
+    if(needPpUa&&!due.some(d=>d.id==="pp_ua")) due.push({id:"pp_ua",t:"Urinalysis"});
+    if(C.ppDs.has("pp_dob")&&!due.some(d=>d.id==="ecg")) due.push({id:"ecg",t:"12-lead ECG (postpartum dyspnea / chest pain — refer to BGHMC)"});
+  }
   // RHU FBS follow-up, cardiac ECG, and postpartum prior-GDM OGTT (apply postpartum as indicated)
   if(C.gdmRO){ due.push({id:"fbs2",t:"Repeat Fasting Blood Sugar (FBS)"});
     if(!C.lab.crea&&!due.some(d=>d.id==="hl_crea"||d.id==="cht_crea"||d.id==="base_crea")) due.push({id:"dm_crea",t:"Serum creatinine"}); }
@@ -1700,7 +1820,7 @@ function compute(){
       if(!C.lab.ogtt&&!due.some(d=>d.id==="ogtt"||d.id==="dm_ogtt")) due.push({id:"dm_ogtt",t:"75 g OGTT"});
     } else if(!due.some(d=>d.id==="pgdm_a1c")) due.push({id:"dm_a1c",t:"HbA1c"});
   }
-  if(C.rf.has("ws_cardiac")) due.push({id:"ecg",t:"12-lead ECG (cardiac symptoms — refer to BGHMC)"});
+  if(!C.pp&&C.rf.has("ws_cardiac")) due.push({id:"ecg",t:"12-lead ECG (cardiac symptoms — refer to BGHMC)"});
   { const priorGDM=C.rf.has("gdm_diet")||C.rf.has("gdm_ins")||C.gdmConf||C.ogttPos;
     const ppDays=C.pp&&C.dlv?dayDiff(C.vdate,C.dlv):null;
     const ogttDate=C.lab.ogtt?isoToDate(document.querySelector('[data-d="ogtt"]').value):null;
@@ -1726,6 +1846,10 @@ function compute(){
   C.dwDue=!C.pp&&!(w!=null&&w<14)&&radioVal("dwDone")==="0";
   if(C.pp){
     if(C.pp===1) rx.push({id:"fe",d:"Ferrous Sulfate + Folic Acid Tablet #90",s:"Sig: 1 tab 1 beses sa 1 araw sa TANGHALI (3 buwan)"});
+    if(C.ppExam.fp==="Progestin-only pills (POP)")
+      rx.push({id:"fp_pop",d:"Progestin-only pills (POP) 28-tab pack #1",s:"Sig: 1 tab 1 beses sa 1 araw sa parehong oras araw-araw (tuloy-tuloy, walang patlang)"});
+    else if(C.ppExam.fp==="DMPA (injectable)")
+      rx.push({id:"fp_dmpa",d:"DMPA (Medroxyprogesterone acetate) 150 mg/mL vial #1",s:"Sig: 150 mg (1 mL) deep IM kada 3 buwan"});
     // BAPP ch. 7 + RHU postpartum BP rule: switch off methyldopa regardless of BP; no outpatient amlodipine during active severe emergency; SBP ≤149 -> BP monitoring note only; SBP ≥150 with abnormal repeat (>120/80) -> Amlodipine 5 mg + BP monitoring note
     const om=customRx.map(r=>r.d).join("\n"); // medicines added with the Add box
     if(/methyldopa/i.test(om)){C.noMethyldopa=true; C.notes.push("Methyldopa switched to Amlodipine");}
@@ -1812,26 +1936,26 @@ function render(){
     +`<br>• <b>BP checks:</b> within 72 h (days 3–5 peak), day 7–10 (adjust/wean meds), week 2–3 (repeat CBC/creatinine/AST/ALT if abnormal at discharge), week 6 (full review &amp; urine protein), and week 12 (persistent HPN/proteinuria → IM/nephrology).`
     +`<br>• <b>Danger signs (through day 42):</b> severe headache, blurred vision, seizure, RUQ/epigastric pain, chest pain/dyspnea/orthopnea, sudden face/hand swelling, or home BP ≥160/110 → ER immediately.`
     +`<br>• <b>Contraception (US MEC):</b> avoid combined estrogen methods in the first 21 days (42 days if extra VTE risk/early breastfeeding) and with elevated BP; prefer <b>POP, DMPA, implant, or IUD</b>. Advise ≥18–24 mo birth spacing.</div>`;
-  $("mapOut").innerHTML=C.map!=null?`MAP ${C.map.toFixed(1)} mmHg${C.map>=90&&C.w!=null&&C.w<28?' <span class="red">— ≥90 before 28 wk: increased preeclampsia risk; closer BP surveillance; consider earlier MFM referral / FMF screening at 11–13 6/7 wk if available</span>':""} <span class="hint">· from ${C.sbp2!=null?"repeat":"first"} reading</span>`:"";
+  $("mapOut").innerHTML=C.map!=null?`MAP ${C.map.toFixed(1)} mmHg${!C.pp&&C.map>=90&&C.w!=null&&C.w<28?' <span class="red">— ≥90 before 28 wk: increased preeclampsia risk; closer BP surveillance; consider earlier MFM referral / FMF screening at 11–13 6/7 wk if available</span>':""} <span class="hint">· from ${C.sbp2!=null?"repeat":"first"} reading</span>`:"";
   $("sbp2").closest("label").classList.toggle("hidden",!C.showRep);
   let vs="";
   const flag={};
-  if(C.lowBP){vs+=`<div class="alert red">BP ${C.bpU[0]}/${C.bpU[1]}: low (SBP below 90 or DBP below 50). Lay her on her left side and recheck; look for bleeding, sepsis or dehydration.</div>`;flag[C.sbp2!=null?"sbp2":"sbp"]="r";flag[C.sbp2!=null?"dbp2":"dbp"]="r";}
+  if(C.lowBP){vs+=`<div class="alert red">BP ${C.bpU[0]}/${C.bpU[1]}: low (SBP below 90 or DBP below 50). ${C.pp?"Recheck BP immediately; evaluate for postpartum hemorrhage (PPH), sepsis, or dehydration.":"Lay her on her left side and recheck; look for bleeding, sepsis or dehydration."}</div>`;flag[C.sbp2!=null?"sbp2":"sbp"]="r";flag[C.sbp2!=null?"dbp2":"dbp"]="r";}
   if(C.tempC!=null&&C.tempC<35){vs+=`<div class="alert amber">Temperature ${C.tempC.toFixed(1)} °C: hypothermia. Warm her and recheck.</div>`;flag.temp="a";}
-  if(C.fht!=null&&(C.fht<110||C.fht>160))flag.fht="r";
+  if(!C.pp&&C.fht!=null&&(C.fht<110||C.fht>160))flag.fht="r";
   if(C.spo2!=null&&C.spo2<95)flag.spo2="r";
   if(C.tempC!=null&&C.tempC>=38)flag.temp="a";
   if(C.rr!=null&&(C.rr<12||C.rr>24))flag.rr=C.rr<12?"r":"a";
   if(C.hr!=null&&(C.hr>110||C.hr<50))flag.hr="a";
   if(C.hypNow){const hi=C.sbp2!=null?["sbp2","dbp2"]:["sbp","dbp"];hi.forEach(k=>flag[k]=SEVBP(C)?"r":"a");}
   ["sbp","dbp","sbp2","dbp2","hr","rr","temp","spo2","fht"].forEach(k=>{const el=k==="sbp"||k==="dbp"?$("bp"):k==="sbp2"||k==="dbp2"?$("bp2"):$(k); if(k==="dbp"||k==="dbp2")return; const f=flag[k]||flag[k.replace("s","d")]; el.style.outline=f?`2px solid ${f==="r"?"#c62828":"#e0a800"}`:"";});
-  if(C.fht!=null&&(C.fht<110||C.fht>160)) vs+=`<div class="alert red">FHT ${C.fht} bpm is outside 110–160: same-day fetal assessment.</div>`;
+  if(!C.pp&&C.fht!=null&&(C.fht<110||C.fht>160)) vs+=`<div class="alert red">FHT ${C.fht} bpm is outside 110–160: same-day fetal assessment.</div>`;
   if(C.spo2!=null&&C.spo2<95) vs+=`<div class="alert red">SpO₂ ${C.spo2}%: below 95%. Sit upright, oxygen; consider pulmonary edema.</div>`;
-  if(C.tempC!=null&&C.tempC>=38) vs+=`<div class="alert amber">Temperature ${C.tempC.toFixed(1)} °C: fever. Look for infection (UTI, chorioamnionitis, dengue).</div>`;
+  if(C.tempC!=null&&C.tempC>=38) vs+=`<div class="alert amber">Temperature ${C.tempC.toFixed(1)} °C: ${C.pp?"postpartum fever. Rule out puerperal sepsis / endometritis, mastitis, wound infection, or UTI.":"fever. Look for infection (UTI, chorioamnionitis, dengue)."}</div>`;
   if(C.rr!=null&&C.rr<12) vs+=`<div class="alert red">RR ${C.rr}/min: below 12. If on MgSO₄, withhold and suspect toxicity.</div>`;
   else if(C.rr!=null&&C.rr>24) vs+=`<div class="alert amber">RR ${C.rr}/min: tachypnea.</div>`;
   if(C.hr!=null&&(C.hr>110||C.hr<50)) vs+=`<div class="alert amber">HR ${C.hr}/min: ${C.hr>110?"tachycardia":"bradycardia"}.</div>`;
-  if(C.rf.has("ws_cardiac")) vs+=`<div class="alert red"><b>Cardiac symptoms reported:</b> examine heart and lungs (murmur, crackles, orthopnea, JVP); 12-lead ECG added to diagnostic request. Refer urgently to BGHMC [APEX] for echocardiography / cardiology evaluation.</div>`;
+  if(!C.pp&&C.rf.has("ws_cardiac")) vs+=`<div class="alert red"><b>Cardiac symptoms reported:</b> examine heart and lungs (murmur, crackles, orthopnea, JVP); 12-lead ECG added to diagnostic request. Refer urgently to BGHMC [APEX] for echocardiography / cardiology evaluation.</div>`;
   if(!C.pp&&(C.rf.has("ws_bleed")||C.rf.has("ws_leak")||C.rf.has("ptl_early")||(C.rf.has("ws_contr")&&C.w!=null&&C.w<34))){
     const noIe=C.rf.has("ws_bleed")||C.rf.has("ws_leak")||C.rf.has("aph_stable")||C.rf.has("aph_unstable");
     const dexWin=C.w!=null&&C.w>=24&&C.w<=33;
@@ -1893,13 +2017,13 @@ function render(){
   // due list
   $("dueList").innerHTML=(C.cbcNote?`<li class="hint" style="order:9"><i>Note on request: “${C.cbcNote}”</i></li>`:"")
    +C.labNotes.map(n=>`<li class="hint" style="order:10"><i>Note on request: “${esc(n)}”</i></li>`).join("")
-   +(C.due.length?C.due.map(d=>`<li class="row"><label class="chk"><input type="checkbox" class="dueChk" data-id="${d.id}" ${unticked.has(d.id)?"":"checked"}> <span class="${isUTZ(d.t)?"red":""}">${esc(d.t)}</span></label>${d.custom!=null?`<button class="ghost small" data-rmlab="${d.custom}">Remove</button>`:""}</li>`).join(""):`<li class="hint">No labs due by the rules for this AOG and contact.</li>`);
+   +(C.due.length?C.due.map(d=>`<li class="row"><label class="chk"><input type="checkbox" class="dueChk" data-id="${d.id}" ${unticked.has(d.id)?"":"checked"}> <span class="${isUTZ(d.t)?"red":""}">${esc(d.t)}</span></label>${d.custom!=null?`<button class="ghost small" data-rmlab="${d.custom}">Remove</button>`:""}</li>`).join(""):`<li class="hint">${C.pp?"No labs due for this postpartum check-up.":"No labs due by the rules for this AOG and contact."}</li>`);
   // rx
   $("rxList").innerHTML=C.rx.map(r=>`<li class="row"><label class="chk"><input type="checkbox" class="rxChk" data-id="${r.id}" ${unticked.has(r.id)?"":"checked"}><span><b>${esc(r.d)}</b><br><span class="hint">${esc(r.s)}</span>${r.start?`<br><b style="color:var(--warn)">${esc(r.start)}</b>`:""}${r.info?`<br><span class="hint">${esc(r.info)}</span>`:""}</span></label>${r.custom!=null?`<button class="ghost small" data-rmrx="${r.custom}">Remove</button>`:""}</li>`).join("")
    +(C.bpNote?`<li class="hint" style="margin-top:6px"><i>Note at end of list: “For BP monitoring”</i></li>`:"")
    +(C.cbcNote?`<li class="hint"><i>Note at end of list: “${C.cbcNote}”</i></li>`:"")
    +C.notes.map(n=>`<li class="hint"><i>Note at end of list: “${esc(n)}”</i></li>`).join("")
-   +(!C.ready?`<li class="hint" style="margin-top:6px">Aspirin is added once the risk stratification is complete.</li>`:"");
+   +(!C.pp&&!C.ready?`<li class="hint" style="margin-top:6px">Aspirin is added once the risk stratification is complete.</li>`:"");
   // EPDS
   $("epdsReq").classList.toggle("hidden",!C.epdsMand); $("epdsAsk").classList.toggle("hidden",C.contact===1); $("epdsAskTxt").textContent=C.epdsT3?"EPDS done this trimester (from 28 weeks)?":"EPDS done before in this pregnancy?";
   $("epdsOn").classList.toggle("hidden",!C.epdsShow); $("epdsOff").classList.toggle("hidden",!( !C.epdsMand&&radioVal("epdsPrev")==="1"));
@@ -1944,14 +2068,38 @@ function render(){
     $("planBox").innerHTML=ph;
   }
   renderTD(C);
-  document.body.classList.toggle("pp",!!C.pp); $("sDlv").classList.toggle("hidden",!C.pp&&!$("dlvDate").value);
-  if(C.pp){const pd=C.dlv?dayDiff(C.vdate,C.dlv):null;
-    $("riskBox").innerHTML=C.ready?`<div class="riskbox" style="background:var(--fill);color:var(--ink)"><div class="doh">POSTPARTUM ${C.pp}</div><div style="font-size:13px">${pd!=null&&pd>=0?`Day ${pd} after delivery`:""}</div></div>`
-      :`<div class="riskbox pending"><b>Postpartum ${C.pp}: complete the form</b><div style="font-size:12px">Missing: ${esc(C.missing.join(", "))}</div></div>`;}
-  $("mbarTxt").textContent=C.pp?`Postpartum ${C.pp}${C.emerg?" · EMERGENCY":""}`:C.ready?`Level ${C.level} (${LEVEL_COLOR[C.level]})${C.emerg?" · EMERGENCY":""} · Aspirin ${C.aspTxt}`:`Risk: ${C.missing.length} item${C.missing.length===1?"":"s"} left`;
+  document.body.classList.toggle("pp",!!C.pp);
+  $("sDlv").classList.toggle("hidden",!C.pp);
+  $("sPP").classList.toggle("hidden",!C.pp);
+  if($("s11Title")) $("s11Title").textContent=C.pp?"Postpartum visit summary (copy and paste)":"OB history summary (copy and paste)";
+  if(C.pp){
+    const res=$("dlvRes").value, isAb=res==="Abortion", isLive=!res||/^Live birth/.test(res);
+    $("dlvWtWrap").classList.toggle("hidden",isAb);
+    $("ppNbWrap").classList.toggle("hidden",!isLive);
+    const dn=C.ppDs.size;
+    $("ppDsBadge").textContent=dn?dn+" ticked":(C.ppDsDone?"None":"Not answered");
+    $("ppDsBadge").classList.toggle("need",!C.ppDsDone);
+    $("ppOut").innerHTML=C.ppAlerts.map(a=>`<div class="alert ${a.sev}">${a.msg}</div>`).join("");
+    const pd=C.dlv?dayDiff(C.vdate,C.dlv):null;
+    const pbg=C.emerg?"var(--l4)":C.ppUrgent?"var(--al-amb-bg)":"var(--fill)", pfg=C.emerg?"#fff":C.ppUrgent?"var(--al-amb-ink)":"var(--ink)";
+    if(C.ready){
+      $("riskBox").innerHTML=`<div class="riskbox" style="background:${pbg};color:${pfg}"><div class="doh">POSTPARTUM ${C.pp}${C.emerg?" · EMERGENCY":C.ppUrgent?" · URGENT":""}</div><div style="font-size:13px">${pd!=null&&pd>=0?`Day ${pd} after delivery`:""}</div></div>`
+        +(C.emerg?`<div class="alert red"><b>POSTPARTUM EMERGENCY:</b> stabilize and transfer to BGHMC ER through the SDN. Call ahead; escort with a midwife or nurse.</div>`:"")
+        +(C.reasons.length?`<ul class="reasons">${C.reasons.map(r=>`<li><span class="lv lv${r.l}">L${r.l}</span> ${esc(r.t)}</li>`).join("")}</ul>`:`<div class="hint" style="margin-top:6px">Routine postpartum check-up; no danger signs noted.</div>`);
+    } else {
+      const left=C.missing.length;
+      $("riskBox").innerHTML=`<div class="riskbox pending"><b>Postpartum ${C.pp}: complete the form</b>
+        <div class="ringRow"><div class="ringW"><svg width="52" height="52" viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="22" class="ringBg"/><circle cx="26" cy="26" r="22" class="ringFg" transform="rotate(-90 26 26)"/></svg><b>${Math.round(C.progress*100)}%</b></div>
+        <div style="text-align:left"><b class="left">${left} item${left===1?"":"s"} left</b><br><button type="button" class="missTgl" aria-expanded="${MISS_OPEN}">${MISS_OPEN?"Hide":"Show"} what's missing</button></div></div>
+        <ul class="missing${MISS_OPEN?"":" hidden"}">${C.missing.map(m=>`<li>${esc(m)}</li>`).join("")}</ul></div>`;
+      const ring=$("riskBox").querySelector(".ringFg"), RC=2*Math.PI*22;
+      if(ring){ ring.style.strokeDasharray=RC; ring.style.strokeDashoffset=RC*(1-C.progress); }
+    }
+  }
+  $("mbarTxt").textContent=C.pp?`Postpartum ${C.pp}${C.emerg?" · EMERGENCY":C.ppUrgent?" · URGENT":C.ready?"":" · "+C.missing.length+" left"}`:C.ready?`Level ${C.level} (${LEVEL_COLOR[C.level]})${C.emerg?" · EMERGENCY":""} · Aspirin ${C.aspTxt}`:`Risk: ${C.missing.length} item${C.missing.length===1?"":"s"} left`;
   const dot=$("mbarDot");
   if(dot){
-    if(C.pp){dot.textContent=C.emerg?"!":"PP"; dot.style.background=C.emerg?"var(--l4)":"var(--tint)"; dot.style.color=C.emerg?"#fff":"var(--accent-ink)";}
+    if(C.pp){dot.textContent=C.emerg?"!":"PP"; dot.style.background=C.emerg?"var(--l4)":C.ppUrgent?"var(--warn)":"var(--tint)"; dot.style.color=C.emerg||C.ppUrgent?"#fff":"var(--accent-ink)";}
     else if(C.ready){dot.textContent="L"+C.level; dot.style.background=`var(--l${C.level})`; dot.style.color=C.level===3?"#222":"#fff";}
     else {dot.textContent=Math.round(C.progress*100)+"%"; dot.style.background="var(--tint)"; dot.style.color="var(--accent-ink)";}
   }
@@ -1981,6 +2129,28 @@ function medLine(r){const sig=(r.s||"").replace(/^sig:\s*/i,""), t=sig.toUpperCa
 const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 function summaryText(C){
   const ord=n=>n+(["th","st","nd","rd"][(n%100>10&&n%100<14)?0:(n%10<4?n%10:0)]);
+  const meds=C.rx.filter(r=>!unticked.has(r.id)).map(medLine);
+  if(C.pp){
+    const pd=C.dlv?dayDiff(C.vdate,C.dlv):null, res=$("dlvRes").value, isLive=!res||/^Live birth/.test(res);
+    const ds=[...C.ppDs].map(id=>(PP_DANGER.find(x=>x[0]===id)||[,""])[1]).filter(Boolean);
+    const dlvLine=[C.dlv?mdy(C.dlv):"",$("dlvMode").value,res,$("dlvPlace").value,$("dlvFac").value.trim(),$("dlvAtt").value?"Attendant: "+$("dlvAtt").value:"",$("dlvWt").value?"Birth wt: "+$("dlvWt").value+" g":""].filter(Boolean).join(" · ");
+    const vLine=[C.sbp!=null?`BP ${C.sbp}/${C.dbp}${C.sbp2!=null?` → ${C.sbp2}/${C.dbp2}`:""} mmHg`:"",C.hr!=null?`HR ${C.hr}/min`:"",C.rr!=null?`RR ${C.rr}/min`:"",C.tempRaw!=null?`Temp ${C.tempRaw} ${$("tU").value}`:"",C.spo2!=null?`SpO₂ ${C.spo2}%`:"",C.wtDisp?`Wt ${C.wtDisp}`:""].filter(Boolean).join(" · ");
+    const ex=[["Fundus",C.ppExam.fundus],["Lochia",C.ppExam.lochia],["Wound",C.ppExam.wound],["Breasts",C.ppExam.breast],["Pallor",C.ppExam.pallor],["Urination/bowel",C.ppExam.urine]].filter(([,v])=>v).map(([k,v])=>`  ${k}: ${v}`).join("\n");
+    const nbParts=[]; if(C.ppExam.nb)nbParts.push(C.ppExam.nb); if(C.ppExam.nbVac)nbParts.push("BCG & Hep B birth dose given"); if(C.ppExam.nbNbs)nbParts.push("Newborn screening done");
+    return `Date: ${mdy(C.vdate)}   Visit: Postpartum ${C.pp}${pd!=null&&pd>=0?` (Day ${pd} after delivery)`:""}
+Delivery: ${dlvLine||"—"}${C.ppExam.notes?"\nDelivery notes: "+C.ppExam.notes:""}
+${vLine?"Vitals: "+vLine+"\n":""}OB score: ${C.GP||""}
+
+Diagnosis: ${C.dx}
+
+Postpartum exam:${ex?"\n"+ex:" —"}
+Postpartum danger signs: ${ds.length?ds.join("; "):C.ppDsDone?"none":"not answered"}
+Family planning: ${C.ppExam.fp||"—"}${isLive?"\nNewborn: "+(nbParts.length?nbParts.join("; "):"—"):""}
+
+Current Medications:${meds.length?"\n"+meds.map(m=>"  "+m).join("\n"):" none"}
+
+Labs done:${C.labLines.length?"\n"+C.labLines.map(l=>"  "+l).join("\n"):(C.labsDone==="0"?" None":"")}`;
+  }
   const lmp=C.lmp.date?mdy(C.lmp.date):(C.lmp.unknown?"Not recalled":"");
   const pdt=p=>p.pd&&p.pd.d?(p.pd.approx?`${MON[p.pd.d.getMonth()]} ${p.pd.d.getFullYear()}`:`${MON[p.pd.d.getMonth()]} ${p.pd.d.getDate()}, ${p.pd.d.getFullYear()}`):(p.raw||"date ?");
   const hist=C.past.map((p,i)=>{let m=p.manner||"?"; if((p.manner==="Abortion"||p.manner==="Ectopic")&&p.dc)m+=` (${p.dc})`; return `  G${i+1} - ${pdt(p)} - ${m} - ${p.comp==="Yes"?`FMC: ${p.spec||"yes, unspecified"}`:"no FMC"}`}).join("\n");
@@ -1990,11 +2160,10 @@ function summaryText(C){
   const ws=ticked("DOH warning signs");
   const sec=["Conditions in the current pregnancy","Social and demographic","Past obstetric and surgical history","Pre-existing medical conditions"]
     .map(g=>{const t=ticked(g);return t.length?`${g}: ${t.join("; ")}`:"";}).filter(Boolean);
-  const meds=C.rx.filter(r=>!unticked.has(r.id)).map(medLine);
   const ev=EPDS.map((_,i)=>radioVal("e"+i)), tot=ev.reduce((t,v)=>t+Number(v||0),0), i10=ev[9]!=null?Number(ev[9]):null;
   const aasNeeded=(C.epdsDone&&tot>=10&&i10!=null&&i10<=2)||radioVal("aasPrev")==="0";
   const aas=radioVal("aasPrev")==="1"||AAS.every((_,i)=>radioVal("a"+i)!=null)?"done":aasNeeded?"not done":"not needed";
-  return `Date: ${mdy(C.vdate)}   Visit: ${C.pp?"Postpartum "+C.pp:C.contact?ord(C.contact)+" prenatal contact":""}
+  return `Date: ${mdy(C.vdate)}   Visit: ${C.contact?ord(C.contact)+" prenatal contact":""}
 LMP: ${lmp}   EDD: ${C.edd?mdy(C.edd)+" by "+C.basis:(C.lmp.unknown?"X":"")}${C.fht!=null||C.fh!=null?"\n":""}${C.fht!=null?`\nFHT: ${C.fht} bpm${$("fhtLoc").value?` (${$("fhtLoc").value})`:""}`:""}${C.fh!=null?`\nFundic height: ${C.fh} cm`:""}
 
 Aspirin status (BAPP): ${C.ready?asp:"(pending)"}
@@ -2105,12 +2274,13 @@ function refUrgency(C){
 }
 function refUrgAuto(C){
   if(C.emerg)return"Emergency";
+  if(C.pp)return C.ppUrgent||C.sameDay||C.hypNow?"Urgent":"Routine";
   if(C.level===4||C.sameDay||C.hypNow||C.rf.has("ws_fm")||(C.hb!=null&&C.hb<7)||(C.plt!=null&&C.plt<100000)||C.ict==="Positive"||(C.fbs!=null&&C.fbs>=126)||(C.a1c!=null&&C.a1c>=6.5))return"Urgent";
   return"Routine";
 }
 function refNeeded(C){
   if(!C.ready)return false;
-  if(C.pp)return C.emerg; // postpartum: refer only for emergencies (BP 160/110 or higher confirmed, danger signs); 150/100 treated at the RHU
+  if(C.pp)return C.emerg||C.ppUrgent; // postpartum: refer for emergencies (severe BP, PPH, eclampsia/CVT, dyspnea) or urgent exam findings (sepsis, wound infection, DVT, newborn)
   const w=C.w;
   return C.level>=3||C.emerg||C.sameDay||(C.level===2&&(w==null||w<=20||(w>=35&&w<=36)||w>=40));
 }
@@ -2118,7 +2288,7 @@ function renderRef(C){
   const need=refNeeded(C); $("refCard").classList.remove("hidden");
   if(!$("refUrgMan").checked)$("refUrg").value=refUrgAuto(C);
   const u=refUrgency(C);
-  const why=C.emerg?"Emergency":C.sameDay?"Same-day referral for preeclampsia evaluation":!need?(C.ready?"No referral criteria met":"Risk stratification not yet complete"):C.level>=3?`Level ${C.level}: OB-GYN care`:C.sameDay?"Same-day referral for preeclampsia evaluation":`Level 2: OB-GYN review window (${C.w==null?"AOG unknown":C.w<=20?"by 20 weeks":C.w>=40?"40 weeks or more":"35–36 weeks"})`;
+  const why=C.emerg?"Emergency":C.pp&&C.ppUrgent?"Urgent postpartum evaluation":C.sameDay?"Same-day referral for preeclampsia evaluation":!need?(C.ready?"No referral criteria met":C.pp?"Postpartum check-up not yet complete":"Risk stratification not yet complete"):C.level>=3?`Level ${C.level}: OB-GYN care`:`Level 2: OB-GYN review window (${C.w==null?"AOG unknown":C.w<=20?"by 20 weeks":C.w>=40?"40 weeks or more":"35–36 weeks"})`;
   $("refWhy").innerHTML=`<b>${esc(why)}.</b> Letter addressed <b>${u==="Emergency"?"To ER:":"To OB-Gyne:"}</b> · Urgency: <b>${u}</b>`;
 }
 function epdsInfo(){
@@ -2137,17 +2307,29 @@ function refBlocks(){
   B.push({t:"h",text:"Patient"});
   B.push(row(["Name",C.name],["Age/Sex",`${C.age??""}/F`],["Contact No.",$("phone").value.trim()]));
   B.push(row(["Address",C.brgy?`Brgy. ${brgyShort(C.brgy)}, Bagac, Bataan`:""],["PhilHealth PIN",C.pinTxt]));
-  B.push(kv("Prenatal contact",C.pp?`Postpartum ${C.pp}`:C.contact?`${C.contact}${["st","nd","rd"][C.contact-1]||"th"} contact`:""));
-  B.push({t:"h",text:"Pregnancy"});
-  B.push(kv("Pregnancy location",{none:"Not yet confirmed",utz:"Intrauterine (ultrasound)",clin:"Intrauterine (clinical)"}[C.loc]));
-  B.push(row(["AOG",C.days!=null?C.aogStr:(C.lmp.unknown?"Undetermined (LMP not recalled)":"")],["LMP",C.lmp.date?mdy(C.lmp.date):(C.lmp.unknown?"Not recalled":"")],["EDD",C.edd?mdy(C.edd)+" by "+C.basis:(C.lmp.unknown?"X":"")]));
-  B.push(kv("OB score",C.GP||""));
-  if(C.past.length) B.push({t:"table",head:["Pregnancy","Date","Manner","Complications"],rows:C.past.map((p,i)=>[`G${i+1}`,p.raw||"—",(p.manner||"—")+((p.manner==="Abortion"||p.manner==="Ectopic")&&p.dc?` (${p.dc})`:""),p.comp==="Yes"?(p.spec||"Yes"):"None"])});
+  B.push(kv(C.pp?"Visit":"Prenatal contact",C.pp?`Postpartum ${C.pp}`:C.contact?`${C.contact}${["st","nd","rd"][C.contact-1]||"th"} contact`:""));
+  if(C.pp){
+    const pd=C.dlv?dayDiff(C.vdate,C.dlv):null, ds=[...C.ppDs].map(id=>(PP_DANGER.find(x=>x[0]===id)||[,""])[1]).filter(Boolean);
+    B.push({t:"h",text:"Delivery & postpartum assessment"});
+    B.push(row(["Delivery date",C.dlv?mdy(C.dlv)+(pd!=null&&pd>=0?` (Day ${pd})`:""):""],["Mode",$("dlvMode").value],["Outcome",$("dlvRes").value]));
+    B.push(row(["Place",$("dlvPlace").value],["Facility",$("dlvFac").value.trim()],["Attendant",$("dlvAtt").value]));
+    if($("dlvWt").value) B.push(kv("Birth weight",$("dlvWt").value+" g"));
+    if(C.ppExam.notes) B.push(kv("Delivery notes",C.ppExam.notes));
+    B.push(kv("OB score",C.GP||""));
+    B.push({t:"grid",items:[["Fundus",C.ppExam.fundus],["Lochia",C.ppExam.lochia],["Perineal/CS wound",C.ppExam.wound],["Breasts",C.ppExam.breast],["Pallor",C.ppExam.pallor],["Urination/bowel",C.ppExam.urine],["Family planning",C.ppExam.fp],["Newborn",C.ppExam.nb]]});
+    B.push(kv("Postpartum danger signs",ds.length?ds.join("; "):C.ppDsDone?"None":"Not answered"));
+  } else {
+    B.push({t:"h",text:"Pregnancy"});
+    B.push(kv("Pregnancy location",{none:"Not yet confirmed",utz:"Intrauterine (ultrasound)",clin:"Intrauterine (clinical)"}[C.loc]));
+    B.push(row(["AOG",C.days!=null?C.aogStr:(C.lmp.unknown?"Undetermined (LMP not recalled)":"")],["LMP",C.lmp.date?mdy(C.lmp.date):(C.lmp.unknown?"Not recalled":"")],["EDD",C.edd?mdy(C.edd)+" by "+C.basis:(C.lmp.unknown?"X":"")]));
+    B.push(kv("OB score",C.GP||""));
+    if(C.past.length) B.push({t:"table",head:["Pregnancy","Date","Manner","Complications"],rows:C.past.map((p,i)=>[`G${i+1}`,p.raw||"—",(p.manner||"—")+((p.manner==="Abortion"||p.manner==="Ectopic")&&p.dc?` (${p.dc})`:""),p.comp==="Yes"?(p.spec||"Yes"):"None"])});
+  }
   B.push({t:"h",text:"Diagnosis"}); B.push({t:"p",text:C.dx});
   B.push({t:"h",text:"Reason for referral"});
-  B.push({t:"list",items:C.reasons.map(r=>`${r.t} (Level ${r.l})`)});
-  B.push({t:"p",text:"Request: "+($("refNote").value.trim()||"For evaluation and management.")+(C.rf.has("ws_fm")?" Decreased fetal movements; for same-day NST/BPP.":"")});
-  if(C.pp&&C.emProto)B.push({t:"p",text:"Postpartum: please rule out cerebral venous thrombosis / stroke — urgent CT head with CT venography, or MRI with MR venography."});
+  B.push({t:"list",items:C.reasons.map(r=>C.pp?r.t:`${r.t} (Level ${r.l})`)});
+  B.push({t:"p",text:"Request: "+($("refNote").value.trim()||"For evaluation and management.")+(!C.pp&&C.rf.has("ws_fm")?" Decreased fetal movements; for same-day NST/BPP.":"")});
+  if(C.pp&&(C.emProto||C.ppDs.has("pp_head")))B.push({t:"p",text:"Postpartum: please rule out cerebral venous thrombosis / stroke — urgent CT head with CT venography, or MRI with MR venography."});
   if(!C.pp&&(C.surv||(C.delivWin&&C.delivWin.lo<41))){
     B.push({t:"h",text:"Antenatal surveillance & planned delivery timing (Field Manual Ch. 6–7)"});
     if(C.surv) B.push(kv("Fetal surveillance",`${C.surv.w?`From ${C.surv.w} wk${C.surv.startDt&&!C.surv.dueNow?` (${mdy(C.surv.startDt)})`:""}`:"At diagnosis"} — ${C.surv.freq} (${C.surv.why})`));
@@ -2155,7 +2337,8 @@ function refBlocks(){
   }
   B.push({t:"h",text:"Vital signs at referral"});
   const T=C.tempRaw!=null?`${C.tempRaw} ${$("tU").value}`:"";
-  B.push({t:"grid",items:[["BP",C.sbp!=null?`${C.sbp}/${C.dbp} mmHg`:""],["Repeat BP",C.sbp2!=null?`${C.sbp2}/${C.dbp2} mmHg`:""],["MAP",C.map!=null?C.map.toFixed(1)+" mmHg":""],["HR",C.hr!=null?C.hr+"/min":""],["RR",C.rr!=null?C.rr+"/min":""],["Temp",T],["SpO₂",C.spo2!=null?C.spo2+"%":""],["FHT",C.fht!=null?C.fht+" bpm"+($("fhtLoc").value?", "+$("fhtLoc").value:""):""],["Fundic height",C.fh!=null?C.fh+" cm":""],["Weight",C.wtDisp],["BMI",C.bmi!=null?C.bmi.toFixed(1)+" ("+asianBMI(C.bmi)+")":""],["BP monitoring result",{"1":"HPN","0":"no HPN"}[radioVal("htnConfR")]||""]]});
+  const vsItems=[["BP",C.sbp!=null?`${C.sbp}/${C.dbp} mmHg`:""],["Repeat BP",C.sbp2!=null?`${C.sbp2}/${C.dbp2} mmHg`:""],["MAP",C.map!=null?C.map.toFixed(1)+" mmHg":""],["HR",C.hr!=null?C.hr+"/min":""],["RR",C.rr!=null?C.rr+"/min":""],["Temp",T],["SpO₂",C.spo2!=null?C.spo2+"%":""],...(C.pp?[]:[["FHT",C.fht!=null?C.fht+" bpm"+($("fhtLoc").value?", "+$("fhtLoc").value:""):""],["Fundic height",C.fh!=null?C.fh+" cm":""]]),["Weight",C.wtDisp],...(C.pp?[]:[["BMI",C.bmi!=null?C.bmi.toFixed(1)+" ("+asianBMI(C.bmi)+")":""]]),["BP monitoring result",{"1":"HPN","0":"no HPN"}[radioVal("htnConfR")]||""]];
+  B.push({t:"grid",items:vsItems});
   B.push({t:"h",text:"Laboratory results"});
   if(C.labRows.length)B.push({t:"table",head:["Test","Result","Date done"],rows:C.labRows.map(r=>[r.name,r.val,r.date||"—"])}); else B.push({t:"p",text:C.labsDone==="0"?"No laboratory tests done yet.":"—"});
   if(C.rhNeg&&C.ict!=="Positive"&&!C.rf.has("rh_iso")&&!C.pp) B.push({t:"p",text:"Note: Rh-negative (unsensitized) — Anti-D immunoglobulin (RhoGAM) indicated at 28 weeks and within 72 hours of delivery."});
@@ -2167,18 +2350,22 @@ function refBlocks(){
     B.push(kv("Proteinuria",C.prot?"Present":(C.dip||C.upcr!=null?"Not significant":"Not yet tested")));
     if(C.hellpScreen)B.push(kv("HELLP",C.hellp?`${C.hellp}: ${C.hellpParts.join("; ")}`:"Screen indicated; no criteria met with available results"));
   }
-  B.push({t:"h",text:"BAPP preeclampsia prevention"});
-  B.push(kv("Aspirin",C.asp?`YES — ${C.asp160?"160 mg (2 × 80 mg)":"80 mg"} at bedtime until 36 weeks`:C.aspNotYet?`NOT YET — eligible; start ${C.asp160?"160 mg (2 × 80 mg)":"80 mg"} at bedtime on ${mdy(C.aspStart)} (12 weeks)`:`NO (${C.aspWhy})`));
-  B.push(kv("Risk factors",`${C.nHigh} high, ${C.nMod} moderate`));
+  if(!C.pp){
+    B.push({t:"h",text:"BAPP preeclampsia prevention"});
+    B.push(kv("Aspirin",C.asp?`YES — ${C.asp160?"160 mg (2 × 80 mg)":"80 mg"} at bedtime until 36 weeks`:C.aspNotYet?`NOT YET — eligible; start ${C.asp160?"160 mg (2 × 80 mg)":"80 mg"} at bedtime on ${mdy(C.aspStart)} (12 weeks)`:`NO (${C.aspWhy})`));
+    B.push(kv("Risk factors",`${C.nHigh} high, ${C.nMod} moderate`));
+  }
   B.push({t:"h",text:"Current prescription"});
   B.push({t:"list",items:C.rx.filter(r=>!unticked.has(r.id)).map(r=>{const t=`${r.d} — ${r.s.replace(/^Sig:\s*/,"Sig: ")}`;return r.start?{t,start:r.start}:t;})});
   const g=emGiven();
   B.push({t:"h",text:"Medicines and actions given at the RHU"});
   if(g.length)B.push({t:"table",head:["Time","Medicine / action","Dose","Route","BP / notes"],rows:g.map(x=>[hm12(x.time),x.d,x.dose||"—",x.route||"—",x.note||""])}); else B.push({t:"p",text:"None."});
-  const e=epdsInfo();
-  B.push({t:"h",text:"Mental health and safety screening"});
-  B.push(kv("EPDS (Tagalog)",!e&&radioVal("epdsPrev")==="1"?(C.epdsT3?"Done earlier this trimester":"Done before in this pregnancy"):e?`Total ${e.total}/30${e.complete?"":" (incomplete)"}; item 10 (self-harm) score ${e.item10??"—"}`:"Not done at this visit"));
-  B.push(kv("Abuse Assessment Screen",e&&e.aas?e.aas:radioVal("aasPrev")==="1"?"Done before in this pregnancy":"Not done"));
+  if(!C.pp){
+    const e=epdsInfo();
+    B.push({t:"h",text:"Mental health and safety screening"});
+    B.push(kv("EPDS (Tagalog)",!e&&radioVal("epdsPrev")==="1"?(C.epdsT3?"Done earlier this trimester":"Done before in this pregnancy"):e?`Total ${e.total}/30${e.complete?"":" (incomplete)"}; item 10 (self-harm) score ${e.item10??"—"}`:"Not done at this visit"));
+    B.push(kv("Abuse Assessment Screen",e&&e.aas?e.aas:radioVal("aasPrev")==="1"?"Done before in this pregnancy":"Not done"));
+  }
   return B;
 }
 // one block of the referral as HTML (preview / Print directly)
@@ -2499,10 +2686,11 @@ async function savePDF(){
 
 /* ===================== SECTION JUMP BAR + FOLDING ===================== */
 // Which section each required item belongs to (labels from the COMPLETENESS list in compute()).
-const REQ_SEC=l=>/^Age|^ANC Contact/.test(l)?"s1":/Blood pressure|Repeat BP|Fetal heart|Height and weight/.test(l)?"s2":/^LMP|eUTZ/.test(l)?"s3":/^G and T-P|Past pregnancy/.test(l)?"s4":/^Risk factors/.test(l)?"s5":/^Labs/.test(l)?"s7":/EPDS|Abuse/.test(l)?"epdsCard":null;
-const FOLDABLE=["s1","s2","s3","s4","s5","s6","s7"]; // emergency, referral and screening never fold
+const REQ_SEC=l=>/^Age|^Date of birth|^ANC Contact/.test(l)?"s1":/^Date of delivery|^Place of delivery|^Birth attendant|^Mode of delivery|^Outcome/.test(l)?"sDlv":/Blood pressure|Repeat BP|Fetal heart|Height and weight/.test(l)?"s2":/^LMP|eUTZ/.test(l)?"s3":/^G and T-P|Past pregnancy/.test(l)?"s4":/^Risk factors/.test(l)?"s5":/^Uterine|^Lochia|^Perineal|^Breasts|^Pallor|^Urination|^Family planning|^Newborn|^Postpartum danger/.test(l)?"sPP":/^Labs/.test(l)?"s7":/EPDS|Abuse/.test(l)?"epdsCard":null;
+const FOLDABLE=["s1","sDlv","s2","sPP","s3","s4","s5","s6","s7"]; // emergency, referral and screening never fold
 const SECS=[...document.querySelectorAll("main>section.card")];
-const SEC_NAME={s1:"Patient",sDlv:"Delivery",s2:"Vitals",s3:"Dating",s4:"OB",s5:"Risk",s6:"BAPP",s7:"Labs",s8:"Request",s9:"Rx",emCard:"Emergency",refCard:"Referral",epdsCard:"EPDS",s11:"Summary"};
+const SEC_NAME={s1:"Patient",sDlv:"Delivery",s2:"Vitals",sPP:"Postpartum",s3:"Dating",s4:"OB",s5:"Risk",s6:"BAPP",s7:"Labs",s8:"Request",s9:"Rx",emCard:"Emergency",refCard:"Referral",epdsCard:"EPDS",s11:"Summary"};
+const PP_HIDE_SECS=new Set(["s3","s4","s5","s6","epdsCard"]);
 SECS.forEach(sec=>{
   const n=sec.dataset.n||sec.querySelector("h2 .n").textContent;
   const a=document.createElement("a"); a.href="#"+sec.id; a.textContent=SEC_NAME[sec.id]||n; a.dataset.sec=sec.id;
@@ -2515,7 +2703,7 @@ SECS.forEach(sec=>{
   }
 });
 // current section pill (filled green) follows the scroll
-let hereT=0; addEventListener("scroll",()=>{if(hereT)return; hereT=setTimeout(()=>{hereT=0; const vis=SECS.filter(x=>!x.classList.contains("hidden")); let cur=vis[0]; vis.forEach(x=>{if(x.getBoundingClientRect().top<=170)cur=x;});
+let hereT=0; addEventListener("scroll",()=>{if(hereT)return; hereT=setTimeout(()=>{hereT=0; const isPP=document.body.classList.contains("pp"); const vis=SECS.filter(x=>!x.classList.contains("hidden")&&!(isPP&&PP_HIDE_SECS.has(x.id))); let cur=vis[0]; vis.forEach(x=>{if(x.getBoundingClientRect().top<=170)cur=x;});
   $("jump").querySelectorAll("a").forEach(a=>a.classList.toggle("here",!!cur&&a.dataset.sec===cur.id));},120);},{passive:true});
 const secDone={};
 function foldSummary(id,C){
@@ -2523,7 +2711,9 @@ function foldSummary(id,C){
   if(id==="s6") return cf+`Aspirin ${C.aspTxt||"—"}`;
   if(cf){const t=CARRIED; CARRIED=""; const r=cf+foldSummary(id,C); CARRIED=t; return r;}
   if(id==="s1") return [v("name"),C.age!=null?C.age+" y":"",v("brgy")&&("Brgy. "+v("brgy")),C.pp?"PP "+C.pp:C.contact!=null?"ANC "+C.contact:""].filter(Boolean).join(" · ");
+  if(id==="sDlv") return [C.dlv?mdy(C.dlv):"",v("dlvMode"),v("dlvRes"),v("dlvFac")||v("dlvPlace")].filter(Boolean).join(" · ");
   if(id==="s2") return [v("bp")&&"BP "+v("bp")+(v("bp2")?" → "+v("bp2"):""),$("mapOut").textContent.split(/[.;]/)[0],v("wt")&&"Wt "+v("wt")+" "+v("wU")].filter(Boolean).join(" · ");
+  if(id==="sPP") return [C.ppExam.fp,C.ppDs.size?`${C.ppDs.size} danger sign${C.ppDs.size>1?"s":""}`:(C.ppDsDone?"No danger signs":"")].filter(Boolean).join(" · ");
   if(id==="s3") return $("aogOut").textContent||("LMP "+v("lmp"));
   if(id==="s4") return C.GP||"";
   if(id==="s5"){const n=document.querySelectorAll("#riskGroups .rf:checked").length; return n?n+" risk factor"+(n>1?"s":"")+" ticked":"None";}
@@ -2533,14 +2723,15 @@ function foldSummary(id,C){
 function updateNav(C){
   const done={}; (C.req||[]).forEach(([l,ok])=>{const s=REQ_SEC(l); if(s) done[s]=(done[s]??true)&&!!ok;});
   if(done.s3&&radioVal("eutzDone")==null) done.s3=false; // keep Dating open until the eUTZ question is answered
-  // sections with nothing required: complete once the risk stratification is
+  // sections with nothing required: complete once the form is ready
   if(C.ready) ["s6","s8","s9","refCard","s11"].forEach(k=>done[k]=true);
   // screening: both "done before?" answered, plus every item of a screen being done now
   { const ep=radioVal("epdsPrev"), epOk=C.epdsMand||ep==="0"?C.epdsDone:ep==="1", apOk=radioVal("aasPrev")==="1"||AAS.every((_,i)=>radioVal("a"+i)!=null);
     done.epdsCard=epOk&&apOk&&(done.epdsCard??true); }
   SECS.forEach(sec=>{
-    const a=$("jump").querySelector(`[data-sec="${sec.id}"]`), red=!!sec.querySelector(".alert.red:not(.hidden)")&&!sec.classList.contains("hidden")||sec.id==="emCard";
-    a.classList.toggle("hidden",sec.classList.contains("hidden"));
+    const hideSec=sec.classList.contains("hidden")||(!!C.pp&&PP_HIDE_SECS.has(sec.id));
+    const a=$("jump").querySelector(`[data-sec="${sec.id}"]`), red=!!sec.querySelector(".alert.red:not(.hidden)")&&!hideSec||sec.id==="emCard";
+    a.classList.toggle("hidden",hideSec);
     a.classList.toggle("alert",red); a.classList.toggle("done",!red&&!!done[sec.id]);
     a.setAttribute("aria-label",`Section ${a.textContent}${red?", alert":done[sec.id]?", complete":""}`);
     secDone[sec.id]=!!done[sec.id]&&!red;
@@ -2569,7 +2760,7 @@ document.addEventListener("click",e=>{const lb=e.target.closest&&e.target.closes
 document.addEventListener("focusout",e=>{const sec=e.target.closest&&e.target.closest("main>section.card"), next=e.relatedTarget; if(!sec||!next||sec.contains(next))return; setTimeout(()=>foldIfDone(sec,next),0);});
 // Radios and "None" ticks finish a section; single risk ticks and dropdowns don't (more may follow). "Labs done: Yes" opens the lab table, so it never folds.
 document.addEventListener("change",e=>{const t=e.target, sec=t.closest&&t.closest("main>section.card"); if(!sec)return; sec.dataset.seen="1";
-  if(!(t.type==="radio"&&!(t.name==="labsdone"&&t.value==="1")||t.classList.contains("noneG")))return; setTimeout(()=>foldIfDone(sec,null),0);});
+  if(!(t.type==="radio"&&!(t.name==="labsdone"&&t.value==="1")||t.classList.contains("noneG")||t.id==="ppDsNone"))return; setTimeout(()=>foldIfDone(sec,null),0);});
 // Moving into another section folds the finished foldable sections you left; keep the focused field still on screen.
 document.addEventListener("focusin",e=>{
   const here=e.target.closest("main>section.card"); if(!here)return;
@@ -2605,6 +2796,8 @@ document.addEventListener("change",e=>{
     // collapse this section and open the next unanswered one
     const grps=[...document.querySelectorAll("details.grp")]; const gi=+t.dataset.g; grps[gi].open=false;
     render(); const next=CUR.groupsDone.findIndex((d,i)=>i>gi&&!d); if(next>=0) grps[next].open=true; return;}
+  if(t.classList.contains("ppds")&&t.checked)$("ppDsNone").checked=false;
+  if(t.id==="ppDsNone"&&t.checked)document.querySelectorAll(".ppds").forEach(x=>x.checked=false);
   if(t.classList.contains("dueChk")||t.classList.contains("rxChk")){t.checked?unticked.delete(t.dataset.id):unticked.add(t.dataset.id);}
   render();
 });
@@ -2652,7 +2845,7 @@ $("mPrint").onclick=()=>{$("pageSize").textContent=`@page{size:${MODE==="ref"||M
 // EHR bridge 1.7+: sends name + ticked labs due to the EMR; the bridge answers with "prenatal-labs-ok"
 window.addEventListener("prenatal-labs-ok",e=>{const d=typeof e.detail==="object"?e.detail:{labs:e.detail,meds:0};$("copyMsg").textContent+=` Labs (${d.labs}) and meds (${d.meds}) sent to the EMR.`;});
 // "Ferrous Sulfate + Folic Acid Tablet #30" + "Sig: 1 tab …" -> {name, qty:"30", iq:"1 tab", sig:"1 tab …"}; Td/Tdap: qty 1, qty instruction a space
-const emrMed=r=>{const m=/^(.*?)\s*#\s*(\d+)\s*$/.exec(r.d),sig=r.s.replace(/^Sig:\s*/i,""),td=r.id==="td"||r.id==="tdap",n=/^(\d+)\s+tabs\b/i.exec(sig);
+const emrMed=r=>{const m=/^(.*?)\s*#\s*(\d+)\s*$/.exec(r.d),sig=r.s.replace(/^Sig:\s*/i,""),td=r.id==="td"||r.id==="tdap"||r.id==="fp_dmpa",n=/^(\d+)\s+tabs\b/i.exec(sig);
   return {name:m?m[1]:r.d,qty:m?m[2]:"1",iq:td?" ":n?n[1]+" tabs":"1 tab",sig};};
 $("copyBtn").onclick=async()=>{const t=$("summary").value;try{await navigator.clipboard.writeText(t);$("copyMsg").textContent="Copied."}catch(e){$("summary").select();try{document.execCommand("copy");$("copyMsg").textContent="Copied."}catch(_){$("copyMsg").textContent="Select the text and press Ctrl+C."}}
   window.dispatchEvent(new CustomEvent("prenatal-labs",{detail:JSON.stringify({name:$("name").value.trim(),labs:CUR?CUR.due.filter(d=>!unticked.has(d.id)).map(d=>d.t):[],meds:CUR?CUR.rx.filter(r=>!unticked.has(r.id)).map(emrMed):[],ts:Date.now()})}));};
@@ -2673,8 +2866,11 @@ function setView(text,canNewVisit){
   VIEW=text; document.body.classList.toggle("viewonly",!!text); let b=$("viewBar");
   if(!text){if(b)b.remove(); document.querySelectorAll("main input, main select, main textarea, main button").forEach(e=>e.disabled=false); render(); return;}
   if(!b){b=document.createElement("div");b.id="viewBar";b.className="alert blue";$("topbar").after(b);}
-  b.innerHTML=`<span style="flex:1"><b>${esc(text)}</b></span>`+(canNewVisit?`<button class="small" id="nvBtn">Record a New Visit</button>`:"");
-  if(canNewVisit)$("nvBtn").onclick=()=>{setView(null);newVisit();DIRTY=false;ehrToast("New visit started");};
+  b.innerHTML=`<span style="flex:1"><b>${esc(text)}</b></span>`+(canNewVisit?`<button class="small" id="nvBtn">Record a New Visit</button><button class="ghost small" id="ppBtn">Postpartum / Delivery</button>`:"");
+  if(canNewVisit){
+    $("nvBtn").onclick=()=>{setView(null);newVisit();DIRTY=false;ehrToast("New visit started");};
+    $("ppBtn").onclick=()=>{setView(null);newVisit();const c=$("contact"); const nxt=Math.min(4,visitLog.filter(v=>/^PP/.test(v.contact)).length+1); c.value="p"+nxt; c.dataset.auto="0"; render(); $("sDlv").scrollIntoView({block:"start"}); DIRTY=false; ehrToast(`Postpartum ${nxt} mode opened`);};
+  }
   applyView();
 }
 // Unfinished visits: device-only saves, finished later with End Visit
@@ -2839,8 +3035,9 @@ const RC1=`INDIRECT("RC[-1]",FALSE)`, T_DERIVED={"Facility-based":`=IF(${RC1}=""
 const T_DROPS={"Place of delivery":["Hospital","RHU/lying-in","Home","En route"],"Birth attendant":["Doctor","Nurse","Midwife","Traditional Birth Attendant","Others","None"],"Mode":["SVD","CS"],"Outcome":["Live birth, term","Live birth, preterm","Stillbirth","Abortion"]};
 // manual-area cells the app writes: derived formulas always; delivery data only once it is entered
 function manualCells(C){const o={}; Object.entries(T_DERIVED).forEach(([h,f])=>o[h]=f);
-  if(C.dlv){const res=$("dlvRes").value; Object.assign(o,{"Status":res==="Abortion"?"Pregnancy loss":"Delivered","Delivery date":mdy(C.dlv),"Place of delivery":$("dlvPlace").value,"Facility name":$("dlvFac").value.trim(),
-    "Birth attendant":$("dlvAtt").value,"Mode":$("dlvMode").value,"Outcome":res,"Birth weight (g)":$("dlvWt").value});}
+  if(C.dlv){const res=$("dlvRes").value, dn=$("dlvNotes")?$("dlvNotes").value.trim():""; Object.assign(o,{"Status":res==="Abortion"?"Pregnancy loss":"Delivered","Delivery date":mdy(C.dlv),"Place of delivery":$("dlvPlace").value,"Facility name":$("dlvFac").value.trim(),
+    "Birth attendant":$("dlvAtt").value,"Mode":$("dlvMode").value,"Outcome":res,"Birth weight (g)":$("dlvWt").value});
+    if(dn) o["Notes"]=dn;}
   return Object.entries(o).map(([h,v])=>[TCOLS.length+TMANUAL.indexOf(h),v]);}
 const VCOLS=["Record ID","Visit date","Place","Contact #","AOG","SBP","DBP","Repeat SBP","Repeat DBP","Weight (kg)","BMI","Weight gain (kg)","Weight gain status","FHT","FHT location","Fundic ht","Risk","Diagnosis","Labs requested","Prescription","Referral","Emergency protocol","Physician","Lab results"];
 const TI=Object.fromEntries(TCOLS.map((h,i)=>[h,i]));
@@ -2851,10 +3048,11 @@ const fmtD=d=>d?mdy(d):"";
 function aogWk(C){return C.days!=null?+(C.days/7).toFixed(1):"";}
 function visitSummary(C){
   const e=emGiven(), dt=$("vdate").value;
-  const ei=epdsInfo(); return {epds:ei&&ei.complete?ei.total:"",aas:ei&&ei.aas?(/^POS/.test(ei.aas)?"POS":"neg"):"",date:dt,place:SITE,contact:C.pp?"PP"+C.pp:(C.contact||""),ifaTo:!unticked.has("fe")&&C.ifaTo?iso(C.ifaTo):"",caTo:!unticked.has("ca")&&C.caTo?iso(C.caTo):"",aog:C.aogStr||"",bp:C.sbp!=null?`${C.sbp}/${C.dbp}`:"",bp2:C.sbp2!=null?`${C.sbp2}/${C.dbp2}`:"",
-    wt:C.wtDisp||"",bmi:C.bmi!=null?C.bmi.toFixed(1):"",wg:C.wg?`${C.wg.g.toFixed(1)} kg (${C.wg.st})`:"",fht:C.fht??"",fhtLoc:C.fht!=null?$("fhtLoc").value:"",fh:C.fh??"",
+  const ei=epdsInfo(), ppd=C.pp&&C.dlv?Math.max(0,dayDiff(C.vdate,C.dlv)):null;
+  return {epds:ei&&ei.complete?ei.total:"",aas:ei&&ei.aas?(/^POS/.test(ei.aas)?"POS":"neg"):"",date:dt,place:SITE,contact:C.pp?"PP"+C.pp:(C.contact||""),ifaTo:!unticked.has("fe")&&C.ifaTo?iso(C.ifaTo):"",caTo:!unticked.has("ca")&&C.caTo?iso(C.caTo):"",aog:C.pp?(ppd!=null?`Postpartum day ${ppd}`:""):(C.aogStr||""),bp:C.sbp!=null?`${C.sbp}/${C.dbp}`:"",bp2:C.sbp2!=null?`${C.sbp2}/${C.dbp2}`:"",
+    wt:C.wtDisp||"",bmi:C.pp?"":(C.bmi!=null?C.bmi.toFixed(1):""),wg:C.pp?"":(C.wg?`${C.wg.g.toFixed(1)} kg (${C.wg.st})`:""),fht:C.pp?"":(C.fht??""),fhtLoc:C.pp?"":(C.fht!=null?$("fhtLoc").value:""),fh:C.pp?"":(C.fh??""),
     level:C.ready?riskLbl(C.level):"",dx:C.dx,labs:C.due.filter(d=>!unticked.has(d.id)).map(d=>d.t).join("; "),
-    rx:C.rx.filter(r=>!unticked.has(r.id)).map(r=>r.d).join("; "),ref:refNeeded(C)?refUrgency(C):"",em:e.length?e.map(x=>x.d).join("; "):"",doc:C.doc?C.doc.name:"",aogDays:C.days,labRes:(C.labLines||[]).join("; ")};
+    rx:C.rx.filter(r=>!unticked.has(r.id)).map(r=>r.d).join("; "),ref:refNeeded(C)?refUrgency(C):"",em:e.length?e.map(x=>x.d).join("; "):"",doc:C.doc?C.doc.name:"",aogDays:C.pp?null:C.days,labRes:(C.labLines||[]).join("; ")};
 }
 function trackerRow(C,visits){
   const r=new Array(TCOLS.length).fill(""), set=(h,v)=>{r[TI[h]]=v??"";};
@@ -3229,6 +3427,9 @@ function newVisit(){
   if(visitLog.length&&visitLog[visitLog.length-1].date===todayISO())return;
   $("vdate").value=todayISO();
   ["bp","bp2","sbp","dbp","sbp2","dbp2","hr","rr","temp","spo2","fht","fhtLoc","fh","wt"].forEach(k=>$(k).value="");
+  ["ppFundus","ppLochia","ppWound","ppBreast","ppPallor","ppUrine","ppFP","ppNb"].forEach(k=>{if($(k))$(k).selectedIndex=0;});
+  if($("ppDsNone"))$("ppDsNone").checked=false;
+  document.querySelectorAll(".ppds").forEach(x=>x.checked=false);
   const wg=RISK_GROUPS.findIndex(g=>/warning signs/i.test(g.g));
   document.querySelectorAll(`.rf[data-g="${wg}"],.noneG[data-g="${wg}"]`).forEach(x=>x.checked=false);
   document.querySelectorAll("[data-emt],[data-emn]").forEach(x=>x.value=""); document.querySelectorAll("[data-given]").forEach(b=>b.textContent="Given"); emExtra.length=0;
