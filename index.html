@@ -178,7 +178,7 @@ button:active:not(:disabled){transform:scale(.97)}
   button.ghost:not(:disabled):hover,#signBtn:hover{background:#e8f2ef!important}
 }
 /* no sideways page scroll (iPhone): clip overflow (keeps the sticky header working) and keep boxes inside the screen */
-html{scroll-behavior:smooth;scroll-padding-top:114px;overscroll-behavior-y:contain}
+html{scroll-behavior:smooth;scroll-padding-top:114px;overscroll-behavior-y:contain;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 html,body{overflow-x:clip;max-width:100%}
 body{overscroll-behavior-y:contain}
 input,select,textarea{min-width:0;max-width:100%}
@@ -553,11 +553,11 @@ body.dash-open #dashView{display:block}
 .db-kpi-val span{font-size:12px;color:var(--muted);font-weight:500}
 /* Main two-column split: Risk Stratification + Clinical Alerts */
 .db-mid{display:grid;grid-template-columns:minmax(270px,5fr) minmax(0,8fr);gap:14px;margin-bottom:14px;align-items:start}
-.db-card{background:var(--card);border-radius:14px;padding:16px 18px;box-shadow:var(--card-shadow);min-width:0}
+.db-card{background:var(--card);border-radius:14px;padding:16px 18px;box-shadow:var(--card-shadow);min-width:0;max-width:100%;overflow:hidden}
 .db-ch{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px}
 .db-ch h3{margin:0;font-size:16px;font-weight:700;letter-spacing:-.015em;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .db-ch .subt{font-size:12.5px;color:var(--muted);margin-top:2px}
-.db-cnt{font-size:12px;font-weight:600;color:var(--muted);background:var(--fill);padding:2px 9px;border-radius:999px;font-variant-numeric:tabular-nums}
+.db-cnt{font-size:12px;font-weight:600;color:var(--muted);background:var(--fill);padding:2px 9px;border-radius:999px;font-variant-numeric:tabular-nums;white-space:nowrap;flex:none}
 /* Risk bars */
 .db-rrow{display:block;width:100%;background:transparent;border:0;padding:8px 8px;margin:0 -8px;border-radius:10px;text-align:left;color:var(--ink);cursor:pointer;min-height:0}
 .db-rrow:hover{background:var(--fill)!important}
@@ -568,8 +568,8 @@ body.dash-open #dashView{display:block}
 .db-track{height:7px;border-radius:999px;background:var(--fill2);overflow:hidden}
 .db-fill{height:100%;border-radius:999px;transition:width 260ms var(--ease-out)}
 /* Clinical Alerts P1-P6 */
-.db-algrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.db-al{display:flex;flex-direction:column;gap:6px;width:100%;text-align:left;padding:12px 13px;border-radius:12px;border:1px solid transparent;cursor:pointer;color:var(--ink);min-height:0;align-items:stretch;justify-content:flex-start;transition:transform 140ms var(--ease-out)}
+.db-algrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;min-width:0}
+.db-al{display:flex;flex-direction:column;gap:6px;width:100%;min-width:0;max-width:100%;overflow:hidden;text-align:left;padding:11px 12px;border-radius:12px;border:1px solid transparent;cursor:pointer;color:var(--ink);min-height:0;align-items:stretch;justify-content:flex-start;font-size:14px;line-height:1.35;transition:transform 140ms var(--ease-out)}
 .db-al:hover{transform:translateY(-1px)}
 .db-al.p1{background:#FEF2F2;border-color:#FECACA} .db-al.p2{background:#FFF7ED;border-color:#FED7AA}
 .db-al.p3{background:#FFFBEB;border-color:#FDE68A} .db-al.p4{background:#FEFCE8;border-color:#FEF08A}
@@ -580,13 +580,13 @@ html[data-theme="dark"] .db-al.p3{background:rgba(245,158,11,.13);border-color:r
 html[data-theme="dark"] .db-al.p4{background:rgba(234,179,8,.13);border-color:rgba(234,179,8,.35)}
 html[data-theme="dark"] .db-al.p5{background:rgba(59,130,246,.13);border-color:rgba(59,130,246,.35)}
 html[data-theme="dark"] .db-al.p6{background:rgba(20,184,166,.13);border-color:rgba(20,184,166,.35)}
-.db-al-top{display:flex;align-items:center;gap:7px;min-width:0}
+.db-al-top{display:flex;align-items:center;gap:6px;min-width:0;width:100%}
 .db-pbdg{font-size:11px;font-weight:800;padding:2px 6px;border-radius:6px;color:#fff;flex:none;letter-spacing:.02em}
 .db-pbdg.p1{background:#DC2626} .db-pbdg.p2{background:#EA580C} .db-pbdg.p3{background:#D97706}
 .db-pbdg.p4{background:#CA8A04} .db-pbdg.p5{background:#2563EB} .db-pbdg.p6{background:#0D9488}
 .db-al-nm{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
-.db-al-id{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--muted);flex:none}
-.db-tags{display:flex;gap:5px;flex-wrap:wrap}
+.db-al-id{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--muted);flex:none;white-space:nowrap}
+.db-tags{display:flex;gap:5px;flex-wrap:wrap;min-width:0}
 .db-tag{font-size:11px;font-weight:650;padding:2px 7px;border-radius:6px;white-space:nowrap;font-variant-numeric:tabular-nums}
 .db-tag.red{background:#FEE2E2;color:#991B1B} .db-tag.org{background:#FFEDD5;color:#9A3412}
 .db-tag.amb{background:#FEF3C7;color:#92400E} .db-tag.blu{background:#DBEAFE;color:#1E40AF}
@@ -598,7 +598,7 @@ html[data-theme="dark"] .db-tag.amb{background:rgba(245,158,11,.24);color:#FDE68
 html[data-theme="dark"] .db-tag.blu{background:rgba(59,130,246,.24);color:#93C5FD}
 html[data-theme="dark"] .db-tag.tel{background:rgba(20,184,166,.24);color:#5EEAD4}
 html[data-theme="dark"] .db-tag.grn{background:rgba(34,197,94,.24);color:#86EFAC}
-.db-al-rsn{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.db-al-rsn{font-size:12px;color:var(--muted);line-height:1.35;white-space:normal;word-break:break-word;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .db-al-more{width:100%;margin-top:10px;background:var(--fill)!important;color:var(--ink)!important;border-radius:10px;font-size:13px;font-weight:600;min-height:40px}
 .db-al-more svg{width:16px;height:16px;transition:transform 200ms var(--ease-out)}
 .db-al-more.exp svg{transform:rotate(180deg)}
@@ -682,7 +682,7 @@ html[data-theme="dark"] .db-st.dlv{background:rgba(167,139,250,.2);color:#DDD6FE
 .db-vc-vit b{font-weight:700}
 /* Tablet & Phone Breakpoints */
 @media (max-width:1120px){.db-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media (max-width:960px){.db-mid{grid-template-columns:1fr}}
+@media (max-width:960px){.db-mid{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:860px){
   #dashBtn{min-height:40px;padding:6px 11px;font-size:13px}
 }
@@ -692,7 +692,10 @@ html[data-theme="dark"] .db-st.dlv{background:rgba(167,139,250,.2);color:#DDD6FE
 }
 @media (max-width:720px){
   #dashView{padding:12px 12px 28px}
-  .db-algrid{grid-template-columns:1fr}
+  .db-algrid{grid-template-columns:minmax(0,1fr)}
+  .db-al{padding:10px 11px}
+  .db-al-top{flex-wrap:wrap;row-gap:2px}
+  .db-al-id{font-size:10.5px}
   #dashDrawer{align-items:flex-end;justify-content:stretch}
   .db-sheet{width:100%;height:94dvh;max-height:94dvh;border-radius:18px 18px 0 0;transform:translateY(100%)}
   .db-sheet::before{content:"";display:block;width:36px;height:4.5px;border-radius:3px;background:var(--grabber);margin:8px auto 0;flex:none}
@@ -702,12 +705,14 @@ html[data-theme="dark"] .db-st.dlv{background:rgba(167,139,250,.2);color:#DDD6FE
   .db-kvg,.db-scrg{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media (max-width:640px){
-  .db-head{flex-direction:column;align-items:stretch;gap:10px}
+  .db-head{flex-direction:column;align-items:stretch;gap:8px}
   .db-brand{justify-content:space-between}
   .db-brand h2{font-size:18px}
-  .db-nav{justify-content:space-between}
-  .db-tabs{flex:1}
+  .db-nav{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+  .db-tabs{grid-column:1/-1;grid-row:1;width:100%}
   .db-tabs button{flex:1;padding:6px 8px;font-size:12.5px}
+  .db-new{grid-column:1;grid-row:2;width:100%}
+  .db-ref{grid-column:2;grid-row:2}
   .db-flt{flex-direction:column;align-items:stretch}
   .db-search{flex:none;width:100%}
   .db-sels{display:grid;grid-template-columns:1fr 1fr;flex:none;width:100%}
@@ -733,7 +738,7 @@ html[data-theme="dark"] .db-st.dlv{background:rgba(167,139,250,.2);color:#DDD6FE
   <div><button type="button" class="gbtn" id="gateGo"><span class="g"><svg width="14" height="14" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.6 13.3l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.7 6c4.5-4.2 6.9-10.3 6.9-17.7z"/><path fill="#FBBC05" d="M10.5 28.6c-.5-1.4-.8-3-.8-4.6s.3-3.2.8-4.6l-7.9-6.1C1 16.6 0 20.2 0 24s1 7.4 2.6 10.7l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.7-6c-2.2 1.5-5 2.3-8.2 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.6 42.6 14.6 48 24 48z"/></svg></span>Sign in with Google</button>
   <p class="gerr" id="gateErr" role="status"></p>
   <button type="button" class="goff hidden" id="gateOff">Continue offline</button>
-  <p class="gnote">Sign in with the RHU or BHS account. Records are saved to the RHU Drive and the Pregnancy Tracker.</p></div>
+  <p class="gnote">Sign in with an approved Google account. Records are saved to the RHU Drive and the Pregnancy Tracker.</p></div>
 </div></div>
 <div id="topbar"><header class="top"><img class="logo" alt="Bagac Prenatal Screening" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAL4AAACgCAYAAACyqNZ2AAArMklEQVR42u19d7ycVbX2s2YmCRBCCQQxIB0JUjT0XhUUP7HQrgooolxBBVQsKEUQQcQPvKAXvdcrKp8oTcQrHaQEpIbeW+iEkpAQEkjOzDzfH+9azMo++y1zcs7MnJN3/37zm3Nm3nl3eZ+99lrPXnstQRcLSQFQAUARabrPxwFYC8AaACYCGA9gDID5AGYBeAnANADTRGR25H5NESEWs0KyIiJNkh8EcAyAnXXsZKirBvAqgCsBnCgiT1tbenWspIsPqSoiDff/+gA+CmAXABsr4GsZt2gAeBnAAwCuB3CFiDyYdv/FCPQfB/AnAMt2qSkvA/i0iNze6+Dv+AMiWXF/70PyWpJ19i9N/Tx8NVKuvZHk50mOshXA6loMxlRIrkHyLR2PPna2NF2dL5JcXtskJejJqvt7b5JTg8HrU2A32xjseuQh30dyf1dXbYSPa03fT9P+L2D3itV9xOIw9oVBT3Idkpe6gaq3Cfa8SeBXjitJbhBOuhE4tqLvt7px6Fbp0zZc0svjXunEQzF9m+S+AG4DsKfq6E0AVX1JhuHUdC9m2Ct2r6bef3cA/yJ5oNZfHYlLrzPkl9Zx6GYfrf5x7vktXsA3lkVBdzyA8wGsAKCuAK2kAL2uwLWBrLiXOOO2riCP9auq1ywD4A8kf6bGbql3lgW1DoH+TADfUCBKSr0mzavB9zMBvKlU5mgF8gp6nWd4JDKRqnrPBoDvkFxBRA5Wyb9YUp5lGWLgA6iKSJ3kaQr6Pq1PUlSZqqPDrgLwTwD3AXgRwBz9/SgAYwGsopTnzkqBruomQCWowyZaH4AvkVwgIoeq0VUvIVCWoWAZvpnDMnha8l6SXyK5fJt1LUNyf5J3BgZzFuNw3EhkHEg+EBnXThcb+2uNal3c2JvtHMPQzBig2SSPNO7d7kGy5vjp8FXRazw9WiF5KMkZGTy255p3H2lsTwn8LtJqCsBxJKdlPAQD31SjG00Ct2t4GmvkKL11Sd6SAf6GToCXSa7oN9RK4C8+wB/sRtkW9XFI/GzqkToaqnNfDWAnEXnIpL2I1Ns1OEWEItIQEZKsicgTAHYFcKnWU4/0uQFgZQAna3tLlqcsA5Y2ppZMUl06puKYNLiR5JihUDWcqlUheXmGzm+uD5vYqlFK/FLiD6SISuvvK/vCQJI2tb5nkDgxzVcnpkF1JFP6tKL17wvgEbQ2tUI2qQLghyWtufiVyiBJGuPr1wSwH1p8vAeZvQ4QkZm6mzsknnt634qIvAVgf6UyrX5P5TYB7ElyAzdhylICv+37HAhgCbQ2lLy0rwL4rYjcrLr4kLoMK5BrInI3gP9IkfpNnQBfGiKbpywjHPgN1ZH3idzXVIq3AJyg7EunfLSbKsVPQbIDXAmkvrXz0yTH6IZbaeiWwC+s5hDAB/TF4L4m/f8sIi855mfIi1N5ZgI4R9vRCPpPAGsC2KSU+iXwB3KP7SPA8t//oUvSlFrvudq2kL2x9u5o86WERQn8dsoWMVUDLSbnDl0ZOnoUzdkS9wN4VIHt22BA39ypZmUpgZ+v3+v7pIjENIDdKiJ9yuR0A1hW7y1Bu3x7309SFqdzuiXwB65DiO6YjgHw3gxV4YEeUSPujy0K+v4e6OGJ0sAtgV+0jEPiJ58G7me63E9bZZ7NaOM4tCITlMAvgZ+tQuv7GH2lfT+7R/Tn2RFg29+jkexBlKUEflv3qRSwA7pdGovQh7KUwO+nQizQV1oZ2yMqxNicPswvIVECv50yV19poJrY5X7ahDMDPEapvu36UFKaJfAz0NSiJucCeC0DNJO63VFlatbPmJwzALxRQqIEflFAGUf+dAT4Jmm37LKubxEVtoqoXNbeZ9RXp1K6KZfAb0eNuCcCfPOF2Yjkmsr5d9SA1L2GJsmVAWwW6be5K987yOpfWUY48A3oN0fuab47YwDs1SVgmW/OnkgijdXRn84UAFNK/b4EfltqhL7fgSRGeprr7yEkRyNxFe4ku2OuyYelSPsqkoBVt2QYvmUpgd/fwFU9fw6SxABEf9ffBoB1kZy+8sGjhlrNqWl9ewP4IFoBp+BsDgK4TkRe66IvUVmGocT3xXzeKxE7oAngJJLjnRQeUt0+eeNYAD9D/zPAXs05p4RCCfyBSH07r3oTgNuRfuBjZQC/tgMiQ6zy2PHGswCsjpaLtJf2FQAPAriy9Mwsgb8I+JcmkmN+kmJkNgDsQ/KHIlIHUBsK8JMcpW7QRwA4CK3ozKFRLgBOFZG+TqlfZemNUhtE1JvU/7tK/h3Q/8STgf8kknNE5EyNgsbBOI6o9YuC/mAAv0D6qasagKkA/qLcfX0R6u12TPpeLJaGqUJ2z2zqyDFXF8xp44xMJz5jx4neEB2o9NeAUDX3/9FBuMC0+Jlb+3YPZKL1UiAqTYHUKwGlru6RMYkGC6sN8uxqKDNyP8ljAZyMVnhvb1Ca5D+W5KYAjhCRJwMQZsavd6k9RaV1neTqAE4H8BnV6WOSuK7t+amI3DrQ7Ig+ox/JZZEcZOn25teSPSTxx5GcpGPSLYp4joi8iCQKyNAGOfAzjORlORn4fMTkH5F8b+xeuhr4lwTXTVApPyMnTLi14wYXcVkGAnp9X43kOSSndznvVFnikbHnkJxC8hPhyi5DBH6TfOOQ5KCdrJI2tsJ4HXwGgEsAXARgqoi8nlHHeCQhQfYC8GmVuEjR6eHqf1Ttj9edQd62pNe8vNei+56nZSlWviUiZ9gKL0Mo+Q0gE5FkN1kvovZ4hiXc2JoJ4DEATyHx/JynS/mKANYG8H4AEyL0pGSA/lkAO4vItIEsfc6IrSJJYrcJEj/+UUMpSMoyMAiayuyIlS1F5A6S1SF9UC7b4crK9mzuqEVJaawBuIi+3HQTJut+NSQH3j8hIs8ugl5v/dkNSbqiOoY2nVJZBqfYc/qziHyOZG1IjTFn7E5HErP+L2jlwYoBz/JVVRxo65GXuRpUEM+rZSuA3e9SlfQDBn0g0bdG6cw2nIrhfLJuVNaHnIUwfl9E5ojIZwEcjsQpzGckZArILANi+MqT8LYKzAPwPRH5lIjMGMSw5EuVas2wLEuYOt0R+k11fVHgnQVgUwAXOHALWjlr25WkZh/U3f0qKuU3E5GfWdKKQaSzSmk/QpaAToCfOgGqIvKkiOwHYDsAF6qBWHPGaSNQa0yKNyLfiVN56k6t+ZSIPGJx+Euvy7L40nHDzCdgEJFbANyiGx17AfgEEvfhduLbLFDD9R8ALhaRB4xVsvrKx1yWjgPfUYDidHfqdzUAFJFHAfwEwE80q8pknQBrI+Hnl0US8GmB2gevIKE5HwBwt4g85eqz3dwS8GXpHPC9KwGAhqoYzPmNGa0LRGQagGkA/tpmvTUkbg7lCaqydA745omnfjMN9/lyAFZSyb00kk2oBoBZAKYDeF5E5ql+bgD2/h1NXRUYrB62gjRVh6+Xj7MsHQO+SXhVLZp64mlbAB9FsmG1HoDxiLsRNAG8SPI+ANcAuNw5qwkCl4Iiq0dZyjLkwHfb/g2SawD4MoDPI0nuHAN5GHOnAuB9+vo/AE4leRWAs0XkqqQKVpHjqVmWsrRbKosA+prSk0uRPAFJXJ0fKuiNV7fNKdtlrbqX7c4aTVlXNueTSI4CXkNyO5e1vDwhVZbuAl9BXye5BYB/ATgOwHJobUIZr15F3Cc+lPq2Q+t3Xj8MYArJ/yS5vKXvLB9ZWboCfAf6zwK4EQntWFfQ1nLu6RM9p00EWw1stTgUwB0kd7UQf2XGkrJ0FPgO9IcAOA9JhDTzfpQUvd6zPCEj03CTJizelWEdANfqIfVmN0IRlmUxBb5u/ddJ7gfgN04ix3Tvhrt/zV3zDpINqLkO3N5bkykGuLkfn0TyIpLLmPtD+QjLMmSsjnk1ktwIwO/QOs9aiagycEC/A8kppbuQRFN+A0kc+lFIuP2NAHwECfU5wU2aasoErSNxbViX5N4i8oStQuWjLMugAt/4dI17+UckLrkxcPqATRcAOENEbsu49UtIIhSfS3IlAPsDOBIJtemZoLC9dQAbq+G7j4hMKcFflqFQdWxz6lsAPoR4cCY7NfUKgE+KyH4icpuF/dBD3RUzTM1F2b4TkVdF5HS9/+luNamnTNYGkp3ga0jupypYrTR6yzIowFcDsknyPQC+h/7nYuE+ewrA9iLydwVhRV2R68rFm2sBzUXZvrMJIiIzReTbAHYB8IST8DHDt6nG9V9IflMlfsn4lGVQJL5lBzkUCU/fRDxz+UwAH1Ode5QCurCzmE0QNwGuR5K95GJn3DLSdtsAO53kqeaRWTI+ZRkw8O1sovreHJyic9tnX3ag7xtoY9wEqKr03xvACWh5e4aTyajROoDvkvwjkmCxzXKzqywDlfj23U4AVo0A3wzcv4vIJSqp+wajUU79qYrIj5D4/8xHa2MrBL+pRAcAuJrkqqXeX5ZFNW73cipF+NsmgBMsFv1gNkylf0Mn1HkAdkOScaWaYfTWdaLeTnIPY3pK1acshYBvseJVXdge/Tl7O+t6q4jcjSE88WSSW0QsAvNjGUavMT4TAVxG8qel6lOWdiS+qQfrAFgzcq1J9wvaWDkGA/yPKfhvKcD4NJWJmkJyE+fnU0r/sqQC1j7/AFqRjWPgujFgd4Ya/FUReRXJbu8lDvwxxsf2AbZEcqD9KKNUS1eHsuRJv40CCW8gFyTHBh+LfD+U4LfgVG+LyGcA/BKt3edmhuqzBIDTSF5Jco1BcHFuojwJNhzLu88tDfj2UD8UqD7+uydF5J1OZwIPglN9A0kazz6k7/RaxLY6gN2RuDjvtYguzk+jjKQ2nIqRMy+a8KxkGLZVVXXSgP9AJ/T7NMYHeixRRM4GsCOAh52EZ8Rmse8mALiI5CkDcHG2VeUyJOEJY/RqWXqvmEvNeYZZiQDfwnuvBuBxJG4BPlWmRZ79ioj8ttsOYu6MwDJI/HwOdp2tZsz+KpIobge6latZoD6LmPx1JBkVkbLSdKNUe2glYo8IBTvcdJPahvHzHy6byW4p+ZQsp9SW/vqujrBrA8n9SL7sMqM0UzJmLND363V3ujDf78bocJKzyuQjPV8u1DA35m0MyZCg30GSGNnHgDfJPwvA2iIyU1UjFgSMuRhwsO0CH+aE5KoAzkSSKcVUlBioLVHFdQD2MGlQpG1uZVxVbYe10f1Y+QchSZzBLkp+q/tZtAIDs0vtmAHgJnOPz8Sqk2Z/iuSvsjxPd/rZ065UHsqVIsh++DWSc3PycJnk/1O77eo1WpTkvT2U9fCKHhqXfiRGTEI19aINIsZraNhWi+i3zmBeAkl289dEZO4QGb51Fz/zVyRvAXAOWmcJwj6PUsn/OZJ3iMh/FE0e4QLg9sqmWC/tTo+ORMXrCu5zn6XNCpIracY4BjqySc3DQ+maNdv0/SiS00jOI/kcyWPSZuNgS3+SY0melyH5LffuOyTXNbp02HF25AM9JPGvbcdu6gkjkeR2KQNo/+9UZKl39zsqZZB+NNQqQ2D4np4B/r6Bqjwl8Ic/8E1CHhYBiEn+uZrMLbNTbvUYR/J1fRh9TrrWdVVZsV17YSCGr5uEv0jJhdvU1zsaDnHYeXWWwC9e0ho1OcVKBpJdy1cLpNaxe28KYAWngxqvWkUSPXl1x7cODZGbWPJNZayOBHAF+vsgWYiTMUjCGKKHdPeyDDHwDQgbRcBoIH9IAZ8HCvvtjujvz2+T6G0kB9SHfhejBX5BEtz2TbSOL4YTfMegnWUZqcA3jlOJ/nUzJN69BSV00wE/jJ9JN4leGOTEbFngbwKoishLAP6G/mlH7YjjusZElRAZ+RLf/l4HSTz7cBPEvr8vTxoakEmugCT7d1iXgXyKo0U7qQsLgNszLllOVZ4htT3K0hvAtwe8YaD2GMgrSHJQPVJADbD7boYkf1UYncH+vr4bKoWqPfPLx18Cv6hh+xyAFwqA1YC9UyDh7XdVJPEz74h836mybsZ3b9rEKBNSjHzgG/g2jujw9vAfcSehWEC/3yHDSL5XRF5px9dnkIoZuHtExsDaMa1MRrEYAN/p5EshyVmVBvxcw9bda2UksfPTwHVTp/V7y+KioN8I/Z3XrG13FDTgyzLMJb494DWRxKRkiv5/bxv33ALAWLQiMoTf39BJ/d5CoJAcA+A0pMfkBxKev+O2R1k6D3x73wBxpyI7XP5wAZ081O8ZMZJnIwkd3kn9vqb05C8ArB+R9mbM3wNgaklnLl7G7YciYDVgvgTgmQKSsFFAv5+qvvwdOa9rUd5IHgngq4hHfLa2/sL4/hIeIx/4RQ6XP5p3uNy+I/k+ZLs135gy8YYC9BU1yA8CcEYK6A3oDwE4X/1LSmk/koHvfOVHqwqQBvz7C4DVvtsKSUiPNP3+xk7o0MH54bPRolJDo9XOhx4iIvNVLSr1+xEu8Q0E70MSHDaNzbinjfvunKHfv+7u1exA/4Ak7uaYyEQMr/seyQ1FZMFw9ckvS3Fg+KhptQg4TC14sABY7UTSdpHVwX53p4i82eF4PKORv+FWBbAnkrg737fkFSWXP/KN2w+lSGkB8BqSjCep6okD8poAJmWoTDd0Sr93k+0GtBzlGjmG+ZIATiF5Lcm1ysTSIxf4oWEbA87jIjInR0obkLdBco41beW4qRP6PfBu1LWKiDwM4EdonQNopKxcPurargBuJfnxMtb+CAS+OzBd5HB5ESm9c8bK8bIzkjvC3zvwnwBgbwC3oX/29FDtMZVvJQD/IHlkmWNrZKo670X2Sah7ctgTSxtUA7Bthn5/u4jMK+DrM1Tgv1hEttYJcK9jeBop0t/CjZ9B8jTd0CrBP4KAvx4S+rGZop48kKOe2G/WRRJYiSkrxw0Zk6sT4K/qJL0YiUvF4UiCDlVTpL+xXnUAR5E8S8FfLcE/MoC/cUT9MPVkNpLUm1nqid1nW6TH0ydaB0+6wpFr2lELNtsnImchOShzoZP+zRTVpw/A10meqWpPyfaMAODHDFsD51Mi8nqO+zAD/T40kAWJL/9DndTvsyaASy36nIjsC+AQZEdAtsBT3yB5rFPtyjKMgb9Bhl7+YKD2xPR72/ndOuM+t4nI/E7r9xngp4uRXxWR/0biX/Q48hPMnUhyXzubUMJoGAKf5EoA1srQve/Nw5C+rw9gDcTz4QKtY4Y9pRtrjPyG5uidiiTZ3RTEc2yJU+V+p7u8jXKHd3hK/ElYtMPldt32KQyJsSM394KakzEB+lyOrd0BXJUBfiA5a3CernRSGrvDD/iTUwzbCpK4N3l5roro98+oCtE1w7YN3b8iIm8jcV+4Di1OP5zMdSSnuE4wmrOE0/AC/uYZYH4GyaYTYnFvnH6/JJLsgmn6/ZUqUUf1utej4/wXAPiMrnhpTFUDwHdJburSJ5VlGKk6oe79rmGb46hlIN8IwCqIH1kkgHVIjjV1otcHxfosIm8iyez+BvonOBA3Bj/v9dWsLP2Bu0qG0flwjkHqz+oS8SOLROIWfB3JicPF6cvaKSJPIck0knYkswFgJ5KfKr05hxfwl88A9/M5vzcgPIX0lC/Gi2+JJMv4RsOFA3cZ1S8F8LsUlcck/bF2oL3T7XSs0iytv5srj9X/Ro7Q7Drwx2RI8hlZS7jpwwCmArhcDcEFkUvNGFwLwI0kPzKMNoCsj99GEuA2lPzGWm0CYLcuSX0D/nWI7z53GviChBXrWeAjJ8b5J/SaasbvRV/Lk7wmJ99U3X3/Bbt3r1OBLm/AV1Ni69v/lwcSuFPts2ewEsnp2pb5Gie/U6+61kmSD5NcytrVqw+1ngHQz/oHnzXw+j6K5B8duGOpNhvu8x8YUHp5E8iOIWr/Htf2N3opqYRLubQVyRe7mBjiUZLrdWMM2ik1JHEil8fCG1im2qxRZMa67OB1ETmQ5AsAjnZLbrgxZoe7f0JyVRE5zAaqE+HCB6Drv+vYRvIXAH4VqBPmwTkGwH4ATkWHk545GvY2kpsB+BqAXZAk5RhqqUsA0wFcCeBsEZnVq8/SS4pYisiFUjYW1VmDlDuHRXJnpeWdupTk0u3U1SWpLySX1dRGYWI8G7NbuintwnptNR3qV1YbehX457i8VGFOqPkkJ7ULSKcTf5LkWyl6cZhn9naSqxRRrbo4Vjapf5uRI2yexhXqJvil00clu1Hnojb4sylS2YB6kxmgAwT/lk7n7MuR/NNIfrBXwe/GYbecMft8r/TBrVRD+sJwK8rGTHcGWuxBXqTOWG09TAf+tUjeF0j4NIP6DZK79yL4nRG/DMnXMvIAn9nLK1dZWg/05wXyv04huXa7LIwD//IkrypId1rIv56jO526878RFS7U80uPzR6n6t5LclZANcYA+TrJg8Olvw2w1Ej+3t0zj+48ptfoTjeRj83Q818lOa4Ef28D30B5cEFVhCT/SXIbD4a8B6zgNVXhJAfyGOPjje1fu99Vemi8Ph4Zl6b77P3DhuEowc//ygG/B2RTQblKeJ+CdOdXHVDy6M7/dRK02uWxso2iD2SsWCS560DaW0CAiBcii2qvFBBWlUEYs6J9qgz0/gG9Ku380BiL83N2XkM15VWSR5Ac5dSfSkF14RMk5+TQnQb+Ox1NWOsi8G31GU9yZoaB+4W8trpxr/kxy/i8GhNYRSes3m8h9dR9XnN9k0Xh5gvUVU1bxYsC19GnWe40tdwx8p0l+asUFScNlCQ5leTHiqo/bqJsTvL5gnTnMyQndxP87oFVST4RWbGsrd9Ja2cWNRwbM63LVsoVSE7Swz8oqGK2TUPr36uTXKcNyV1Nab/kCEAh+X6SE9vRUNz/S5BcjeQGJNcjOSHvN1ng/3e3+ZQl/cPNr/PNVyOvQtfxNdwOch7jM9smWA+A//aIcLD2/zzWxkCCL0VyT5JnaJDa+0k+ovf9C8nDg7H8ga6wC0g+TXKvLGnsx57kqmrH/Z7kLepI9hDJG0n+RvdzVtRrx5G8UDfjFug1a6fVFU5kkpNJHk3yr7pSP6rP93KSJ5PcxT37LUjereM2h+TZJEfHJH8wdsuQPECp9mkk33ZCaJbW95+mchYFv0mXDdWQZWRJj+m2JvneInkiyWXydEVX17Ikr8wBf8O9H+yXs05upDjhcEUG8P8nIkGtr2NIfpvkUwWcvhaQPJfkDyPPoUFywxSVwepaU4E9u0Bdr5I8XkEf1nW3ATJNmpPcleTVOTixcj/Jb5B8LoKtH0cmbsXh83CSz7bhOHezs7myVanggR3i1JG8TnkQPGEenjlLYdV9/z9t0J3HZ+iX/lU122MwJodr7yUZwD83WNWqThreHYxXn757F996RAD4vpsL8LEZE+wg3RDMq6svxdW6Gazok4P7GxhHB+oxI/X4uhopAs36/Xgg3a2eVUheF7SxHoxL03nPhnWdUsheCSjIFUjeFXHJTVN//EO7muTmsUmVUteJbdCd/4/kR3RQpChwQ8NxgMA/P7JC2d/nR/Tz3Zwx31dgHH1f6xFgNUmeGkwwe/9x5FoWfG6NlAm3gxdg+hrnwFjPsQnDe4bCzep91nkKVJ06/GSb/WGkXeeQrGTqyOrqaqH2ZqhBVeR4ncWbbOq1HwGwC8lfAzhJRKZbpyylpqurKiLHqWvzr9E6URQeYreTT5/X11sAnif5HJIMjdMBvIok9dAMfX8VwMsaQcGDmAN0oS1iY1Q1tdBmAP6GJPFEI/ituWn7YtlqrK9p40zfFz3Z9l0Ax6CV6M7XZRGgF2ojWokzagXqEvc8Lkbi/tyHJMyiL2EgXnF9aoclWgbAZUgCEof12NjZOIX/w33eB+CLSE7Stc1bNwsYuFnqz8skvxaoN5UUo/fjJN/MYZfqBSUn9aDIUyT/pm1YfYDUoLX98iI6vkrFp3JObzFHrUtjun5qdoO+b58hFYs+ozTbantTbfT95JR9n2YBezDr82dVfTIN4Pcp9TQKrCrNoF0NknOLSCw7ULE5WgcuahFpYLMqFkLQQFUHsDKAXwI4kOQxInKNA3vDxbSsichlJHcB8FckyelidVfdzPcvRCTNGCTnftcC8EkkKX/+AuBkEXnGr0A5xSTmchnXzNWVrE7yaK0zbH9D2z8HyZnlu5EErl0DwIcBfND1LU+NayhF/EvX5zAVUxXA00gOjDymbdkQwB5IMto3C0riPpIbAPhuyupl9f4LSWj4F5EcdtoSwMecNlApsFLuAOALOnajgmdQATAfwHm6IjyNJN/ZxkgOBO0aXGvaw5h2fFP+K8M35XmS56VscOWtDn8KuOJqpO7VnUG4YBGOxTUDI8vKDJL7Fd19dpL8yQwe/3i9bqIyKo2UgyuXklwzxeb5slKKMVJhIYmvv9k7xY3C2nccyaUida2o1F+a5F9I4utv/hjBg103neQnU8bvQyRvS5HYXuIvoddfmVHPfebGnlLXgbrKM3jmVxTd1RWS92Q85Iv12o+4TmXRkqHhOpvkMSTHhvSnUyuWcaqFt9ibizgRfBu/VGDvwYC/sjNUYzu3dq/DI2Pxrrt3sOHnXxU3pvMjfY0B/4qIYLEx/mpaXe7zn+YAcgfX99mBSmMT7HVdDTyJsFBdJMem7IE0nCAVNWgXRAzgpm5mrmSboY61q/gdWyUUnne/vyF3oyygkeZlPOTvuGsreuzw5QHolo+Q3Cfc/Q3u/euUSdTnXp5GaxaYHA33m82zwO8GdNsUSWwP78PODgh9nJokX9K9i6xd3NGBU1+MPfqZXrOSbtyEznLvTjAFiKRRwPr3nRmA3Emv2SfDJfsLvu0ZO/bvV0w1Iz5bLzo6Nk1o7Onvl6OtLKsCZNt2jbg9ciTB9mFnVSqcGfjYNwpK3stIbhLQj57X3Vql023O+C0q3dPUsD534kwyNtxqbhMlTfV7R3dKK7qr6MfKrj+5gC+PSbCV3S56M7jPaXrtDpGJaHVunee64ECyfwbwd9ZrTgmeWcOdoBuVt1/i6rowqCsE/plBXxsukkMhp7a0nea8H1rjtwiMOjgjdhZaySP6rGMiMl1EDkeSLOJqtDIN1pGeabCpxtIeAG7TrfwJanDSJoCI3Coi3xeRrZDk79oZwKEA/i+A89Wguh9JFpZZ2i6ro5pCydb0s+0AfMAFy+o3bhr4dtdgjODuOU1EXkASfn18cJ2938ycyGtKsVLp30cjz8Dfb5Xge3s+MwA8pPdqFjDY79K/qxltex/isVbvEpG+pOnZwYG172mpXxn0SYJ6btf+5ALf0+Rs5UDL9XWxBmweecg2OA+JyBs+nIQyGYIkneidAHbXHdwTkCSI84xGyCDZd6MAHAlgH5InAvhvi0jspGRDRF5GEtH5hsjgjgEwDsAyyiZNUrZkb71/yJYYQ7EVkrRFC4UIYSs69PJIz95eQSuZxtgIt231zdawJbnPTq+ZlXPdEsEzs769iSTcOwo+6znKlCyZcc2SKfd4Q5970ZA0eX0ak1NPoaKTsBEDWnRG6kMeo5RXmnS7K3YvpSUbtiSJyJ8BbArgRN1sqqZspvgNh7rO+t+ohNxJE7hZsgZTBaqBe0JF2zBfRF4XkadF5F8i8jsR+Zz255UUaQMk6U+R0i4A+LhK8jCJtf1t4fPeURDFwLNCwYdnK8yEyDPoR59GVpblACxdBB/anuUc4CRl0s5NuccEbWvubNa6JuRcljZhVypaT8SNRZCzVPhIyKtkTJQ785YaF3Z7jogcrxPgArc7mZVo2WbrNgCuJ/kHkmuKSF0nQTPlIVpHR5nV775fTaVxmuSbm6MOHJLyu6oC/Z/62UwAr0UkMQDsog9PcvRT0Y229VL4fLvfC8EzMs56eQCT9YFnUbWWtX5bp5KmlWeC52V1bqm7+8yb1Bnqov//uaCPVs/WatTm1mOaiOKl7oKf5Roge2cwM80078AMatTTZx9V/5+i9KcZbjP1gPxWtmNZsO5NA1YojZHZPbKnYIb+dhmhRZokrwnYi4sCQ9BYjJlGq2X47Bur86sMVsd8dcZHAl3ZM7vGGeaVFN8lC5H4SKR/IauzZ+Qaq+tI57gmGUzV5hG/oNC4/VwGe3RgDnskDsNrkvwiyX2pgcuKAP/HGRsIL9mGSDs6l2cYdLCPIPnKANwfqK4Al5D8iW74fFq52z1I/hvJo0j+Tt1g81ifpm5mLRtxubX23pTjemDxRm0D5gsZLMkN7kCJX479hNs/xTEwxuNfHGHIGqEna6gaus/PKcjj2ySL8fhzSe6YUpfR0u8l+VjGBHvOBUF4O0J5NpiEd1kv2Jeouvpsv+UAt99CPYcwaaCut/b3dUWlfVYdbofz7MBFNY/+HMjmVRqdaTvCZ2TsIB+QAvqG4+bHBXsPy6mfeyPlId9GcsvI2CynvvFpPjsx4O+eMykXOiPtfree+i+1s3P7qww6dy7JQ23yB3XtnnJyLdy5XTKgPPtSNrp2S9svIPn9YLzsGf8rVz9SqnL9wLfCfE7OEpHDlb6sL4J/+7u/J7kVgJ+oxx+ch6Fk6N0MPAclolNXMmwa688LSJJdv2FGpemIJFdTtmbZiB+M/f5oEfmp9cd8f9Rb8tSIZ6FntqYgybdlvjrbAZiY4adjdZ4qIt9X1aquFOF2Edas6ejnm5Ak46shyXG8vbJCjRQ7wH67g4hMUWm6OpKMOaOdH0zoq/OU+uuYr86mADYL7hmr5zll4N7R53GXo2cl8vurAFwB4Ekd38lIUjhtEOACmZRusC3/VsaO7SF5mzBtgD88vnaAHq8rsvu7KC4LJgXeJLlFsGNdcbrvzTnS/hWV0sLg0LaeuJqaYsc0BugxmeadubG6ONSZHuJwsLwzv5XhnVnP8Zdqxzvz5wP0Aq2n1D2rkuGRaYzOWKTnwH04gxJsqwT0p4jIuUiyjJystJb38FzU8NNNvY+ohHgKwIdF5A6V0rZ5Jcoa/V7ZjnpEIlpK0+NEZJZjR+De56u34GvonzvXh02vu1czh4WJeWdWReR+ZZ2qEQlXjdTVcIxUu3Wdrp6Ro3Q1Y+Ct24z0qbAvvoVnB/ADJHmSrR4Eq3vD9aWRMn7W7wqAk4puX6fpcRPbNWwHqP9voOxIzMDrC46fha9G4MvjJcQ8kmeRHB/YNb7u32YwTnWnp1cK+PdMJvnCAE9gNdo8gXVYcG2RuhpFdHx3AssM8vPaPO3VjBwZTD2BpXWNd45tRfsTYwtPKcLonJBhWDzprhuSQ94R+nMyyVNJPrCIKs7jJH/GhSMYVIK+L0XyggzQ28ObV4TSdeBfja1D6t5Q73NH5NLOwTYdWMzd9nuhuunq+igXPtDeSKknD6z9gO89d/XvH7AV6YBBH8K60ggHu/6R4CiqPZtx6sbOFC/dZobr+TySX8/0vnUdOy/DO+6fi8LotDkBKoGTWoXkB5W+PJtJJIjHleJ6S0Exj8lB62fV4/A8kt8luY3n/p1EqQanze7M2VtYENg51TZXsX8jeWuBSfqqOuQdFPluDpNI1BIZH9P5l2cS53NagbruVyYpdLeOAt/bMfr3hnpaKi+iQ53JOexPk3ww8v23IvX4/u3lnk9eWaDM0Ib+npLhrkAmUX+3Cax9YxN+KyJfWVRGp90JoDp0PQVUSwNYSnXBprICb4nIOymrWrOlTiYnr0geqgzMOMRPfMGxM2eLyGHtjIH2wdwQoGdxd0SSJHui3neWMhS3ArhRRGbotV8E8D3d6n8CwHdE5GbvJ8WUFDy637K9Mj6TkKQIaiI5h/ywskpTlN15Xf1xiIXPPBur0++kmv+M5KoAdlLnxjXUV+ptZc3u1j49rNeuA+BMvXau+mSdFOuH+QGZ45k6J+6pjpDv0+dfV1bucWWv/i4iD4VtzGJ0am6ZjB0+OXqwGJ0BqkCVcGMkjzFi//B1XqJsQ/L6AiyHSfpL/YqxKDZMkWu58BnlFcPnFagEGyiP/vnYZlxOPauxFbqkGbxvndV2thG1LaLGjjfufiBjR3JpPZMwPvTRL+TC7EAxwS1ZMSpz/24BP2MghQsHEE0NMuX6uQlbYULyjk0a6P/BJGzdYARvXWgCB0531djuccryb6A/JKD9HjPARgRHNVLHPhmbS+sXUW/DXejgZFQtopZV2hUIgTCTjDZU2lEnwmjAzQy/jWGXwt718aQUf5OsgzIXOj+cSrcmeEp/VnftXOD+7mMSje1Tes2Y4PdjmcTj/Ka6bDQjz346Wwn6pBP9WgTBJwO5gS2p22dssDTZSgpXGWagrwUOUI0c5zg/GU4NDboe6ZM9s89k+OpYeVsN3ft0U+1BJjnKskK1N0n+dbgKuliJqSk2W1aIbE6ZsTMXrYMRHGZ9NoPpK2idB4iNg2141NRYOkJEznXGaS/mcH05QljYBpm1dwk1OKMbU4FbgMfELzGCSpbUek8GsN9EclJnOBbrz3Ipu4h0u7o1JMcmt1DQV9W3u6cmu+14A7gdSXyemjJPzWAnteomQfiy3Vvvc7NA7/VHEfmnMi2NkQ78pRA/C0kF/jzbVh5mfbal+h59yH0ODB7wzwP4sojsLiJPKmXZ6PEJTQD7ArhIaVE75NMIJkEl8pLIOIxGEnzq322lw0gtTl/cObIFbTTXBcPZsFUdfR015MIyUzeMJvSiPl+EkdO/D3I+7zG3hPAVMlnvaDSFId2d70VwVPRgQ1hmkdxoOAEig9VZn+Sf1T/8XmV5Cuf06lXwu/4tqbucf1JP176cXc631OA9OXDnGHGglxzJsQSA0wB8FomX5lQAR4nIrWk7hMMJ/G63cwyABW439d04nsN55faqmUapW0dfE9XGGaUq60wku6qPi8iTwcRvDudxSCv/HxlEmhoSbj4+AAAAAElFTkSuQmCC"><div>
   <h1>Prenatal Screening<span class="h1rest"> — Bagac Rural Health Unit</span></h1><div class="barPt" id="barPt"></div>
@@ -3291,7 +3296,7 @@ $("endBtn").onclick=()=>{
   $("mSheet").innerHTML=`<div class="alert amber"><b>Saved on this device only.</b> Her record on the RHU Drive and the Pregnancy Tracker are <b>not updated yet</b>. They will update when you sign in to RHU Drive.</div><div class="row" style="gap:10px"><button id="sgnGo">Sign in now</button><button class="ghost" id="sgnNo">OK</button></div><p class="hint" id="sgnMsg"></p>`;
   $("mMsg").textContent=""; $("modal").classList.remove("hidden");
   $("sgnNo").onclick=closeModal;
-  $("sgnGo").onclick=()=>{CLOUD.token().then(()=>closeModal())
+  $("sgnGo").onclick=()=>{CLOUD.token().then(()=>{CLOUD.flush();closeModal();})
     .catch(e=>{$("sgnMsg").textContent=(e.message==="offline"?"No internet right now.":"Sign-in did not complete ("+e.message+").")+" The form stays saved on this device and uploads at the next sign-in.";});};
 };
 $("openBtn").onclick=()=>$("openFile").click();
@@ -3446,18 +3451,47 @@ function visitRow(v,recId){const bp=x=>(String(x||"").match(/(\d+)\s*\/\s*(\d+)/
 // iPhone/iPad Safari tab, not the installed app: it has its own storage, so no device-only saves there
 const IOS_BROWSER=(/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1))&&!(navigator.standalone||matchMedia("(display-mode: standalone)").matches);
 const CLOUD={on:location.origin==="https://benbasilio.github.io",CID:"713916870176-iucah2it41567v5h9mpg6ffsp75rfo24.apps.googleusercontent.com",
-  tok:null,exp:0,tc:null,email:"",
-  token(){ // must be called inside the click, before any await, so the Google pop-up is allowed
+  API_URL:"https://script.google.com/macros/s/AKfycbx8uQWgtRn7O2kJODKSpMCBKD8oqzRAHMSo-KKgF2q_8HlSXOks7HZHvFRoOH8E5Bfo/exec",
+  tok:null,exp:0,tc:null,email:"",reselect:false,
+  token(skipWho){ // must be called inside the click, before any await, so the Google pop-up is allowed
     if(this.tok&&Date.now()<this.exp-60e3)return Promise.resolve(this.tok);
     if(!window.google||!google.accounts||!google.accounts.oauth2)return Promise.reject(new Error("offline"));
-    if(!this.tc)this.tc=google.accounts.oauth2.initTokenClient({client_id:this.CID,scope:"https://www.googleapis.com/auth/drive.file",callback:()=>{}});
-    return new Promise((ok,no)=>{this.tc.callback=r=>{if(r.error)return no(new Error(r.error));this.tok=r.access_token;this.exp=Date.now()+r.expires_in*1000;this.who();ok(this.tok);setTimeout(()=>this.flush(),0);};
-      this.tc.error_callback=e=>no(new Error(e.type||"signin"));this.tc.requestAccessToken({prompt:""});});
+    const scope=this.API_URL?"openid email":"https://www.googleapis.com/auth/drive.file";
+    if(!this.tc)this.tc=google.accounts.oauth2.initTokenClient({client_id:this.CID,scope,callback:()=>{}});
+    const pr=this.reselect?"select_account":""; this.reselect=false;
+    return new Promise((ok,no)=>{this.tc.callback=r=>{if(r.error)return no(new Error(r.error));this.tok=r.access_token;this.exp=Date.now()+r.expires_in*1000;this.email="";paintSign();if(!this.API_URL){this.who();setTimeout(()=>this.flush(),0);}else if(!skipWho){this.who().catch(()=>{});}ok(this.tok);};
+      this.tc.error_callback=e=>no(new Error(e.type||"signin"));this.tc.requestAccessToken({prompt:pr});});
+  },
+  async rpc(action,payload){
+    const r=await fetch(this.API_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action,token:this.tok,...(payload||{})})});
+    if(!r.ok)throw new Error(`Bridge error (${r.status})`);
+    let j; try{j=await r.json();}catch(_){throw new Error("Could not reach the RHU sync service. Try again.");}
+    if(!j||!j.ok){
+      const err=new Error((j&&j.error)||"Request failed"); err.code=j&&j.code;
+      if(err.code==="UNAUTH"){this.tok=null;this.exp=0;paintSign();}
+      throw err;
+    }
+    return j;
   },
   async api(url,opt={}){for(let a=0;;a++){const r=await fetch(url,{...opt,headers:{Authorization:"Bearer "+this.tok,...(opt.body&&typeof opt.body==="string"?{"Content-Type":"application/json"}:{}),...(opt.headers||{})}});
     if(r.status===429&&a<3){await new Promise(k=>setTimeout(k,(a+1)*15000));continue;}
     if(!r.ok)throw new Error(`${r.status} ${(await r.text()).slice(0,200)}`); return r.status===204?null:(opt.raw?r:r.json());}},
-  async who(){try{const a=await this.api("https://www.googleapis.com/drive/v3/about?fields=user(emailAddress)");this.email=a.user.emailAddress;}catch(e){} paintSign(); if(this.email)siteFromEmail(this.email).catch(()=>{});},
+  async who(){
+    if(this.API_URL){
+      try{
+        const a=await this.rpc("whoami");
+        this.email=a.email||"";
+        if(a.site){SITE=a.site; try{localStorage.setItem("prenatalSite",JSON.stringify({last:SITE}))}catch(e){} render();}
+        paintSign();
+        setTimeout(()=>this.flush(),0);
+        return a;
+      }catch(e){
+        if(e.code==="FORBIDDEN"||e.code==="UNAUTH"){this.tok=null;this.exp=0;this.email="";this.reselect=true;paintSign();}
+        throw e;
+      }
+    }
+    try{const a=await this.api("https://www.googleapis.com/drive/v3/about?fields=user(emailAddress)");this.email=a.user.emailAddress;}catch(e){} paintSign(); if(this.email)siteFromEmail(this.email).catch(()=>{});
+  },
   q(s){return encodeURIComponent(s);},
   async folder(name,parent){const p=parent||"root", ck=`${p}/${name}`; this._fc=this._fc||{}; if(this._fc[ck])return this._fc[ck];
     const f=await this.api(`https://www.googleapis.com/drive/v3/files?q=${this.q(`name='${name.replace(/'/g,"\\'")}' and mimeType='application/vnd.google-apps.folder' and '${p}' in parents and trashed=false`)}&fields=files(id)`);
@@ -3692,6 +3726,7 @@ const CLOUD={on:location.origin==="https://benbasilio.github.io",CID:"7139168701
     if(del.length)await this.api(`${S}:batchUpdate`,{method:"POST",body:JSON.stringify({requests:del.sort((a,b)=>b[1]-a[1]).map(([sid,i])=>({deleteDimension:{range:{sheetId:sid,dimension:"COLUMNS",startIndex:i,endIndex:i+1}}}))})});},
   // one save: Drive file + tracker row + visits row
   async push(job){
+    if(this.API_URL){const r=await this.rpc("push",{job}); return {rec:r.rec,id:r.id,stale:!!r.stale};}
     const root=await this.folder("Bagac Prenatal Records"), yr=await this.folder(job.year,root), br=await this.folder(job.brgy||"No barangay",yr);
     const sid=await this.tracker(root), S=`https://sheets.googleapis.com/v4/spreadsheets/${sid}/values`;
     const normD=s=>{const p=parseFlex(s);return p&&p.d?iso(p.d):String(s||"").trim();};
@@ -3742,8 +3777,12 @@ const CLOUD={on:location.origin==="https://benbasilio.github.io",CID:"7139168701
     const q=this.queue().filter(x=>!(x.name===job.name&&x.edd===job.edd)); q.push(job); this.setQueue(q);
     tokP.then(()=>this.flush()).catch(()=>ehrToast("Saved on device; sign in to RHU Drive to upload.",true));
   },
-  async list(){const r=await this.api(`https://www.googleapis.com/drive/v3/files?q=${this.q("appProperties has { key='app' and value='prenatal' } and trashed=false")}&orderBy=modifiedTime desc&pageSize=1000&fields=files(id,name,appProperties,modifiedTime)`);return r.files;},
-  async get(id){return (await this.api(`https://www.googleapis.com/drive/v3/files/${id}?alt=media`,{raw:true})).json();}
+  async list(){
+    if(this.API_URL)return (await this.rpc("list")).files||[];
+    const r=await this.api(`https://www.googleapis.com/drive/v3/files?q=${this.q("appProperties has { key='app' and value='prenatal' } and trashed=false")}&orderBy=modifiedTime desc&pageSize=1000&fields=files(id,name,appProperties,modifiedTime)`);return r.files;},
+  async get(id){
+    if(this.API_URL)return (await this.rpc("get",{fid:id})).data;
+    return (await this.api(`https://www.googleapis.com/drive/v3/files/${id}?alt=media`,{raw:true})).json();}
 };
 function paintSign(){const b=$("signBtn"); if(!b)return; const q=CLOUD.queue().length, ok=CLOUD.tok&&Date.now()<CLOUD.exp;
   const full=ok?`✓ ${CLOUD.email||"Signed in"}${q?` · ${q} to upload`:""}`:`Sign in to RHU Drive${q?` (${q} waiting)`:""}`;
@@ -3755,7 +3794,7 @@ function paintSign(){const b=$("signBtn"); if(!b)return; const q=CLOUD.queue().l
   if(!bn){bn=document.createElement("div");bn.id="syncBar";bn.className="alert amber";bn.style.cssText="margin:8px auto;max-width:1280px;display:flex;gap:10px;align-items:center;flex-wrap:wrap";$("topbar").after(bn);}
   const old=new Date(Math.min(...Q.map(j=>j.saved||+isoToDate(j.date)||Date.now())));
   bn.innerHTML=`<span style="flex:1"><b>${Q.length} saved form${Q.length>1?"s":""} waiting to sync</b> (oldest ${mdy(old)}). Sign in to upload to the RHU Drive and the Pregnancy Tracker.</span><button class="small" id="syncGo">Sign in</button>`;
-  $("syncGo").onclick=()=>CLOUD.token().catch(e=>ehrToast(e.message==="offline"?"No internet right now; try again when online.":"Sign-in failed: "+e.message,true));}
+  $("syncGo").onclick=()=>CLOUD.token().then(()=>CLOUD.flush()).catch(e=>ehrToast(e.message==="offline"?"No internet right now; try again when online.":"Sign-in failed: "+e.message,true));}
 /* Device site from the signed-in account: the RHU account is RHU, any other account is a BHS.
    Only a SHA-256 of the RHU email is in this public file. The last site stays on the device for signed-out saves. */
 const RHU_HASH="0ed95199634aa8b0bdc8b464f3d58f5c67065b90114e6761e7802813a958ac54";
@@ -3833,7 +3872,7 @@ function closeModal(){$("modal").classList.add("hidden");$("modal").classList.re
 if(CLOUD.on){
   document.querySelectorAll(".cloudOnly").forEach(x=>x.classList.remove("hidden"));
   const g=document.createElement("script"); g.src="https://accounts.google.com/gsi/client"; g.async=true; document.head.appendChild(g);
-  $("signBtn").onclick=()=>CLOUD.token().then(()=>CLOUD.flush()).catch(e=>ehrToast("Sign-in failed: "+e.message,true));
+  $("signBtn").onclick=()=>CLOUD.token(true).then(()=>CLOUD.API_URL&&!CLOUD.email?CLOUD.who():CLOUD.flush()).catch(e=>ehrToast("Sign-in failed: "+e.message,true));
   // sign-in screen: shown at start and again when the sign-in expires (the form behind it stays); "Continue offline" only without internet
   const gate=$("gate"), signedIn=()=>CLOUD.tok&&Date.now()<CLOUD.exp-60e3; let offlineOK=false;
   $("gateLogo").src=document.querySelector("header.top .logo").src;
@@ -3842,8 +3881,8 @@ if(CLOUD.on){
   const gateHide=()=>{gate.classList.add("out"); setTimeout(()=>gate.classList.add("hidden"),300);};
   gate.classList.remove("hidden"); gateOffBtn();
   $("gateGo").onclick=()=>{const b=$("gateGo"); b.disabled=true; $("gateErr").textContent="";
-    CLOUD.token().then(()=>{offlineOK=false; gateHide(); if(linkOpen)linkOpen(); else checkMatch(); /* EHR patient loaded while signed out */})
-      .catch(e=>{const off=e.message==="offline"||!navigator.onLine; $("gateErr").textContent=off?"No internet connection.":"Sign-in did not complete. Try again.";
+    CLOUD.token(true).then(()=>CLOUD.API_URL?CLOUD.who():null).then(()=>{offlineOK=false; gateHide(); if(linkOpen)linkOpen(); else checkMatch(); /* EHR patient loaded while signed out */})
+      .catch(e=>{const off=e.message==="offline"||!navigator.onLine; $("gateErr").textContent=off?"No internet connection.":(e.code==="FORBIDDEN"||e.code==="UNAUTH")?e.message:"Sign-in did not complete. Try again.";
         if(off)$("gateOff").classList.remove("hidden");})
       .finally(()=>{b.disabled=false;});};
   $("gateOff").onclick=()=>{offlineOK=true; gateHide(); ehrToast("Working offline: saves stay on this device and upload at the next sign-in.");};
@@ -3995,7 +4034,19 @@ function dashParseRows(tVals,vVals,today){
   }).sort((a,b)=>b.ts-a.ts);
   Object.values(visitsByRec).forEach(arr=>arr.sort((a,b)=>b.ts-a.ts));
 
-  const pRaw=toObjs(tVals).filter(r=>r["Record ID"]||r["Name"]);
+  const pRawAll=toObjs(tVals).filter(r=>r["Record ID"]||r["Name"]);
+  // Deduplicate by Record ID (keeps first/most recently updated row if sheet has leftover duplicate rows)
+  const seenRec=new Map();
+  pRawAll.forEach(r=>{
+    const id=(r["Record ID"]||"").trim();
+    if(!id){seenRec.set("__no_id_"+seenRec.size,r); return;}
+    const prev=seenRec.get(id);
+    if(!prev){seenRec.set(id,r); return;}
+    const dtA=Date.parse(prev["Updated"]||"")||+(dParseDate(prev["Last visit"])||0);
+    const dtB=Date.parse(r["Updated"]||"")||+(dParseDate(r["Last visit"])||0);
+    if(dtB>dtA) seenRec.set(id,r);
+  });
+  const pRaw=[...seenRec.values()];
   const patients=pRaw.map(r=>{
     const status=r["Status"]||"Active";
     const active=status==="Active", delivered=status==="Delivered";
@@ -4501,18 +4552,26 @@ async function dashLoad(force){
   dashPopFilters(); dashRender();
   try{
     await CLOUD.token();
-    const root=await CLOUD.folder("Bagac Prenatal Records");
-    const tid=await CLOUD.tracker(root);
-    const [sheet,files]=await Promise.all([
-      CLOUD.api(`https://sheets.googleapis.com/v4/spreadsheets/${tid}/values:batchGet?ranges=${CLOUD.q("Tracker!A1:ZZ")}&ranges=${CLOUD.q("Visits!A1:ZZ")}&valueRenderOption=FORMATTED_VALUE`),
-      CLOUD.list().catch(()=>[])
-    ]);
-    const tVals=(sheet.valueRanges&&sheet.valueRanges[0]&&sheet.valueRanges[0].values)||[];
-    const vVals=(sheet.valueRanges&&sheet.valueRanges[1]&&sheet.valueRanges[1].values)||[];
+    let tVals=[], vVals=[], files=[];
+    if(CLOUD.API_URL){
+      const d=await CLOUD.rpc("dashboard");
+      tVals=d.tVals||[]; vVals=d.vVals||[];
+    } else {
+      const root=await CLOUD.folder("Bagac Prenatal Records");
+      const tid=await CLOUD.tracker(root);
+      const [sheet,fl]=await Promise.all([
+        CLOUD.api(`https://sheets.googleapis.com/v4/spreadsheets/${tid}/values:batchGet?ranges=${CLOUD.q("Tracker!A1:ZZ")}&ranges=${CLOUD.q("Visits!A1:ZZ")}&valueRenderOption=FORMATTED_VALUE`),
+        CLOUD.list().catch(()=>[])
+      ]);
+      tVals=(sheet.valueRanges&&sheet.valueRanges[0]&&sheet.valueRanges[0].values)||[];
+      vVals=(sheet.valueRanges&&sheet.valueRanges[1]&&sheet.valueRanges[1].values)||[];
+      files=fl||[];
+    }
     const parsed=dashParseRows(tVals,vVals);
     DASH.patients=parsed.patients; DASH.visits=parsed.visits; DASH.visitsByRec=parsed.visitsByRec;
-    DASH.files=files||[]; DASH.fileByRec={};
+    DASH.files=files; DASH.fileByRec={};
     DASH.files.forEach(f=>{const r=f.appProperties&&f.appProperties.recId; if(r&&!DASH.fileByRec[r])DASH.fileByRec[r]=f.id;});
+    DASH.patients.forEach(p=>{if(p.recId&&p.driveFileId&&!DASH.fileByRec[p.recId])DASH.fileByRec[p.recId]=p.driveFileId;});
     DASH.loadedAt=Date.now(); DASH.stale=false;
     try{localStorage.setItem(DASH_CACHE,JSON.stringify({ts:DASH.loadedAt,tVals,vVals}));}catch(e){}
   }catch(e){
