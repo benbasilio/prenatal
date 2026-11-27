@@ -1,5 +1,5 @@
 // Offline cache. build.py rewrites V when files change.
-const V="bf0714dbcf";
+const V="5c77fe8f9b";
 const FILES=["./","index.html","jspdf.umd.min.js","manifest.webmanifest","icons/icon-180.png","icons/icon-192.png","icons/icon-512.png","icons/maskable-512.png"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(V).then(c=>Promise.all(FILES.map(f=>fetch(f,{cache:"no-cache"}).then(r=>c.put(f,r))))).then(()=>self.skipWaiting()));});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==V).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
