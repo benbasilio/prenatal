@@ -126,6 +126,8 @@ body.pp #s3,body.pp #s4,body.pp #s5,body.pp #s6,body.pp #epdsCard,body.pp label.
 .pg .pgb{flex:1;min-height:0;overflow:hidden}.pg .cont{font-style:italic;font-size:9pt;margin:8px 0 0}
 .pg .pgn{position:absolute;bottom:.4in;left:0;right:0;text-align:center;font-size:8.5pt}
 .letter.ref.tight{font-size:9pt}.letter.ref.tight h4{margin:6px 0 2px}.letter.ref.tight td,.letter.ref.tight th{font-size:8.5pt;padding:1px 4px}.letter.ref .lh{position:relative;padding-bottom:6px;margin-bottom:0}.letter.ref .lh img{position:absolute;left:0;top:0}
+.pdfpg{background:#fff;margin:0 auto 12px;border:1px solid #cbd5e1;box-shadow:0 2px 10px rgba(0,0,0,.14);border-radius:4px;overflow:hidden}
+.pdfpg canvas{display:block;width:100%;height:auto}
 /* phones (iPhone 17 Pro Max 440 pt wide, Android) */
 input::placeholder,textarea::placeholder{font-size:13px}
 @media (max-width:500px){input::placeholder,textarea::placeholder{font-size:12px}select:has(option:checked[value=""]),#loc:has(option[value="none"]:checked),#wU,#hU,#tU,select[data-u],#refNote.dflt{font-size:12px!important}}
@@ -290,8 +292,8 @@ body.viewonly main .card{opacity:.96}
 @media print{
   body>*:not(#modal),#modal .box>*:not(#mSheet){display:none!important}
   body,.modal,.modal .box{position:static;display:block;padding:0;margin:0;background:none;box-shadow:none;max-width:none;overflow:visible}
-  .sheet,.letter{zoom:1;margin:0;border:none;box-shadow:none}
-  .sheet,.letter{break-after:page}.sheet:last-child,.letter:last-child{break-after:auto}
+  .sheet,.letter,.pdfpg{zoom:1;margin:0;border:none;box-shadow:none;border-radius:0;max-width:none!important}
+  .sheet,.letter,.pdfpg{break-after:page}.sheet:last-child,.letter:last-child,.pdfpg:last-child{break-after:auto}
   .letter{width:auto}
 }
 /* ===== Apple-style theme (HIG): Light & Dark mode, frosted bars, crisp cards, segmented controls ===== */
@@ -991,7 +993,7 @@ html[data-theme="dark"] .db-st.dlv{background:rgba(167,139,250,.2);color:#DDD6FE
 
 <!-- 10 EPDS -->
 <section class="card" id="epdsCard">
-  <h2 style="display:flex;align-items:center;gap:8px"><span class="n">10</span><span style="flex:1">Depression and Abuse Screening</span></h2>
+  <h2 style="display:flex;align-items:center;gap:8px"><span class="n">10</span><span style="flex:1">Depression and Abuse Screening</span><button type="button" class="ghost small" id="printEpds" title="Blank EPDS + Abuse Assessment Screen, US Letter">Print</button></h2>
   <h3 style="font-size:14px;margin:4px 0">EPDS — Antas ng Postnatal Depression ng Edinburgh (Tagalog)</h3>
   <div id="epdsReq" class="alert amber hidden"><b>Required at this visit</b> (1st contact, or first visit from 28 weeks). Risk stratification waits until all 10 items are answered.</div>
   <div id="epdsAsk" class="row"><span id="epdsAskTxt">EPDS done before in this pregnancy?</span>
@@ -1003,17 +1005,18 @@ html[data-theme="dark"] .db-st.dlv{background:rgba(167,139,250,.2);color:#DDD6FE
     <div id="epdsQs"></div>
     <div id="epdsRes" style="margin-top:10px"></div>
   </div>
-  <h3 style="font-size:14px;margin:16px 0 4px">Abuse Assessment Screen (5 tanong) — itanong nang pribado, wala ang partner</h3>
-  <div class="row">Abuse screen done before in this pregnancy?
-    <span class="yn"><label class="chk"><input type="radio" name="aasPrev" value="1"> Yes</label>
-    <label class="chk"><input type="radio" name="aasPrev" value="0"> No</label></span><button class="ghost small" style="margin-left:auto" id="printEpds" title="Blank EPDS + Abuse Assessment Screen, US Letter">Print</button></div>
-  <div id="aasOff" class="hint hidden">Abuse screen already done; section collapsed.</div>
-  <div id="aasWrap" class="hidden" style="margin-top:10px">
-      
+  <div id="aasSec" class="hidden">
+    <h3 style="font-size:14px;margin:16px 0 4px">Abuse Assessment Screen (5 tanong) — itanong nang pribado, wala ang partner</h3>
+    <div id="aasAsk" class="row hidden">Abuse screen done before in this pregnancy?
+      <span class="yn"><label class="chk"><input type="radio" name="aasPrev" value="1"> Yes</label>
+      <label class="chk"><input type="radio" name="aasPrev" value="0"> No</label></span></div>
+    <div id="aasOff" class="hint hidden">Abuse screen already done; section collapsed.</div>
+    <div id="aasWrap" class="hidden" style="margin-top:6px">
       <p class="hint">Tagalog wording is a working translation of the Abuse Assessment Screen (McFarlane et al., 1992); it has not been formally validated.</p>
       <div id="aasQs"></div>
       <div id="aasRes"></div>
     </div>
+  </div>
 </section>
 
 <!-- 11 SUMMARY -->
@@ -1840,7 +1843,8 @@ function compute(){
     ...(C.w!=null&&C.w>=20?[["Fetal heart tone (from 20 weeks)",C.fht!=null]]:[]),
     ["Height and weight",!!(ht&&(wt||wt0))],
     ...RISK_GROUPS.map((g,gi)=>[`Risk factors: ${g.g} (tick or None)`,C.groupsDone[gi]]),
-    ["Labs done? (yes/no)",C.labsDone!=null]
+    ["Labs done? (yes/no)",C.labsDone!=null],
+    ...(!(C.w!=null&&C.w<14)?[["Deworming: done in this pregnancy? (yes/no)",radioVal("dwDone")!=null]]:[])
   ];
   if(C.pp){
     const res=$("dlvRes").value, isAb=res==="Abortion", isLive=!res||/^Live birth/.test(res);
@@ -1865,11 +1869,14 @@ function compute(){
   }
   // EPDS (Field Manual Step 6 / contact 4): at booking, and again in the third trimester (from 28 wk) unless already done this trimester
   C.epdsT3=!C.pp&&C.w!=null&&C.w>=28;
-  C.epdsMand=C.contact===1||(C.epdsT3&&radioVal("epdsPrev")!=="1"); C.epdsShow=C.epdsMand||radioVal("epdsPrev")==="0";
+  C.epdsMand=!C.pp&&(C.contact===1||(C.epdsT3&&radioVal("epdsPrev")!=="1")); C.epdsShow=!C.pp&&(C.epdsMand||radioVal("epdsPrev")==="0");
   C.epdsDone=EPDS.every((_,i)=>radioVal("e"+i)!=null);
+  C.epdsTotal=EPDS.reduce((t,_,i)=>t+Number(radioVal("e"+i)||0),0);
+  C.epdsI10=radioVal("e9")!=null?Number(radioVal("e9")):null;
+  C.epdsPos=!C.pp&&C.epdsShow&&((C.epdsDone&&C.epdsTotal>=10)||(C.epdsI10!=null&&C.epdsI10>=1));
   if(C.epdsMand) req.push(["EPDS (required at this visit)",C.epdsDone]);
   C.aasPrev=radioVal("aasPrev");
-  if(C.epdsMand) req.push(["Abuse screen: done before? or answered",C.aasPrev==="1"&&!(C.epdsDone&&EPDS.reduce((t,_,i)=>t+Number(radioVal("e"+i)||0),0)>=10)||AAS.every((_,i)=>radioVal("a"+i)!=null)]);
+  if(C.epdsPos) req.push(["Abuse screen (EPDS positive)",AAS.every((_,i)=>radioVal("a"+i)!=null)]);
   C.req=req; C.missing=req.filter(r=>!r[1]).map(r=>r[0]); C.progress=(req.length-C.missing.length)/req.length; C.ready=C.missing.length===0;
 
   /* ---- BAPP ---- */
@@ -2442,9 +2449,7 @@ Labs done:${C.labLines.length?"\n"+C.labLines.map(l=>"  "+l).join("\n"):(C.labsD
   const ws=ticked("DOH warning signs");
   const sec=["Conditions in the current pregnancy","Social and demographic","Past obstetric and surgical history","Pre-existing medical conditions"]
     .map(g=>{const t=ticked(g);return t.length?`${g}: ${t.join("; ")}`:"";}).filter(Boolean);
-  const ev=EPDS.map((_,i)=>radioVal("e"+i)), tot=ev.reduce((t,v)=>t+Number(v||0),0), i10=ev[9]!=null?Number(ev[9]):null;
-  const aasNeeded=(C.epdsDone&&tot>=10&&i10!=null&&i10<=2)||radioVal("aasPrev")==="0";
-  const aas=radioVal("aasPrev")==="1"||AAS.every((_,i)=>radioVal("a"+i)!=null)?"done":aasNeeded?"not done":"not needed";
+  const aas=!C.epdsPos?(C.epdsDone||radioVal("epdsPrev")==="1"?"not indicated (EPDS negative)":"not indicated"):(AAS.every((_,i)=>radioVal("a"+i)!=null)?"done":"not done");
   return `Date: ${mdy(C.vdate)}   Visit: ${C.contact?ord(C.contact)+" prenatal contact":""}
 LMP: ${lmp}   EDD: ${C.edd?mdy(C.edd)+" by "+C.basis:(C.lmp.unknown?"X":"")}${C.fht!=null||C.fh!=null?"\n":""}${C.fht!=null?`\nFHT: ${C.fht} bpm${$("fhtLoc").value?` (${$("fhtLoc").value})`:""}`:""}${C.fh!=null?`\nFundic height: ${C.fh} cm`:""}
 
@@ -2466,15 +2471,18 @@ function renderEPDS(){
   const vals=EPDS.map((_,i)=>radioVal("e"+i)); const done=vals.every(v=>v!=null);
   const total=vals.reduce((s,v)=>s+(v?Number(v):0),0); const i10=vals[9]!=null?Number(vals[9]):null;
   let h=`<div class="row"><span>EPDS total:</span><span class="score">${total}</span><span class="hint">/ 30 · ${vals.filter(v=>v!=null).length} of 10 answered</span></div>`;
-  let showAAS=false;
+  const epdsShow=CUR?CUR.epdsShow:true;
+  const showAAS=epdsShow&&((done&&total>=10)||(i10!=null&&i10>=1));
   if(i10===3) h+=`<div class="alert red"><b>Item 10 scored 3 (frequent thoughts of self-harm): REFER to Mariveles Mental Wellness General Hospital (MMWGH) Emergency Room today,</b> regardless of total score. Do not leave her alone; arrange escort.</div>`;
-  else if(i10===1||i10===2) h+=`<div class="alert amber"><b>Item 10 scored ${i10}: refer to the RHU Physician</b> for same-day assessment.</div>`;
+  else if(i10===1||i10===2) h+=`<div class="alert amber"><b>Item 10 scored ${i10}: refer to the RHU Physician</b> for same-day assessment and complete the Abuse Assessment Screen below.</div>`;
   if(done){
-    if(total>=10&&i10!=null&&i10<=2){h+=`<div class="alert amber"><b>EPDS ${total} (≥10): possible depression.</b> Probe further and screen for domestic violence below.</div>`;showAAS=true;}
+    if(total>=10&&i10!=null&&i10<=2){h+=`<div class="alert amber"><b>EPDS ${total} (≥10): possible depression.</b> Probe further and screen for domestic violence below.</div>`;}
     else if(total<10&&i10===0) h+=`<div class="alert green">EPDS ${total}: below 10, item 10 negative. Repeat in the third trimester and postpartum.</div>`;
   }
-  const aasPrev=radioVal("aasPrev"); showAAS=showAAS||aasPrev==="0";
-  $("epdsRes").innerHTML=h; $("aasWrap").classList.toggle("hidden",!showAAS); $("aasOff").classList.toggle("hidden",!(aasPrev==="1"&&!showAAS));
+  $("epdsRes").innerHTML=h;
+  if($("aasSec"))$("aasSec").classList.toggle("hidden",!showAAS);
+  $("aasWrap").classList.toggle("hidden",!showAAS);
+  $("aasOff").classList.add("hidden");
   if(showAAS){const a=AAS.map((_,i)=>radioVal("a"+i));const pos=a.some(v=>v==="1");const all=a.every(v=>v!=null);
     $("aasRes").innerHTML=pos?`<div class="alert red"><b>Positive abuse screen:</b> refer to the Barangay VAW Desk and the MSWDO (RA 9262). Document privately; make a safety plan.</div>`:(all?`<div class="alert green">Abuse screen negative. Ask again each trimester and postpartum.</div>`:"");}
 }
@@ -2703,7 +2711,7 @@ function refBlocks(){
     const e=epdsInfo();
     B.push({t:"h",text:"Mental health and safety screening"});
     B.push(kv("EPDS (Tagalog)",!e&&radioVal("epdsPrev")==="1"?(C.epdsT3?"Done earlier this trimester":"Done before in this pregnancy"):e?`Total ${e.total}/30${e.complete?"":" (incomplete)"}; item 10 (self-harm) score ${e.item10??"—"}`:"Not done at this visit"));
-    B.push(kv("Abuse Assessment Screen",e&&e.aas?e.aas:radioVal("aasPrev")==="1"?"Done before in this pregnancy":"Not done"));
+    B.push(kv("Abuse Assessment Screen",e&&e.aas?e.aas:!C.epdsPos?"Not indicated (EPDS negative)":"Not done"));
   }
   return B;
 }
@@ -2807,10 +2815,64 @@ function buildRefPDF(){
   return refPDFRun(k,"draw",hs);
 }
 
-/* jsPDF's built-in Helvetica only has WinAnsi glyphs: map the rest to plain text */
+/* jsPDF's built-in Helvetica only has WinAnsi glyphs: map the rest to plain text.
+   Also records every exact jsPDF drawing op per page so the in-app preview renders page-for-page identically to the saved PDF. */
 const PDF_MAP={"≥":">=","≤":"<=","→":"->","←":"<-","₀":"0","₁":"1","₂":"2","₃":"3","₄":"4","₅":"5","₆":"6","₇":"7","₈":"8","₉":"9","⁹":"9","☐":"[ ]","⚠":"!","−":"-","≈":"~","“":'"',"”":'"',"‘":"'","’":"'"};
 const pdfTxt=t=>typeof t==="string"?t.replace(/[≥≤→←₀-₉⁹☐⚠−≈“”‘’]/g,c=>PDF_MAP[c]).replace(/[^\x00-\xFF–—•…€]/g,"?"):Array.isArray(t)?t.map(pdfTxt):t;
-function pdfSafe(doc){for(const f of ["text","splitTextToSize","getTextWidth"]){const o=doc[f].bind(doc);doc[f]=(t,...a)=>o(pdfTxt(t),...a);}return doc;}
+function pdfSafe(doc){
+  const ps=doc.internal&&doc.internal.pageSize;
+  const rec={w:ps?ps.getWidth():8.5,h:ps?ps.getHeight():11,pages:[[]],cur:0,st:{style:"normal",size:12,tc:"#000",dc:"#000",lw:0.01}};
+  doc._rec=rec;
+  const cur=()=>rec.pages[rec.cur];
+  const rgb=(r,g,b)=>g==null?`rgb(${r},${r},${r})`:`rgb(${r},${g},${b})`;
+  const wrap=(m,fn)=>{if(typeof doc[m]!=="function")return; const o=doc[m].bind(doc); doc[m]=(...a)=>{fn(...a); return o(...a);};};
+  wrap("addPage",()=>{rec.pages.push([]); rec.cur=rec.pages.length-1;});
+  wrap("setPage",n=>{rec.cur=Math.max(0,Math.min(rec.pages.length-1,(+n||1)-1));});
+  wrap("setFont",(_,style)=>{rec.st.style=style||"normal";});
+  wrap("setFontSize",sz=>{rec.st.size=+sz||12;});
+  wrap("setTextColor",(r,g,b)=>{rec.st.tc=rgb(r,g,b);});
+  wrap("setDrawColor",(r,g,b)=>{rec.st.dc=rgb(r,g,b);});
+  wrap("setLineWidth",w=>{rec.st.lw=+w||0.01;});
+  wrap("line",(x1,y1,x2,y2)=>{cur().push({k:"l",x1,y1,x2,y2,c:rec.st.dc,lw:rec.st.lw});});
+  wrap("rect",(x,y,w,h)=>{cur().push({k:"r",x,y,w,h,c:rec.st.dc,lw:rec.st.lw});});
+  wrap("addImage",(src,_,x,y,w,h)=>{cur().push({k:"i",src,x,y,w,h});});
+  for(const f of ["splitTextToSize","getTextWidth"]){const o=doc[f].bind(doc); doc[f]=(t,...a)=>o(pdfTxt(t),...a);}
+  {const o=doc.text.bind(doc); doc.text=(t,x,y,opt)=>{const s=pdfTxt(t); cur().push({k:"t",t:Array.isArray(s)?s.slice():String(s??""),x,y,a:(opt&&opt.align)||"left",style:rec.st.style,size:rec.st.size,c:rec.st.tc}); return o(s,x,y,opt);};}
+  return doc;
+}
+const _pdfImgCache={};
+function pdfImg(src){
+  if(_pdfImgCache[src])return _pdfImgCache[src];
+  return (_pdfImgCache[src]=new Promise(res=>{if(typeof Image==="undefined")return res(null); const im=new Image(); im.onload=()=>res(im); im.onerror=()=>res(null); im.src=src;}));
+}
+let LAST_PDF=null, LAST_PDF_KEY="";
+async function renderPDFPreview(doc,titleBase){
+  LAST_PDF=doc; LAST_PDF_KEY=MODE;
+  const rec=doc._rec, n=rec.pages.length, DPI=150;
+  $("mTitle").textContent=`${titleBase} (${n} page${n===1?"":"s"})`;
+  const srcs=[...new Set(rec.pages.flatMap(p=>p.filter(o=>o.k==="i").map(o=>o.src)))];
+  const imgs=Object.fromEntries(await Promise.all(srcs.map(async s=>[s,await pdfImg(s)])));
+  const box=$("mSheet"); box.innerHTML="";
+  const cw=Math.round(rec.w*DPI), ch=Math.round(rec.h*DPI), maxW=rec.w<=4.5?"420px":"760px";
+  rec.pages.forEach(ops=>{
+    const wrap=document.createElement("div"); wrap.className="pdfpg"; wrap.style.maxWidth=maxW;
+    const cv=document.createElement("canvas"); cv.width=cw; cv.height=ch;
+    const ctx=cv.getContext("2d");
+    ctx.fillStyle="#ffffff"; ctx.fillRect(0,0,cw,ch);
+    ops.forEach(op=>{
+      if(op.k==="l"){ctx.strokeStyle=op.c; ctx.lineWidth=Math.max(1,op.lw*DPI); ctx.beginPath(); ctx.moveTo(op.x1*DPI,op.y1*DPI); ctx.lineTo(op.x2*DPI,op.y2*DPI); ctx.stroke();}
+      else if(op.k==="r"){ctx.strokeStyle=op.c; ctx.lineWidth=Math.max(1,op.lw*DPI); ctx.strokeRect(op.x*DPI,op.y*DPI,op.w*DPI,op.h*DPI);}
+      else if(op.k==="i"){const im=imgs[op.src]; if(im)ctx.drawImage(im,op.x*DPI,op.y*DPI,op.w*DPI,op.h*DPI);}
+      else if(op.k==="t"){
+        ctx.fillStyle=op.c; ctx.textAlign=op.a; ctx.textBaseline="alphabetic";
+        ctx.font=`${/italic/i.test(op.style)?"italic ":""}${/bold/i.test(op.style)?"700 ":""}${(op.size*DPI/72).toFixed(2)}px Helvetica, Arial, sans-serif`;
+        if(Array.isArray(op.t)){const lh=op.size*1.15*DPI/72; op.t.forEach((line,i)=>ctx.fillText(line,op.x*DPI,op.y*DPI+i*lh));}
+        else ctx.fillText(op.t,op.x*DPI,op.y*DPI);
+      }
+    });
+    wrap.appendChild(cv); box.appendChild(wrap);
+  });
+}
 
 /* ===================== BLANK EPDS (US Letter) ===================== */
 function epdsHead(){const C=CUR;return [[["Pangalan",C.name,5.4],["Edad",C.age!=null?String(C.age):"",2.1]],[["Barangay",C.brgy?brgyShort(C.brgy):"",5.4],["Petsa",C.vdate?mdy(C.vdate):"",2.1]]];}
@@ -2830,7 +2892,15 @@ function epdsHTML(){
    ${AAS.map((q,i)=>`<div style="margin:3px 0">${i+1}. ${esc(q)} &nbsp; ☐ Oo &nbsp; ☐ Hindi</div>`).join("")}
    <div style="border:1px solid #000;padding:6px;margin-top:10px"><b>Para sa kawani (staff use)</b>${[...EPDS_KEY,...EPDS_STAFF].map(t=>`<div>${esc(t)}</div>`).join("")}</div></div>`;
 }
-function openEpds(){MODE="epds";$("modal").classList.remove("drive");$("mClose").textContent="Close";$("mTitle").textContent="Blank EPDS preview (US Letter)";$("mSheet").innerHTML=epdsHTML();$("mMsg").textContent="Save the PDF, open it and print on US Letter at 100%.";$("modal").querySelector(".box").classList.add("wide");$("modal").classList.remove("hidden");}
+function openEpds(){
+  MODE="epds"; LAST_PDF=null; $("modal").classList.remove("drive"); $("mClose").textContent="Close";
+  $("mTitle").textContent="Blank EPDS preview (US Letter)";
+  $("mMsg").textContent="Save the PDF, open it and print on US Letter at 100%.";
+  $("modal").querySelector(".box").classList.add("wide");
+  $("modal").classList.remove("hidden");
+  if(window.jspdf) renderPDFPreview(buildEpdsPDF(),"Blank EPDS preview (US Letter)");
+  else $("mSheet").innerHTML=epdsHTML();
+}
 function buildEpdsPDF(){
   const {jsPDF}=window.jspdf; const doc=pdfSafe(new jsPDF({unit:"in",format:"letter",orientation:"portrait"}));
   const W=8.5,H=11,M=0.5,CW=W-2*M; let y=M;
@@ -2898,11 +2968,16 @@ function dangerSheetHTML(){
 function printNotes(){const C=CUR,n=[];if(MODE==="rx"&&C.bpNote)n.push("For BP monitoring");if(MODE==="rx")n.push(...C.notes);if(MODE==="lab")n.push(...(C.labNotes||[]));if(C.cbcNote)n.push(C.cbcNote);return n}
 function addrStr(){const C=CUR;return C.brgy?`Brgy. ${brgyShort(C.brgy)}`:""}
 function openPreview(mode){
-  MODE=mode; const C=CUR;
+  MODE=mode; LAST_PDF=null; const C=CUR;
   if(!C.doc){alertMsg("Select the visiting physician first.");return}
   $("modal").classList.remove("drive"); $("mClose").textContent="Close";
+  const baseTitle=(mode==="lab"?"Lab request":"Prescription")+" preview (4 × 6 in)";
+  $("mTitle").textContent=baseTitle;
+  $("mMsg").textContent=`Save the PDF, open it and print at actual size (100%) on ${paper()}.`;
+  $("modal").querySelector(".box").classList.remove("wide");
+  $("modal").classList.remove("hidden");
+  if(window.jspdf){ renderPDFPreview(buildPDF(),baseTitle); return; }
   const items=getPrintItems(); const title=mode==="lab"?"DIAGNOSTIC REQUEST":"PRESCRIPTION";
-  $("mTitle").textContent=(mode==="lab"?"Lab request":"Prescription")+" preview (4 × 6 in)";
   const page=(its,start,notes)=>`<div class="sheet"><div class="hd"><b>Municipality of Bagac, Bataan</b><br>Rural Health Unit</div>
    <div style="display:flex;justify-content:space-between;gap:8px"><span>Name: <span class="u">${esc(C.name||"")}</span></span><span style="white-space:nowrap">Age/Sex: <span class="u">${C.age??""}/F</span></span></div>
    <div style="display:flex;justify-content:space-between;gap:8px;align-items:flex-end"><span>Address: <span class="u">${esc(addrStr())}</span></span><span style="white-space:nowrap">Date: <span class="u">${mdy(new Date())}</span></span></div>
@@ -2912,7 +2987,6 @@ function openPreview(mode){
    <ol start="${start}">${its.map(i=>`<li class="${i.red?"red":""}">${mode==="rx"?`<b>${esc(i.main)}</b><br>${esc(i.sub)}${i.start?`<br><b style="color:#c00000">${esc(i.start)}</b>`:""}`:esc(i.main)}</li>`).join("")}</ol>
    ${notes?printNotes().map(n=>`<div style="margin-top:4px;font-style:italic">${esc(n)}</div>`).join(""):""}
    <div class="sig"><div style="display:inline-block;text-align:left"><span class="ln"></span><br><b>${esc(C.doc.name)}</b><br>Lic. No. ${C.doc.lic}<br>${esc(C.doc.title||"Rural Health Physician")}</div></div></div>`;
-  $("modal").classList.remove("hidden"); // shown first so the sheets can be measured
   const out=[]; let i=0;
   do{ let n=items.length-i;
     for(;;){ $("mSheet").innerHTML=page(items.slice(i,i+n),i+1,i+n===items.length); const sh=$("mSheet").firstChild;
@@ -2921,19 +2995,17 @@ function openPreview(mode){
   }while(i<items.length);
   if(mode==="rx") out.push(dangerSheetHTML());
   $("mSheet").innerHTML=out.join("");
-  $("mMsg").textContent=`Save the PDF, open it and print at actual size (100%) on ${paper()}.`;
-  $("modal").querySelector(".box").classList.remove("wide");
-  $("modal").classList.remove("hidden");
 }
 function openRef(){
-  MODE="ref"; const C=CUR;
+  MODE="ref"; LAST_PDF=null; const C=CUR;
   if(!C.doc){alertMsg("Select the visiting physician first.");return}
   $("modal").classList.remove("drive"); $("mClose").textContent="Close";
   $("mTitle").textContent="Referral letter preview (US Letter)";
   $("mMsg").textContent="Save the PDF, open it and print on US Letter at 100%.";
   $("modal").querySelector(".box").classList.add("wide");
   $("modal").classList.remove("hidden");
-  paginateRef(); // after showing: pages are measured
+  if(window.jspdf) renderPDFPreview(buildRefPDF(),"Referral letter preview (US Letter)");
+  else paginateRef();
 }
 function alertMsg(t){$("modal").classList.add("drive");$("modal").querySelector(".box").classList.remove("wide");$("mClose").textContent="OK";$("mTitle").textContent="Notice";$("mSheet").innerHTML=`<div class="alert amber" style="white-space:pre-line">${esc(t)}</div>`;$("mMsg").textContent="";$("modal").classList.remove("hidden")}
 function buildPDF(){
@@ -3012,7 +3084,7 @@ let downloadsNS=null;
 (async()=>{try{if(window.claude&&window.claude.use)downloadsNS=await window.claude.use("downloads")}catch(e){}})();
 async function savePDF(){
   if(!window.jspdf){$("mMsg").textContent="PDF library did not load. Check the internet connection and reload.";return}
-  const doc=MODE==="ref"?buildRefPDF():MODE==="epds"?buildEpdsPDF():buildPDF(); const C=CUR;
+  const doc=(LAST_PDF&&LAST_PDF_KEY===MODE)?LAST_PDF:(MODE==="ref"?buildRefPDF():MODE==="epds"?buildEpdsPDF():buildPDF()); const C=CUR;
   const sur=(C.name||"patient").split(/[ ,]/)[0].replace(/[^A-Za-z0-9-]/g,"")||"patient";
   const fn=`${MODE==="lab"?"LabRequest":MODE==="ref"?"Referral":MODE==="epds"?"EPDS":"Prescription"}_${sur}_${todayISO()}.pdf`;
   const blob=doc.output("blob");
@@ -3025,7 +3097,7 @@ async function savePDF(){
 
 /* ===================== SECTION JUMP BAR + FOLDING ===================== */
 // Which section each required item belongs to (labels from the COMPLETENESS list in compute()).
-const REQ_SEC=l=>/^Age|^Date of birth|^Visit type|^ANC Contact/.test(l)?"s1":/^Date of delivery|^Place of delivery|^Birth attendant|^Mode of delivery|^Outcome/.test(l)?"sDlv":/Blood pressure|Repeat BP|Fetal heart|Height and weight/.test(l)?"s2":/^LMP|eUTZ/.test(l)?"s3":/^G and T-P|Past pregnancy/.test(l)?"s4":/^Risk factors/.test(l)?"s5":/^Uterine|^Lochia|^Perineal|^Breasts|^Pallor|^Urination|^Family planning|^Newborn|^Postpartum danger/.test(l)?"sPP":/^Labs/.test(l)?"s7":/EPDS|Abuse/.test(l)?"epdsCard":null;
+const REQ_SEC=l=>/^Age|^Date of birth|^Visit type|^ANC Contact/.test(l)?"s1":/^Date of delivery|^Place of delivery|^Birth attendant|^Mode of delivery|^Outcome/.test(l)?"sDlv":/Blood pressure|Repeat BP|Fetal heart|Height and weight/.test(l)?"s2":/^LMP|eUTZ/.test(l)?"s3":/^G and T-P|Past pregnancy/.test(l)?"s4":/^Risk factors/.test(l)?"s5":/^Uterine|^Lochia|^Perineal|^Breasts|^Pallor|^Urination|^Family planning|^Newborn|^Postpartum danger/.test(l)?"sPP":/^Labs/.test(l)?"s7":/^Deworming/.test(l)?"s9":/EPDS|Abuse/.test(l)?"epdsCard":null;
 const FOLDABLE=["s1","sDlv","s2","sPP","s3","s4","s5","s6","s7"]; // emergency, referral and screening never fold
 const SECS=[...document.querySelectorAll("main>section.card")];
 const SEC_NAME={s1:"Patient",sDlv:"Delivery",s2:"Vitals",sPP:"Postpartum",s3:"Dating",s4:"OB",s5:"Risk",s6:"BAPP",s7:"Labs",s8:"Request",s9:"Rx",emCard:"Emergency",refCard:"Referral",epdsCard:"EPDS",s11:"Summary"};
@@ -3064,8 +3136,8 @@ function updateNav(C){
   if(done.s3&&radioVal("eutzDone")==null) done.s3=false; // keep Dating open until the eUTZ question is answered
   // sections with nothing required: complete once the form is ready
   if(C.ready) ["s6","s8","s9","refCard","s11"].forEach(k=>done[k]=true);
-  // screening: both "done before?" answered, plus every item of a screen being done now
-  { const ep=radioVal("epdsPrev"), epOk=C.epdsMand||ep==="0"?C.epdsDone:ep==="1", apOk=radioVal("aasPrev")==="1"||AAS.every((_,i)=>radioVal("a"+i)!=null);
+  // screening: EPDS answered (or done before when not required); Abuse screen only when EPDS is positive
+  { const ep=radioVal("epdsPrev"), epOk=C.epdsMand||ep==="0"?C.epdsDone:ep==="1", apOk=!C.epdsPos||AAS.every((_,i)=>radioVal("a"+i)!=null);
     done.epdsCard=epOk&&apOk&&(done.epdsCard??true); }
   SECS.forEach(sec=>{
     const hideSec=sec.classList.contains("hidden")||(!!C.pp&&PP_HIDE_SECS.has(sec.id));
@@ -3868,7 +3940,7 @@ async function checkMatch(){
   $("mSheet").onclick=async e=>{const b=e.target.closest("[data-ret]"); if(!b)return; b.disabled=true; DIRTY=false; try{await loadDrive(b.dataset.ret); closeModal(); $("mSheet").onclick=null;}catch(err){b.disabled=false; ehrToast("Could not open: "+err.message,true);}};
 }
 $("name").addEventListener("change",checkMatch);
-function closeModal(){$("modal").classList.add("hidden");$("modal").classList.remove("drive");$("mClose").textContent="Close";$("mSheet").onclick=null;}
+function closeModal(){LAST_PDF=null;LAST_PDF_KEY="";$("modal").classList.add("hidden");$("modal").classList.remove("drive");$("mClose").textContent="Close";$("mSheet").onclick=null;}
 if(CLOUD.on){
   document.querySelectorAll(".cloudOnly").forEach(x=>x.classList.remove("hidden"));
   const g=document.createElement("script"); g.src="https://accounts.google.com/gsi/client"; g.async=true; document.head.appendChild(g);
