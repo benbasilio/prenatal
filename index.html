@@ -1147,7 +1147,8 @@ function ancStatus(C){const L=ancVisits(C); if(!C.lmpEq||C.days==null)return {L,
   const D=C.dlv?Math.min(C.days,dayDiff(C.dlv,C.lmpEq)):C.days; // windows after delivery never opened
   const missed=ANC_WIN.map((w,i)=>i+1).filter(x=>D>=ANC_WIN[x-1][1]&&!met.has(x)); // window closed, no visit in it
   return {L,met,missed,n:met.size,t:[cnt([1]),cnt([2,3]),cnt([4,5,6,7,8])],on:!missed.length};}
-const ancTxt=A=>A.undated?null:{t1:`${A.t[0]}/1`,t2:`${A.t[1]}/2`,t3:`${A.t[2]}/5`,anc:`${A.n}/8`+(A.n>=8?" (Complete)":A.missed.length?` (missed ${A.missed.join(", ")})`:""),on:A.on?"Yes":"No"};
+const ord=n=>n+(["th","st","nd","rd"][(n%100>10&&n%100<14)?0:(n%10<4?n%10:0)]);
+const ancTxt=A=>A.undated?null:{t1:`${A.t[0]}/1`,t2:`${A.t[1]}/2`,t3:`${A.t[2]}/5`,anc:`${A.n}/8`+(A.n>=8?" (Complete)":A.missed.length?` (missed: ${A.missed.map(ord).join(", ")} contact)`:""),on:A.on?"Yes":"No"};
 /* Td/Tdap doses (all pregnancies); kept with the patient's file */
 let tdDoses=[], CARRIED="";
 function buildTD(){$("tdBody").innerHTML=tdDoses.map((t,i)=>`<tr data-td="${i}"><td class="hint">#${i+1}</td><td><select class="tdt" aria-label="Vaccine"><option${t.type==="Td"?" selected":""}>Td</option><option${t.type==="Tdap"?" selected":""}>Tdap</option></select></td><td><span class="dwrap"><input type="text" class="tdd pvd" inputmode="numeric" placeholder="MM/DD/YYYY" value="${esc(t.date||"")}" aria-label="Date given">${CAL}</span></td><td><button type="button" class="ghost small tdx" aria-label="Remove dose">✕</button></td></tr>`).join("");}
@@ -2149,7 +2150,6 @@ function medLine(r){const sig=(r.s||"").replace(/^sig:\s*/i,""), t=sig.toUpperCa
   return fr?[d,dose,fr+(/\bKUNG\b/.test(t)?" PRN":"")].filter(Boolean).join(", "):[d,sig].filter(Boolean).join(", ");} // "kung may lagnat" = as needed
 const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 function summaryText(C){
-  const ord=n=>n+(["th","st","nd","rd"][(n%100>10&&n%100<14)?0:(n%10<4?n%10:0)]);
   const meds=C.rx.filter(r=>!unticked.has(r.id)).map(medLine);
   if(C.pp){
     const pd=C.dlv?dayDiff(C.vdate,C.dlv):null, res=$("dlvRes").value, isLive=!res||/^Live birth/.test(res);
@@ -2322,7 +2322,6 @@ function refBlocks(){
   const C=CUR, u=refUrgency(C), now=new Date(), B=[];
   const kv=(k,v)=>({t:"kv",k,v:v==null||v===""?"—":String(v)});
   const row=(...p)=>({t:"kvrow",pairs:p.map(([k,v])=>[k,v==null||v===""?"—":String(v)])});
-  const ord=n=>n+(["th","st","nd","rd"][(n%100>10&&n%100<14)?0:(n%10<4?n%10:0)]);
   B.push({t:"title",text:"REFERRAL"});
   B.push({t:"meta",text:`Date: ${mdy(now)}   Time: ${hm12(nowHM())}   Urgency: ${u.toUpperCase()}`});
   B.push({t:"to",text:u==="Emergency"?"To ER:":"To OB-Gyne:"});
@@ -3146,8 +3145,8 @@ function trackerRow(C,visits){
   // earliest visit, including typed-in ones before the tracker or outside the RHU
   set("1st visit",first.d?mdy(first.d):""); const fw=first.days!=null&&first.days>=0?first.days/7:""; // weeks as a number; the sheet shows it as "11 3/7"
   set("AOG at 1st visit",fw); set("Early ANC (≤12 wk)",fw===""?"":(fw<13?"Yes":"No"));
-  // leading ' keeps comma-separated lists like "2, 4, 6" as text (Sheets would parse them as a date)
-  if(T){set("T1 visits",A.t[0]); set("T2 visits",A.t[1]); set("T3 visits",A.t[2]); set("ANC #",A.n); set("Missed contacts",A.missed.length?"'"+A.missed.join(", "):""); set("On schedule",T.on);}
+  // ordinal list (e.g. "2nd, 4th, 6th") stays text cleanly in Google Sheets
+  if(T){set("T1 visits",A.t[0]); set("T2 visits",A.t[1]); set("T3 visits",A.t[2]); set("ANC #",A.n); set("Missed contacts",A.missed.length?A.missed.map(ord).join(", "):""); set("On schedule",T.on);}
   else set("Missed contacts","undated");
   set("AOG today",T_AOG); set("Trimester",T_TRI); set("BMI",C.bmi!=null?+C.bmi.toFixed(1):"");
   set("Last visit",mdy(C.vdate));
@@ -3412,7 +3411,7 @@ const CLOUD={on:location.origin==="https://benbasilio.github.io",CID:"7139168701
       const frac=v=>{const m=String(v).match(/^(\d+)\//);return m?+m[1]:""};
       col("Tracker",H,rows,"Risk",r=>/^\d$/.test(r.Risk)?riskLbl(r.Risk):r.Risk);
       ["T1 visits","T2 visits","T3 visits"].forEach(t=>col("Tracker",H,rows,t,r=>frac(r[t])));
-      col("Tracker",H,rows,"Missed contacts",r=>r["Missed contacts"]||(r["ANC #"]==="undated"?"undated":(String(r["ANC #"]).match(/missed ([^)]*)/)||[,""])[1]));
+      col("Tracker",H,rows,"Missed contacts",r=>r["Missed contacts"]||(r["ANC #"]==="undated"?"undated":(String(r["ANC #"]).match(/missed:?\s*([^)]*)/)||[,""])[1].replace(/\s*contact\b/i,"")));
       col("Tracker",H,rows,"ANC #",r=>frac(r["ANC #"])===""?r["ANC #"]==="undated"?"":r["ANC #"]:frac(r["ANC #"]));
       col("Tracker",H,rows,"AOG today",r=>id(r)?T_AOG:""); col("Tracker",H,rows,"Trimester",r=>id(r)?T_TRI:"");
       if(H.includes("HDP / HELLP / GT")){const p=r=>String(r["HDP / HELLP / GT"]||"").split(/;\s*/).filter(Boolean);
@@ -3684,6 +3683,6 @@ window.addEventListener("prenatal-ehr",e=>{
 });
 renderPast(); render();
 </script>
-<script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js");</script>
+<script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js",{updateViaCache:"none"});</script>
 </body>
 </html>
