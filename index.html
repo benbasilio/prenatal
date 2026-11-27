@@ -544,8 +544,9 @@ html[data-theme="dark"] #gate{background:radial-gradient(1100px 620px at 50% -12
     <label class="f" id="vdateWrap">Date<input type="date" id="vdate"></label>
     <label class="f">Visiting physician
       <select id="doc"><option value="">— Select physician —</option></select></label>
-    <label class="f">ANC Contact #
-      <select id="contact"><option value="">— Select —</option></select></label>
+    <label class="f">Visit type
+      <select id="contact"><option value="prenatal">Prenatal</option><option value="postpartum">Postpartum</option></select>
+      <span class="hint" id="visitNumHint"></span></label>
     <label class="f">Pregnancy location
       <select id="loc">
         <option value="none">Not yet confirmed</option>
@@ -554,8 +555,8 @@ html[data-theme="dark"] #gate{background:radial-gradient(1100px 620px at 50% -12
       </select></label>
   </div>
   <div id="pvWrap" style="margin-top:12px">
-    <div style="font-weight:600;margin:4px 0">Previous prenatal visits <span class="hint" style="font-weight:400">before this visit, including visits outside the RHU</span></div>
-    <table><thead><tr><th style="width:130px">Date</th><th>Place</th><th style="width:90px">AOG</th><th style="width:80px;white-space:nowrap">ANC slot</th><th style="width:44px"></th></tr></thead><tbody id="pvBody"></tbody></table>
+    <div style="font-weight:600;margin:4px 0">Previous prenatal visits <span class="hint" style="font-weight:400">before this visit, including visits outside the RHU — enter MM/DD/YYYY, MM/YYYY, or <b>Unknown</b> if date not recalled</span></div>
+    <table><thead><tr><th style="width:155px">Date</th><th>Place</th><th style="width:95px">AOG</th><th style="width:80px;white-space:nowrap">ANC slot</th><th style="width:44px"></th></tr></thead><tbody id="pvBody"></tbody></table>
     <div class="row" style="margin-top:6px;gap:10px"><button type="button" class="ghost small" id="pvAdd">+ Add previous visit</button><span class="hint" id="pvSum" style="flex:1"></span></div>
   </div>
 </section>
@@ -1049,8 +1050,6 @@ function isUTZ(s){return /ultrasound|\btvs\b|\butz\b|scan|\bcas\b|\bbpp\b|biophy
 /* ===================== BUILD UI ===================== */
 BRGYS.forEach(b=>$("brgy").insertAdjacentHTML("beforeend",`<option>${b}</option>`));
 DOCS.forEach(d=>$("doc").insertAdjacentHTML("beforeend",`<option value="${d.id}">${d.name}</option>`));
-for(let i=1;i<=12;i++)$("contact").insertAdjacentHTML("beforeend",`<option value="${i}">${i}${["st","nd","rd"][i-1]||"th"} contact</option>`);
-for(let i=1;i<=4;i++)$("contact").insertAdjacentHTML("beforeend",`<option value="p${i}">Postpartum ${i}</option>`); // not ANC contacts
 $("vdate").value=todayISO();
 
 const PP_DANGER=[
@@ -1135,7 +1134,8 @@ const ANC_WIN=[[0,98],[98,147],[147,196],[196,217],[217,245],[245,252],[252,259]
 const ancSlot=d=>d==null||d<0?null:(ANC_WIN.findIndex(([a,b])=>d>=a&&d<b)+1||null);
 const wkStr=d=>`${Math.floor(d/7)}${d%7?` ${d%7}/7`:""} wk`;
 const dayDiff=(a,b)=>Math.round((a-b)/864e5);
-function pvDate(p,vd){const r=parseFlex(p&&p.date); return r&&r.d&&r.d<vd?r.d:null;} // typed date, only if before this visit
+const isPvUnk=p=>/^(unknown|unk|\?+|na|n\/a)$/i.test(String((p&&p.date)||"").trim());
+function pvDate(p,vd){if(isPvUnk(p))return null; const r=parseFlex(p&&p.date); return r&&r.d&&r.d<vd?r.d:null;} // typed date, only if before this visit
 // every visit up to this one (typed-in, saved in the app, this visit), one per date, oldest first
 function ancVisits(C){const m=new Map(), put=(dt,src,place)=>{if(dt&&!isNaN(dt)&&!m.has(+dt))m.set(+dt,{src,place});};
   if(!C.pp)put(isoToDate($("vdate").value)||C.vdate,"today",SITE);
@@ -1166,29 +1166,32 @@ $("tdAdd").onclick=()=>{tdDoses.push({type:"Td",date:""}); buildTD(); DIRTY=true
 function buildPV(){ // visits saved in the app (locked), then typed-in ones
   const vd=$("vdate").value;
   $("pvBody").innerHTML=visitLog.filter(v=>v.date&&v.date<vd).map(v=>`<tr data-date="${v.date}"><td>${mdy(isoToDate(v.date))}</td><td>${esc(v.place||"—")} <span class="hint">· recorded in app</span></td><td class="pvAog"></td><td class="pvSlot"></td><td></td></tr>`).join("")+
-    prevVisits.map((p,i)=>`<tr data-pv="${i}"><td><span class="dwrap"><input type="text" class="pvd" inputmode="numeric" placeholder="MM/DD/YYYY" value="${esc(p.date||"")}" aria-label="Date of previous visit">${CAL}</span><div class="hint pverr"></div></td><td><select class="pvp" aria-label="Place of previous visit">${placeOpts(p.place)}</select></td><td class="pvAog"></td><td class="pvSlot"></td><td><button type="button" class="ghost small pvx" aria-label="Remove this visit">✕</button></td></tr>`).join("");
+    prevVisits.map((p,i)=>`<tr data-pv="${i}"><td><span class="dwrap"><input type="text" class="pvd" placeholder="MM/DD/YYYY or Unknown" value="${esc(p.date||"")}" aria-label="Date of previous visit (or Unknown)">${CAL}</span><div class="hint pverr"></div></td><td><select class="pvp" aria-label="Place of previous visit">${placeOpts(p.place)}</select></td><td class="pvAog"></td><td class="pvSlot"></td><td><button type="button" class="ghost small pvx" aria-label="Remove this visit">✕</button></td></tr>`).join("");
   if(document.body.classList.contains("viewonly"))applyView();
 }
 function paintPV(C){const A=C.anc;
-  const rows=[...$("pvBody").children].map(tr=>{let dt=null;
-    if(tr.dataset.pv!=null){const p=prevVisits[+tr.dataset.pv], r=parseFlex(p&&p.date), late=r&&r.d&&r.d>=C.vdate;
-      tr.querySelector(".pverr").textContent=r&&r.bad?"Use MM/DD/YYYY or MM/YYYY":late?"Must be before this visit":""; dt=pvDate(p,C.vdate);}
+  const rows=[...$("pvBody").children].map(tr=>{let dt=null, unk=false;
+    if(tr.dataset.pv!=null){const p=prevVisits[+tr.dataset.pv]; unk=isPvUnk(p);
+      if(unk){tr.querySelector(".pverr").textContent="";}
+      else {const r=parseFlex(p&&p.date), late=r&&r.d&&r.d>=C.vdate;
+        tr.querySelector(".pverr").textContent=r&&r.bad?"Use MM/DD/YYYY, MM/YYYY, or Unknown":late?"Must be before this visit":""; dt=pvDate(p,C.vdate);}}
     else dt=isoToDate(tr.dataset.date);
-    return {tr,dt,days:dt&&C.lmpEq?dayDiff(dt,C.lmpEq):null};});
+    return {tr,dt,unk,days:dt&&C.lmpEq?dayDiff(dt,C.lmpEq):null};});
   const seenSlots=new Set();
-  rows.slice().sort((a,b)=>(a.dt?+a.dt:Infinity)-(b.dt?+b.dt:Infinity)).forEach(({tr,days})=>{
+  rows.slice().sort((a,b)=>(a.dt?+a.dt:Infinity)-(b.dt?+b.dt:Infinity)).forEach(({tr,unk,days})=>{
+    if(unk){tr.querySelector(".pvAog").textContent="Date unknown"; tr.querySelector(".pvSlot").textContent="—"; return;}
     tr.querySelector(".pvAog").textContent=days==null?"":days<0?"before LMP":wkStr(days);
     const sl=days==null||days<0?null:ancSlot(days);
     if(sl){const extra=seenSlots.has(sl); seenSlots.add(sl); tr.querySelector(".pvSlot").textContent=extra?`${sl} (extra)`:String(sl);}
     else tr.querySelector(".pvSlot").textContent=days==null||days<0?"":"—";});
-  const T=ancTxt(A), tot=A&&A.L?A.L.length:0, ex=T&&tot>A.n?` (${tot} total visits; extra visits not counted)`:"";
-  $("pvSum").textContent=T?`With this visit: T1 ${T.t1} · T2 ${T.t2} · T3 ${T.t3} · ANC # ${T.anc}${ex} · On schedule: ${T.on}`:"ANC slots need the LMP or a dating ultrasound (section 3).";}
-// ANC Contact # = earlier visits + 1 (up to 12), until the user picks a number
+  const T=ancTxt(A), tot=A&&A.L?A.L.length:0, unkN=prevVisits.filter(isPvUnk).length;
+  const ex=T&&tot>A.n?` (${tot} dated visits; extra visits not counted)`:"";
+  const uTxt=unkN?` (+${unkN} undated)`:"";
+  $("pvSum").textContent=T?`With this visit: T1 ${T.t1} · T2 ${T.t2} · T3 ${T.t3} · ANC # ${T.anc}${ex}${uTxt} · On schedule: ${T.on}`:"ANC slots need the LMP or a dating ultrasound (section 3).";}
+// Visit type auto-selects Postpartum once a delivery date is recorded, otherwise Prenatal
 function autoContact(){const c=$("contact"); if(document.body.classList.contains("viewonly")||!(c.value===""||c.dataset.auto==="1"))return;
   const vd=isoToDate($("vdate").value)||new Date(), dl=isoToDate($("dlvDate").value);
-  if(dl&&vd>=dl){c.value="p"+Math.min(4,visitLog.filter(v=>{const d=isoToDate(v.date);return d&&d>=dl&&d<vd}).length+1); c.dataset.auto="1"; return;}
-  const n=new Set([...visitLog.map(v=>isoToDate(v.date)).filter(d=>d&&d<vd),...prevVisits.map(p=>pvDate(p,vd)).filter(Boolean)].map(Number)).size;
-  c.value=String(Math.min(12,n+1)); c.dataset.auto="1";}
+  c.value=(dl&&vd>=dl)?"postpartum":"prenatal"; c.dataset.auto="1";}
 function pvEdit(e){const tr=e.target.closest("[data-pv]"); if(!tr)return; const p=prevVisits[+tr.dataset.pv]; if(!p)return;
   if(e.target.classList.contains("pvd"))p.date=e.target.value.trim(); else if(e.target.classList.contains("pvp"))p.place=e.target.value;}
 $("pvBody").addEventListener("input",pvEdit); $("pvBody").addEventListener("change",pvEdit);
@@ -1218,8 +1221,20 @@ const SEVBP=C=>C.bpU&&(C.bpU[0]>=160||C.bpU[1]>=110);
 function compute(){
   const C={}; // context
   C.name=$("name").value.trim(); C.pin=$("pin").value.replace(/\D/g,""); C.pinTxt=pinFmt(C.pin); C.brgy=$("brgy").value; C.doc=DOCS.find(d=>d.id===$("doc").value)||null;
-  C.vdate=isoToDate($("vdate").value)||new Date(); const cv=$("contact").value; C.pp=/^p[1-4]$/.test(cv)?+cv[1]:null; C.contact=C.pp?null:num("contact");
+  C.vdate=isoToDate($("vdate").value)||new Date();
   C.dlv=isoToDate($("dlvDate").value)||null;
+  const isPP=$("contact").value==="postpartum";
+  if(isPP){
+    const priorPP=visitLog.filter(v=>{const d=isoToDate(v.date); return d&&d<C.vdate&&(/^PP/i.test(v.contact)||(C.dlv&&d>=C.dlv));}).length;
+    C.pp=priorPP+1; C.contact=null;
+  } else {
+    C.pp=null;
+    const priorDated=new Set([
+      ...visitLog.filter(v=>{const d=isoToDate(v.date); return d&&d<C.vdate&&!/^PP/i.test(v.contact)&&!(C.dlv&&d>=C.dlv);}).map(v=>+isoToDate(v.date)),
+      ...prevVisits.map(p=>pvDate(p,C.vdate)).filter(Boolean).map(Number)
+    ]);
+    C.contact=priorDated.size+prevVisits.filter(isPvUnk).length+1;
+  }
   const DB=parseLMP($("dob").value); C.dob=DB.date&&DB.date<=C.vdate?DB.date:null; C.age=C.dob?yrsOld(C.dob,C.vdate):null;
   if(C.age!=null&&(C.age<9||C.age>60)){C.age=null;C.dob=null;}
   $("age").value=C.age??""; $("dob").style.borderColor=$("dob").value.trim()&&!C.dob?"#c62828":"";
@@ -1556,7 +1571,7 @@ function compute(){
     ["G and T-P-A-L",C.tpalDone],
     ["Past pregnancy table (manner of each)",C.past.every(p=>p.manner)],
     ["Past pregnancy table (date of each)",C.past.every(p=>p.pd&&p.pd.d&&!p.pd.bad)],
-    ["ANC Contact #",C.contact!=null],
+    ["Visit type",!!$("contact").value],
     ["Blood pressure",C.sbp!=null&&C.dbp!=null],
     ...(C.needRepeat?[["Repeat BP (first reading ≥140/90 or <90/50)",false]]:[]),
     ...(C.w!=null&&C.w>=20?[["Fetal heart tone (from 20 weeks)",C.fht!=null]]:[]),
@@ -2071,6 +2086,10 @@ function render(){
   document.body.classList.toggle("pp",!!C.pp);
   $("sDlv").classList.toggle("hidden",!C.pp);
   $("sPP").classList.toggle("hidden",!C.pp);
+  if($("visitNumHint")){
+    if(C.pp){const pd=C.dlv?dayDiff(C.vdate,C.dlv):null; $("visitNumHint").textContent=`Auto: Postpartum #${C.pp}${pd!=null&&pd>=0?` · Day ${pd} after delivery`:""}`;}
+    else {const T=ancTxt(C.anc); $("visitNumHint").textContent=`Auto: Prenatal visit #${C.contact}${T?` · DOH 1-2-5: ${T.anc}`:""}`;}
+  }
   if($("s11Title")) $("s11Title").textContent=C.pp?"Postpartum visit summary (copy and paste)":"OB history summary (copy and paste)";
   if(C.pp){
     const res=$("dlvRes").value, isAb=res==="Abortion", isLive=!res||/^Live birth/.test(res);
@@ -2686,7 +2705,7 @@ async function savePDF(){
 
 /* ===================== SECTION JUMP BAR + FOLDING ===================== */
 // Which section each required item belongs to (labels from the COMPLETENESS list in compute()).
-const REQ_SEC=l=>/^Age|^Date of birth|^ANC Contact/.test(l)?"s1":/^Date of delivery|^Place of delivery|^Birth attendant|^Mode of delivery|^Outcome/.test(l)?"sDlv":/Blood pressure|Repeat BP|Fetal heart|Height and weight/.test(l)?"s2":/^LMP|eUTZ/.test(l)?"s3":/^G and T-P|Past pregnancy/.test(l)?"s4":/^Risk factors/.test(l)?"s5":/^Uterine|^Lochia|^Perineal|^Breasts|^Pallor|^Urination|^Family planning|^Newborn|^Postpartum danger/.test(l)?"sPP":/^Labs/.test(l)?"s7":/EPDS|Abuse/.test(l)?"epdsCard":null;
+const REQ_SEC=l=>/^Age|^Date of birth|^Visit type|^ANC Contact/.test(l)?"s1":/^Date of delivery|^Place of delivery|^Birth attendant|^Mode of delivery|^Outcome/.test(l)?"sDlv":/Blood pressure|Repeat BP|Fetal heart|Height and weight/.test(l)?"s2":/^LMP|eUTZ/.test(l)?"s3":/^G and T-P|Past pregnancy/.test(l)?"s4":/^Risk factors/.test(l)?"s5":/^Uterine|^Lochia|^Perineal|^Breasts|^Pallor|^Urination|^Family planning|^Newborn|^Postpartum danger/.test(l)?"sPP":/^Labs/.test(l)?"s7":/EPDS|Abuse/.test(l)?"epdsCard":null;
 const FOLDABLE=["s1","sDlv","s2","sPP","s3","s4","s5","s6","s7"]; // emergency, referral and screening never fold
 const SECS=[...document.querySelectorAll("main>section.card")];
 const SEC_NAME={s1:"Patient",sDlv:"Delivery",s2:"Vitals",sPP:"Postpartum",s3:"Dating",s4:"OB",s5:"Risk",s6:"BAPP",s7:"Labs",s8:"Request",s9:"Rx",emCard:"Emergency",refCard:"Referral",epdsCard:"EPDS",s11:"Summary"};
@@ -2710,7 +2729,7 @@ function foldSummary(id,C){
   const v=k=>($(k)&&$(k).value||"").trim(), cf=CARRIED&&["s3","s4","s6","s7"].includes(id)?`Carried from ${CARRIED} · `:"";
   if(id==="s6") return cf+`Aspirin ${C.aspTxt||"—"}`;
   if(cf){const t=CARRIED; CARRIED=""; const r=cf+foldSummary(id,C); CARRIED=t; return r;}
-  if(id==="s1") return [v("name"),C.age!=null?C.age+" y":"",v("brgy")&&("Brgy. "+v("brgy")),C.pp?"PP "+C.pp:C.contact!=null?"ANC "+C.contact:""].filter(Boolean).join(" · ");
+  if(id==="s1") return [v("name"),C.age!=null?C.age+" y":"",v("brgy")&&("Brgy. "+v("brgy")),C.pp?"Postpartum #"+C.pp:C.contact!=null?"Prenatal #"+C.contact:""].filter(Boolean).join(" · ");
   if(id==="sDlv") return [C.dlv?mdy(C.dlv):"",v("dlvMode"),v("dlvRes"),v("dlvFac")||v("dlvPlace")].filter(Boolean).join(" · ");
   if(id==="s2") return [v("bp")&&"BP "+v("bp")+(v("bp2")?" → "+v("bp2"):""),$("mapOut").textContent.split(/[.;]/)[0],v("wt")&&"Wt "+v("wt")+" "+v("wU")].filter(Boolean).join(" · ");
   if(id==="sPP") return [C.ppExam.fp,C.ppDs.size?`${C.ppDs.size} danger sign${C.ppDs.size>1?"s":""}`:(C.ppDsDone?"No danger signs":"")].filter(Boolean).join(" · ");
@@ -2869,7 +2888,7 @@ function setView(text,canNewVisit){
   b.innerHTML=`<span style="flex:1"><b>${esc(text)}</b></span>`+(canNewVisit?`<button class="small" id="nvBtn">Record a New Visit</button><button class="ghost small" id="ppBtn">Postpartum / Delivery</button>`:"");
   if(canNewVisit){
     $("nvBtn").onclick=()=>{setView(null);newVisit();DIRTY=false;ehrToast("New visit started");};
-    $("ppBtn").onclick=()=>{setView(null);newVisit();const c=$("contact"); const nxt=Math.min(4,visitLog.filter(v=>/^PP/.test(v.contact)).length+1); c.value="p"+nxt; c.dataset.auto="0"; render(); $("sDlv").scrollIntoView({block:"start"}); DIRTY=false; ehrToast(`Postpartum ${nxt} mode opened`);};
+    $("ppBtn").onclick=()=>{setView(null);newVisit();const c=$("contact"); c.value="postpartum"; c.dataset.auto="0"; render(); $("sDlv").scrollIntoView({block:"start"}); DIRTY=false; ehrToast(`Postpartum #${CUR.pp} mode opened`);};
   }
   applyView();
 }
@@ -2909,7 +2928,9 @@ function restore(d){
   RESTORING=true;
   try{
   $("clearBtn").onclick.call(null,true); $("G").value=d.G||""; renderPast();
-  ctrlKeys().forEach(([k,e])=>{if(!(k in d.f))return;const v=d.f[k]; if(e.type==="checkbox"||e.type==="radio")e.checked=!!v; else e.value=v;});
+  ctrlKeys().forEach(([k,e])=>{if(!(k in d.f))return;let v=d.f[k];
+    if(k==="#contact~1"){v=/^p[1-4]$|^postpartum$/i.test(String(v||""))?"postpartum":"prenatal";}
+    if(e.type==="checkbox"||e.type==="radio")e.checked=!!v; else e.value=v;});
   visitLog=[...(d.visits||[])]; prevVisits=(d.prev||[]).map(p=>({...p})); tdDoses=(d.td||[]).map(t=>({...t})); buildTD(); $("contact").dataset.auto=$("contact").value?"0":"1"; buildPV();
   customLabs.push(...(d.customLabs||[])); customRx.push(...(d.customRx||[])); (d.unticked||[]).forEach(x=>unticked.add(x)); emExtra.push(...(d.emExtra||[]));
   document.querySelectorAll(".pm").forEach(t=>t.closest("td").querySelector(".pdc").classList.toggle("hidden",!(t.value==="Abortion"||t.value==="Ectopic")));
@@ -3588,11 +3609,12 @@ window.addEventListener("prenatal-ehr",e=>{
   $("brgy").value=b||"";
   // Chart (vitals + HPI): EHR value replaces the form value; blanks are skipped.
   const c=p.chart||{}, got=[];
-  const MAP={sbp:"sbp",dbp:"dbp",hr:"hr",rr:"rr",temp:"temp",ht:"ht",wt:"wt",spo2:"spo2",wt0:"wt0",lmp:"lmp",G:"G",P:"Pa",T:"T",Pp:"Pp",A:"A",L:"L",contact:"contact"};
+  const MAP={sbp:"sbp",dbp:"dbp",hr:"hr",rr:"rr",temp:"temp",ht:"ht",wt:"wt",spo2:"spo2",wt0:"wt0",lmp:"lmp",G:"G",P:"Pa",T:"T",Pp:"Pp",A:"A",L:"L"};
   if(c.wt!=null||c.wt0!=null)$("wU").value="kg";
   if(c.ht!=null){$("hU").value="cm";$("htCmRow").classList.remove("hidden");$("htFtRow").classList.add("hidden");}
   if(c.temp!=null)$("tU").value="°C";
   for(const k in MAP)if(c[k]!=null&&c[k]!==""){$(MAP[k]).value=c[k];got.push(k);}
+  if(c.contact!=null&&c.contact!==""){$("contact").value="prenatal";got.push("visit type");}
   if(c.lmp)$("lmpPick").value="";
   if(c.G!=null)renderPast();
   syncVis(); render(); saveDraft();
