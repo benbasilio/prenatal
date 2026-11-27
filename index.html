@@ -508,6 +508,221 @@ html[data-theme="dark"] #gate{background:radial-gradient(1100px 620px at 50% -12
   #gate .gtop{flex:1}
   #gate h1{font-size:32px}
 }
+/* ===== IN-APP MOBILE-FIRST DASHBOARD ===== */
+#dashBtn{flex:none;gap:5px}
+#dashBtn .dbShort{display:none}
+body.dash-open #dashBtn{background:var(--accent)!important;color:#fff!important}
+body.dash-open #jump,body.dash-open .wrap,body.dash-open #mbar,body.dash-open #sheetScrim,body.dash-open #viewBar{display:none!important}
+body.dash-open{padding-bottom:calc(16px + env(safe-area-inset-bottom))}
+#dashView{display:none;max-width:1320px;margin:0 auto;padding:16px 20px 36px;color:var(--ink)}
+body.dash-open #dashView{display:block}
+.db-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.db-brand{display:flex;align-items:center;gap:10px;min-width:0}
+.db-brand h2{margin:0;font-size:20px;font-weight:700;letter-spacing:-.02em;line-height:1.2}
+.db-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;background:var(--tint);color:var(--accent-ink);white-space:nowrap;font-variant-numeric:tabular-nums}
+.db-nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.db-tabs{display:inline-flex;gap:2px;padding:3px;background:var(--fill2);border-radius:10px}
+.db-tabs button{background:none;color:var(--muted);border:0;border-radius:8px;padding:6px 13px;min-height:34px;font-size:13px;font-weight:600;white-space:nowrap}
+.db-tabs button.on{background:var(--seg-on);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.db-tabs button:hover:not(.on){background:rgba(128,128,128,.12)!important;color:var(--ink)}
+.db-new{min-height:38px;padding:6px 14px;font-size:13px;font-weight:600;border-radius:10px}
+.db-ref{width:38px;height:38px;min-height:38px;padding:0;border-radius:10px;flex:none}
+.db-ref.spin svg{animation:dbSpin .8s linear infinite}
+@keyframes dbSpin{to{transform:rotate(360deg)}}
+.db-meta{font-size:12px;color:var(--muted);margin:-6px 0 12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+/* Filter bar */
+.db-flt{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.db-search{position:relative;flex:1 1 220px;min-width:180px}
+.db-search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--muted);pointer-events:none}
+.db-search input{width:100%;padding-left:34px;background:var(--card);box-shadow:var(--card-shadow);min-height:40px;border-radius:10px}
+.db-sels{display:flex;align-items:center;gap:8px;flex-wrap:wrap;flex:2 1 420px}
+.db-sels select{flex:1 1 128px;min-width:120px;background-color:var(--card);box-shadow:var(--card-shadow);min-height:40px;font-size:13px;border-radius:10px}
+.db-chips{display:flex;gap:6px;flex-wrap:wrap;margin:-4px 0 12px}
+.db-chips:empty{display:none}
+.db-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600;background:var(--tint);color:var(--accent-ink);border:0;min-height:28px;cursor:pointer}
+/* KPI Grid */
+.db-kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.db-kpi{background:var(--card);border:0;border-radius:14px;padding:14px 15px;box-shadow:var(--card-shadow);text-align:left;display:flex;flex-direction:column;gap:6px;cursor:pointer;color:var(--ink);transition:transform 140ms var(--ease-out),box-shadow 140ms ease;font-variant-numeric:tabular-nums;min-height:0;align-items:stretch;justify-content:flex-start}
+.db-kpi:hover{transform:translateY(-1px);background:var(--card)!important}
+.db-kpi.on{box-shadow:0 0 0 2px var(--accent-ink),var(--card-shadow)}
+.db-kpi-top{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.db-kpi-lbl{font-size:11px;font-weight:700;letter-spacing:.05em;color:var(--muted);text-transform:uppercase;line-height:1.25}
+.db-kpi-ic{width:17px;height:17px;flex:none}
+.db-kpi-val{display:flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.db-kpi-val b{font-size:24px;font-weight:750;letter-spacing:-.025em;line-height:1.05}
+.db-kpi-val span{font-size:12px;color:var(--muted);font-weight:500}
+/* Main two-column split: Risk Stratification + Clinical Alerts */
+.db-mid{display:grid;grid-template-columns:minmax(270px,5fr) minmax(0,8fr);gap:14px;margin-bottom:14px;align-items:start}
+.db-card{background:var(--card);border-radius:14px;padding:16px 18px;box-shadow:var(--card-shadow);min-width:0}
+.db-ch{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:12px}
+.db-ch h3{margin:0;font-size:16px;font-weight:700;letter-spacing:-.015em;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.db-ch .subt{font-size:12.5px;color:var(--muted);margin-top:2px}
+.db-cnt{font-size:12px;font-weight:600;color:var(--muted);background:var(--fill);padding:2px 9px;border-radius:999px;font-variant-numeric:tabular-nums}
+/* Risk bars */
+.db-rrow{display:block;width:100%;background:transparent;border:0;padding:8px 8px;margin:0 -8px;border-radius:10px;text-align:left;color:var(--ink);cursor:pointer;min-height:0}
+.db-rrow:hover{background:var(--fill)!important}
+.db-rrow.on{background:var(--tint)!important;box-shadow:inset 0 0 0 1px var(--accent-ink)}
+.db-rtop{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13.5px;margin-bottom:6px;font-variant-numeric:tabular-nums}
+.db-rlbl{display:inline-flex;align-items:center;gap:8px;font-weight:600}
+.db-dot{width:8px;height:8px;border-radius:50%;flex:none}
+.db-track{height:7px;border-radius:999px;background:var(--fill2);overflow:hidden}
+.db-fill{height:100%;border-radius:999px;transition:width 260ms var(--ease-out)}
+/* Clinical Alerts P1-P6 */
+.db-algrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.db-al{display:flex;flex-direction:column;gap:6px;width:100%;text-align:left;padding:12px 13px;border-radius:12px;border:1px solid transparent;cursor:pointer;color:var(--ink);min-height:0;align-items:stretch;justify-content:flex-start;transition:transform 140ms var(--ease-out)}
+.db-al:hover{transform:translateY(-1px)}
+.db-al.p1{background:#FEF2F2;border-color:#FECACA} .db-al.p2{background:#FFF7ED;border-color:#FED7AA}
+.db-al.p3{background:#FFFBEB;border-color:#FDE68A} .db-al.p4{background:#FEFCE8;border-color:#FEF08A}
+.db-al.p5{background:#EFF6FF;border-color:#BFDBFE} .db-al.p6{background:#F0FDFA;border-color:#99F6E4}
+html[data-theme="dark"] .db-al.p1{background:rgba(239,68,68,.13);border-color:rgba(239,68,68,.35)}
+html[data-theme="dark"] .db-al.p2{background:rgba(249,115,22,.13);border-color:rgba(249,115,22,.35)}
+html[data-theme="dark"] .db-al.p3{background:rgba(245,158,11,.13);border-color:rgba(245,158,11,.35)}
+html[data-theme="dark"] .db-al.p4{background:rgba(234,179,8,.13);border-color:rgba(234,179,8,.35)}
+html[data-theme="dark"] .db-al.p5{background:rgba(59,130,246,.13);border-color:rgba(59,130,246,.35)}
+html[data-theme="dark"] .db-al.p6{background:rgba(20,184,166,.13);border-color:rgba(20,184,166,.35)}
+.db-al-top{display:flex;align-items:center;gap:7px;min-width:0}
+.db-pbdg{font-size:11px;font-weight:800;padding:2px 6px;border-radius:6px;color:#fff;flex:none;letter-spacing:.02em}
+.db-pbdg.p1{background:#DC2626} .db-pbdg.p2{background:#EA580C} .db-pbdg.p3{background:#D97706}
+.db-pbdg.p4{background:#CA8A04} .db-pbdg.p5{background:#2563EB} .db-pbdg.p6{background:#0D9488}
+.db-al-nm{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.db-al-id{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:var(--muted);flex:none}
+.db-tags{display:flex;gap:5px;flex-wrap:wrap}
+.db-tag{font-size:11px;font-weight:650;padding:2px 7px;border-radius:6px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.db-tag.red{background:#FEE2E2;color:#991B1B} .db-tag.org{background:#FFEDD5;color:#9A3412}
+.db-tag.amb{background:#FEF3C7;color:#92400E} .db-tag.blu{background:#DBEAFE;color:#1E40AF}
+.db-tag.tel{background:#CCFBF1;color:#115E59} .db-tag.grn{background:#DCFCE7;color:#166534}
+.db-tag.gry{background:var(--fill2);color:var(--muted)}
+html[data-theme="dark"] .db-tag.red{background:rgba(239,68,68,.24);color:#FCA5A5}
+html[data-theme="dark"] .db-tag.org{background:rgba(249,115,22,.24);color:#FDBA74}
+html[data-theme="dark"] .db-tag.amb{background:rgba(245,158,11,.24);color:#FDE68A}
+html[data-theme="dark"] .db-tag.blu{background:rgba(59,130,246,.24);color:#93C5FD}
+html[data-theme="dark"] .db-tag.tel{background:rgba(20,184,166,.24);color:#5EEAD4}
+html[data-theme="dark"] .db-tag.grn{background:rgba(34,197,94,.24);color:#86EFAC}
+.db-al-rsn{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.db-al-more{width:100%;margin-top:10px;background:var(--fill)!important;color:var(--ink)!important;border-radius:10px;font-size:13px;font-weight:600;min-height:40px}
+.db-al-more svg{width:16px;height:16px;transition:transform 200ms var(--ease-out)}
+.db-al-more.exp svg{transform:rotate(180deg)}
+/* Registry & Visits desktop table + phone cards */
+.db-tblw{overflow-x:auto;margin:0 -18px;padding:0 18px}
+.db-tbl{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+.db-tbl th{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);padding:9px 8px;border-bottom:1px solid var(--line);white-space:nowrap;text-align:left;cursor:pointer;user-select:none}
+.db-tbl th.ns{cursor:default}
+.db-tbl td{padding:10px 8px;border-bottom:.5px solid var(--line);vertical-align:middle;white-space:nowrap}
+.db-tbl tbody tr{cursor:pointer;transition:background 120ms ease}
+.db-tbl tbody tr:hover{background:var(--fill)}
+.db-tbl .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:var(--muted)}
+.db-tbl .wrapcell{white-space:normal;max-width:260px}
+.db-rk{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:999px;font-size:12px;font-weight:650;white-space:nowrap}
+.db-rk::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.db-rk.l1{background:#E8F5E9;color:#1B5E20} .db-rk.l2{background:#E3F2FD;color:#0D47A1}
+.db-rk.l3{background:#FFF8E1;color:#8D5A00} .db-rk.l4{background:#FFEBEE;color:#B71C1C}
+.db-rk.lu{background:var(--fill2);color:var(--muted)}
+html[data-theme="dark"] .db-rk.l1{background:rgba(48,209,88,.18);color:#86EFAC}
+html[data-theme="dark"] .db-rk.l2{background:rgba(10,132,255,.2);color:#93C5FD}
+html[data-theme="dark"] .db-rk.l3{background:rgba(255,214,10,.2);color:#FDE047}
+html[data-theme="dark"] .db-rk.l4{background:rgba(255,69,58,.22);color:#FCA5A5}
+.db-st{display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:650;white-space:nowrap}
+.db-st.act{background:#E3F0EC;color:#0f6b5c} .db-st.dlv{background:#EDE9FE;color:#5B21B6}
+.db-st.oth{background:var(--fill2);color:var(--muted)}
+html[data-theme="dark"] .db-st.act{background:rgba(56,198,176,.18);color:#5EEAD4}
+html[data-theme="dark"] .db-st.dlv{background:rgba(167,139,250,.2);color:#DDD6FE}
+.db-cards{display:none;flex-direction:column;gap:10px}
+.db-pcard{background:var(--fill);border:0;border-radius:12px;padding:12px 13px;text-align:left;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;gap:7px;width:100%;align-items:stretch;justify-content:flex-start;min-height:0;box-shadow:inset 0 0 0 .5px var(--line)}
+.db-pcard:active{opacity:.88}
+.db-pc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.db-pc-nm{font-size:15px;font-weight:700;line-height:1.25}
+.db-pc-sub{font-size:12.5px;color:var(--muted);line-height:1.35}
+.db-pc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 10px;padding-top:6px;border-top:.5px solid var(--line);font-size:12.5px;font-variant-numeric:tabular-nums}
+.db-pc-grid span{color:var(--muted);display:block;font-size:11px}
+.db-pc-grid b{font-weight:650}
+.db-empty{text-align:center;padding:28px 16px;color:var(--muted);font-size:14px}
+/* Patient Info Slide-Over Drawer (Desktop) / Bottom Sheet (Phone) */
+#dashDrawer{position:fixed;inset:0;z-index:120;display:flex;justify-content:flex-end;background:rgba(0,0,0,.4);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity 200ms var(--ease-out)}
+#dashDrawer.open{opacity:1;pointer-events:auto}
+.db-sheet{width:min(580px,94vw);height:100%;background:var(--card);color:var(--ink);display:flex;flex-direction:column;box-shadow:-12px 0 40px rgba(0,0,0,.22);transform:translateX(100%);transition:transform 260ms var(--ease-drawer);overflow:hidden}
+#dashDrawer.open .db-sheet{transform:none}
+.db-sh-hd{padding:16px 20px 14px;border-bottom:.5px solid var(--line);background:var(--card);flex:none}
+.db-sh-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+.db-sh-badges{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.db-sh-id{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;font-weight:600;padding:3px 8px;border-radius:7px;background:var(--fill);color:var(--ink)}
+.db-sh-close{width:36px;height:36px;min-height:36px;padding:0;border-radius:50%;background:var(--fill)!important;color:var(--ink)!important;font-size:18px;flex:none}
+.db-sh-nm{margin:0;font-size:21px;font-weight:750;letter-spacing:-.02em;line-height:1.2}
+.db-sh-sub{font-size:13px;color:var(--muted);margin-top:4px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.db-sh-sub a{color:var(--accent-ink);font-weight:600;text-decoration:none}
+.db-sh-act{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+.db-sh-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 20px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:14px}
+.db-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;font-variant-numeric:tabular-nums}
+.db-stat{background:var(--fill);border-radius:11px;padding:10px 11px}
+.db-stat span{display:block;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.db-stat b{font-size:14.5px;font-weight:700;line-height:1.2;display:block}
+.db-stat b.ov{color:var(--warn)}
+.db-rsnbox{background:var(--al-amb-bg);border:1px solid rgba(224,168,0,.35);color:var(--al-amb-ink);border-radius:11px;padding:11px 13px;font-size:13px;line-height:1.45}
+.db-rsnbox b{display:block;font-size:12px;margin-bottom:3px}
+.db-sec{border:.5px solid var(--line);border-radius:12px;padding:13px 14px;background:var(--card)}
+.db-sec-t{font-size:11.5px;font-weight:750;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.db-kvg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 12px;font-size:13px;font-variant-numeric:tabular-nums}
+.db-kvg div{min-width:0}
+.db-kvg span{color:var(--muted)}
+.db-kvg b{font-weight:650;color:var(--ink)}
+.db-scrg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.db-scr{background:var(--fill);border-radius:9px;padding:8px 10px;min-width:0}
+.db-scr span{display:block;font-size:11px;color:var(--muted);margin-bottom:2px}
+.db-scr b{font-size:13px;font-weight:650;word-break:break-word}
+.db-scr b.flag{color:var(--warn)}
+.db-labtgl{background:none!important;color:var(--accent-ink)!important;padding:2px 0;min-height:28px;font-size:12.5px;font-weight:700;border-radius:6px}
+.db-lablist{display:flex;flex-direction:column;gap:6px}
+.db-lab{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:8px 10px;border-radius:9px;background:var(--fill);font-size:12.5px;line-height:1.4}
+.db-lab-d{font-size:11.5px;color:var(--muted);white-space:nowrap;flex:none;font-variant-numeric:tabular-nums}
+.db-vlist{display:flex;flex-direction:column;gap:8px}
+.db-vcard{border:.5px solid var(--line);border-radius:11px;padding:11px 13px;background:var(--card);font-size:12.5px;line-height:1.45;display:flex;flex-direction:column;gap:4px}
+.db-vc-hd{display:flex;justify-content:space-between;align-items:center;gap:8px;font-variant-numeric:tabular-nums}
+.db-vc-hd b{font-size:13.5px}
+.db-vc-hd span{font-size:12px;color:var(--muted);font-weight:600}
+.db-vc-vit{display:flex;gap:10px;flex-wrap:wrap;font-size:12.5px;font-variant-numeric:tabular-nums}
+.db-vc-vit b{font-weight:700}
+/* Tablet & Phone Breakpoints */
+@media (max-width:1120px){.db-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:960px){.db-mid{grid-template-columns:1fr}}
+@media (max-width:860px){
+  #dashBtn{min-height:40px;padding:6px 11px;font-size:13px}
+}
+@media (max-width:780px){
+  .db-tblw{display:none}
+  .db-cards{display:flex}
+}
+@media (max-width:720px){
+  #dashView{padding:12px 12px 28px}
+  .db-algrid{grid-template-columns:1fr}
+  #dashDrawer{align-items:flex-end;justify-content:stretch}
+  .db-sheet{width:100%;height:94dvh;max-height:94dvh;border-radius:18px 18px 0 0;transform:translateY(100%)}
+  .db-sheet::before{content:"";display:block;width:36px;height:4.5px;border-radius:3px;background:var(--grabber);margin:8px auto 0;flex:none}
+  .db-sh-hd{padding:10px 16px 12px}
+  .db-sh-body{padding:14px 16px calc(24px + env(safe-area-inset-bottom))}
+  .db-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .db-kvg,.db-scrg{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:640px){
+  .db-head{flex-direction:column;align-items:stretch;gap:10px}
+  .db-brand{justify-content:space-between}
+  .db-brand h2{font-size:18px}
+  .db-nav{justify-content:space-between}
+  .db-tabs{flex:1}
+  .db-tabs button{flex:1;padding:6px 8px;font-size:12.5px}
+  .db-flt{flex-direction:column;align-items:stretch}
+  .db-search{flex:none;width:100%}
+  .db-sels{display:grid;grid-template-columns:1fr 1fr;flex:none;width:100%}
+  .db-sels select{min-width:0;width:100%;font-size:14px!important}
+  .db-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .db-kpi{padding:12px 13px}
+  .db-kpi-val b{font-size:21px}
+  .db-card{padding:14px}
+}
+@media (max-width:440px){
+  #dashBtn .dbFull{display:none}
+  #dashBtn .dbShort{display:inline}
+  header.top{gap:6px;padding:8px 10px;padding-top:calc(8px + env(safe-area-inset-top))}
+  header.top h1{font-size:14.5px}
+}
 </style>
 <style id="pageSize">@page{size:4in 6in;margin:0}</style>
 </head>
@@ -523,7 +738,7 @@ html[data-theme="dark"] #gate{background:radial-gradient(1100px 620px at 50% -12
 <div id="topbar"><header class="top"><img class="logo" alt="Bagac Prenatal Screening" src="data:image/png;base64,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"><div>
   <h1>Prenatal Screening<span class="h1rest"> — Bagac Rural Health Unit</span></h1><div class="barPt" id="barPt"></div>
   <p>DOH DC 2021-0005 classification · BIMSP levels of care (Safe Motherhood Module 2 v2) · BAPP preeclampsia checklist · EPDS (Tagalog).</p></div>
-<button type="button" id="themeBtn" aria-label="Switch to Dark Mode" title="Switch to Dark Mode"><svg class="bi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button><button type="button" id="moreBtn" aria-label="More actions" aria-expanded="false">⋯</button><nav id="tools" aria-label="Patient"><button class="ghost small" id="newBtn">New Patient</button><button class="ghost small cloudOnly hidden" id="searchBtn">Search Patient</button><button class="ghost small" id="unfBtn">Unfinished visits <span id="unfN"></span></button><button class="ghost small" id="openBtn">Open saved file</button></nav>
+<button type="button" class="ghost small cloudOnly hidden" id="dashBtn" aria-pressed="false" title="Open Pregnancy Tracker Dashboard"><svg class="bi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg><span class="dbFull">Dashboard</span><span class="dbShort">Dash</span></button><button type="button" id="themeBtn" aria-label="Switch to Dark Mode" title="Switch to Dark Mode"><svg class="bi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg></button><button type="button" id="moreBtn" aria-label="More actions" aria-expanded="false">⋯</button><nav id="tools" aria-label="Patient"><button class="ghost small" id="newBtn">New Patient</button><button class="ghost small cloudOnly hidden" id="searchBtn">Search Patient</button><button class="ghost small" id="unfBtn">Unfinished visits <span id="unfN"></span></button><button class="ghost small" id="openBtn">Open saved file</button></nav>
 <button type="button" class="cloudOnly hidden" id="signBtn" style="margin-left:auto;flex:none">Sign in to RHU Drive</button>
 </header>
 
@@ -828,6 +1043,45 @@ html[data-theme="dark"] #gate{background:radial-gradient(1100px 620px at 50% -12
 </div></aside>
 </div>
 <button id="mbar" type="button" aria-label="Show risk stratification" aria-expanded="false"><span id="mbarDot"></span><span id="mbarTxt" style="flex:1">Risk stratification</span><svg class="mchev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg></button>
+
+<!-- IN-APP MOBILE-FRIENDLY DASHBOARD -->
+<section id="dashView" aria-label="Bagac Pregnancy Tracker Dashboard">
+  <div class="db-head">
+    <div class="db-brand">
+      <h2>Bagac Pregnancy Tracker</h2>
+      <span class="db-pill" id="dbCount">0 of 0 patients</span>
+    </div>
+    <div class="db-nav">
+      <div class="db-tabs" role="tablist" aria-label="Dashboard views">
+        <button type="button" role="tab" data-dbtab="overview" aria-selected="true" class="on">Overview</button>
+        <button type="button" role="tab" data-dbtab="registry" aria-selected="false">Patient Registry</button>
+        <button type="button" role="tab" data-dbtab="visits" aria-selected="false">Visits</button>
+      </div>
+      <button type="button" class="ghost db-ref" id="dbRefresh" aria-label="Refresh tracker data" title="Refresh tracker data"><svg class="bi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><polyline points="21 3 21 9 15 9"/></svg></button>
+      <button type="button" class="db-new" id="dbNewBtn">+ New Patient</button>
+    </div>
+  </div>
+  <div class="db-meta" id="dbMeta"></div>
+  <div class="db-flt">
+    <div class="db-search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <input type="search" id="dbQ" placeholder="Search ID, name, barangay, risk..." aria-label="Search patients">
+    </div>
+    <div class="db-sels">
+      <select id="dbBrgy" aria-label="Filter by barangay"><option value="">All Barangays</option></select>
+      <select id="dbStatus" aria-label="Filter by status"><option value="">Status: All</option><option value="Active">Status: Active</option><option value="Delivered">Status: Delivered</option><option value="Pregnancy loss">Status: Pregnancy loss</option><option value="Referred-transferred">Status: Referred-transferred</option><option value="Lost to follow-up">Status: Lost to follow-up</option></select>
+      <select id="dbTri" aria-label="Filter by trimester"><option value="">Trimester: All</option><option value="1">Trimester: 1st</option><option value="2">Trimester: 2nd</option><option value="3">Trimester: 3rd</option></select>
+      <select id="dbDoc" aria-label="Filter by physician"><option value="">Physician: All</option></select>
+    </div>
+  </div>
+  <div class="db-chips" id="dbChips"></div>
+  <div id="dbBody"></div>
+</section>
+
+<!-- PATIENT INFO SLIDE-OVER / MOBILE SHEET -->
+<div id="dashDrawer" role="dialog" aria-modal="true" aria-labelledby="dbShName" aria-hidden="true">
+  <div class="db-sheet" id="dbSheet"></div>
+</div>
 
 <!-- MODAL -->
 <div class="modal hidden" id="modal"><div class="box">
@@ -2856,6 +3110,7 @@ document.addEventListener("focusin",e=>{
 
 /* ===================== EVENTS ===================== */
 document.addEventListener("input",e=>{
+  if(e.target.closest&&e.target.closest("#dashView"))return;
   if(e.target.classList.contains("dueChk")||e.target.classList.contains("rxChk"))return; // change handler records the untick; re-rendering here would detach the box first
   if(e.target.id==="G")renderPast();
   if(e.target.id==="vdate")buildPV();
@@ -2867,6 +3122,7 @@ document.addEventListener("input",e=>{
 });
 document.addEventListener("change",e=>{
   const t=e.target;
+  if(t.closest&&t.closest("#dashView"))return;
   if(t.id==="contact")t.dataset.auto="0";
   if(t.id==="refUrg")$("refUrgMan").checked=true;
   if(t.classList.contains("pm")){t.closest("td").querySelector(".pdc").classList.toggle("hidden",!(t.value==="Abortion"||t.value==="Ectopic"));}
@@ -2909,9 +3165,10 @@ function applyTheme(t){
 }
 (()=>{let t="light";try{t=localStorage.getItem(THEME_KEY)||"light";}catch(e){} applyTheme(t);})();
 $("themeBtn").onclick=()=>{const nxt=document.documentElement.dataset.theme==="dark"?"light":"dark"; try{localStorage.setItem(THEME_KEY,nxt);}catch(e){} applyTheme(nxt);};
-// Escape closes open modal, bottom sheet, or overflow menu
+// Escape closes open drawer, modal, bottom sheet, or overflow menu
 document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;
-  if(!$("modal").classList.contains("hidden")) closeModal();
+  if($("dashDrawer")&&$("dashDrawer").classList.contains("open")) dashCloseDrawer();
+  else if(!$("modal").classList.contains("hidden")) closeModal();
   else if(document.body.classList.contains("sheet-open")) setSheet(false);
   else if(document.body.classList.contains("toolsOpen")){document.body.classList.remove("toolsOpen");$("moreBtn").setAttribute("aria-expanded","false");}
 });
@@ -2929,11 +3186,13 @@ const emrMed=r=>{const m=/^(.*?)\s*#\s*(\d+)\s*$/.exec(r.d),sig=r.s.replace(/^Si
   return {name:m?m[1]:r.d,qty:m?m[2]:"1",iq:td?" ":n?n[1]+" tabs":"1 tab",sig};};
 $("copyBtn").onclick=async()=>{const t=$("summary").value;try{await navigator.clipboard.writeText(t);$("copyMsg").textContent="Copied."}catch(e){$("summary").select();try{document.execCommand("copy");$("copyMsg").textContent="Copied."}catch(_){$("copyMsg").textContent="Select the text and press Ctrl+C."}}
   window.dispatchEvent(new CustomEvent("prenatal-labs",{detail:JSON.stringify({name:$("name").value.trim(),labs:CUR?CUR.due.filter(d=>!unticked.has(d.id)).map(d=>d.t):[],meds:CUR?CUR.rx.filter(r=>!unticked.has(r.id)).map(emrMed):[],ts:Date.now()})}));};
-$("clearBtn").onclick=keep=>{ if(keep!==true)dropDraft(); document.querySelectorAll("input[type=hidden]").forEach(x=>x.value=""); document.querySelectorAll(".bad").forEach(x=>x.classList.remove("bad"));
-  document.querySelectorAll("input[type=text]:not([readonly]),input[type=tel],input[type=number],input[type=time],input[type=date]:not(#vdate),textarea:not(.summary)").forEach(x=>x.value="");
+$("clearBtn").onclick=keep=>{ if(keep!==true)dropDraft();
+  const inDash=x=>x.closest&&x.closest("#dashView");
+  document.querySelectorAll("input[type=hidden]").forEach(x=>{if(!inDash(x))x.value="";}); document.querySelectorAll(".bad").forEach(x=>x.classList.remove("bad"));
+  document.querySelectorAll("input[type=text]:not([readonly]),input[type=tel],input[type=number],input[type=time],input[type=date]:not(#vdate),textarea:not(.summary)").forEach(x=>{if(!inDash(x))x.value="";});
   $("refNote").value="For evaluation and management."; emExtra.length=0; document.querySelectorAll("[data-given]").forEach(b=>b.textContent="Given");
-  document.querySelectorAll("input[type=checkbox],input[type=radio]").forEach(x=>x.checked=false);
-  document.querySelectorAll("select").forEach(x=>x.selectedIndex=0);
+  document.querySelectorAll("input[type=checkbox],input[type=radio]").forEach(x=>{if(!inDash(x))x.checked=false;});
+  document.querySelectorAll("select").forEach(x=>{if(!inDash(x))x.selectedIndex=0;});
   $("lmpPick").value="";$("dobPick").value="";$("vdate").value=todayISO();customLabs.length=0;customRx.length=0;unticked.clear();
   visitLog=[]; prevVisits=[]; tdDoses=[]; CARRIED=""; POP_SEEN={fht:false,spo2:false}; $("tdWrap").classList.remove("carried"); $("s6").classList.remove("fold"); buildTD(); $("contact").dataset.auto="1"; buildPV(); renderPast();render();window.scrollTo(0,0);
 };
@@ -2963,7 +3222,7 @@ $("saveBtn").onclick=()=>{
   if(!$("name").value.trim()){ehrToast("Enter the patient's name first.",true);return;}
   const d=snapshot(), k=unfKey(d); unfSet([...unfList().filter(x=>unfKey(x)!==k),d]); DIRTY=false; dropDraft();
   ehrToast("Saved on this device. Not yet in the Drive or Tracker — press End Visit when done.");};
-$("newBtn").onclick=()=>{if(!confirmLeave())return; setView(null); $("clearBtn").onclick(); DIRTY=false; ehrToast("Blank form for a new patient");};
+$("newBtn").onclick=()=>{if(!confirmLeave())return; if(typeof dashClose==="function")dashClose(); setView(null); $("clearBtn").onclick(); DIRTY=false; ehrToast("Blank form for a new patient");};
 $("unfBtn").onclick=()=>{const l=unfList();
   MODE="drive"; $("modal").classList.add("drive"); $("mTitle").textContent="Unfinished visits (this device)";
   $("mSheet").innerHTML=l.length?l.map((d,i)=>`<div class="row" style="margin:4px 0;gap:6px;flex-wrap:nowrap"><button class="ghost" data-unf="${i}" style="flex:1;text-align:left"><b>${esc(d.name||"Unnamed")}</b>${d.recId?" · "+esc(d.recId):""}<br><span class="hint">Saved ${esc(new Date(d.saved).toLocaleString())}</span></button><button class="ghost small" data-unfx="${i}" style="color:var(--l4)">Cancel</button></div>`).join(""):`<p class="hint">No unfinished visits on this device.</p>`;
@@ -2972,7 +3231,7 @@ $("unfBtn").onclick=()=>{const l=unfList();
     const x=e.target.closest("[data-unfx]");
     if(x){const d=l[+x.dataset.unfx]; if(!confirm(`Cancel the unfinished visit of ${d.name||"this patient"}? What was saved on this device is deleted; nothing in the Drive or Tracker changes.`))return;
       unfSet(unfList().filter(y=>!(unfKey(y)===unfKey(d)&&y.saved===d.saved))); ehrToast(`Unfinished visit of ${d.name||"patient"} cancelled`); $("unfBtn").onclick(); return;}
-    const b=e.target.closest("[data-unf]"); if(!b)return; if(!confirmLeave())return; closeModal(); $("mSheet").onclick=null; setView(null); restore(l[+b.dataset.unf]); DIRTY=false; ehrToast(`Opened unfinished visit of ${l[+b.dataset.unf].name}`);};};
+    const b=e.target.closest("[data-unf]"); if(!b)return; if(!confirmLeave())return; closeModal(); $("mSheet").onclick=null; if(typeof dashClose==="function")dashClose(); setView(null); restore(l[+b.dataset.unf]); DIRTY=false; ehrToast(`Opened unfinished visit of ${l[+b.dataset.unf].name}`);};};
 document.addEventListener("input",e=>{if(e.target.closest&&e.target.closest("main"))DIRTY=true;}); $("unfN").textContent=unfList().length||"";
 
 /* ===================== SAVE / OPEN / AUTOSAVE ===================== */
@@ -3040,7 +3299,8 @@ $("openFile").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(
   try{const d=JSON.parse(await f.text());if(!d||typeof d.f!=="object")throw 0;
     if(!confirmLeave())return; setView(null); restore(d); DIRTY=false; ehrToast(`Opened ${d.name||f.name}`);}
   catch(_){ehrToast("This file is not a saved Prenatal Screening Form.",true);}};
-document.addEventListener("input",saveDraft); document.addEventListener("change",saveDraft); document.addEventListener("click",e=>{if(e.target.dataset&&e.target.dataset.given)saveDraft();});
+const draftEv=e=>{if(!(e.target&&e.target.closest&&e.target.closest("#dashView")))saveDraft();};
+document.addEventListener("input",draftEv); document.addEventListener("change",draftEv); document.addEventListener("click",e=>{if(e.target.dataset&&e.target.dataset.given)saveDraft();});
 (()=>{let d=null;try{d=JSON.parse(localStorage.getItem(DRAFT)||"null")}catch(e){}
   if(!d||typeof d.f!=="object")return;
   const b=document.createElement("div");b.className="alert blue";b.id="draftBar";b.style.cssText="position:sticky;top:env(safe-area-inset-top);z-index:50;display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0";
@@ -3471,7 +3731,7 @@ const CLOUD={on:location.origin==="https://benbasilio.github.io",CID:"7139168701
         if($("name").value.trim()===j.name&&!$("recId").value){$("recId").value=r.rec;$("driveId").value=r.id;}
         else if($("recId").value===r.rec)$("driveId").value=r.id;
         q.shift(); this.setQueue(q);}
-      if(done)ehrToast(`Uploaded to RHU Drive ✓ (${done})`+(stale?` · ${stale} older save${stale>1?"s":""} added to Visits only (Drive has a newer visit)`:""));}
+      if(done){if(typeof DASH!=="undefined")DASH.stale=true; ehrToast(`Uploaded to RHU Drive ✓ (${done})`+(stale?` · ${stale} older save${stale>1?"s":""} added to Visits only (Drive has a newer visit)`:""));}}
     catch(e){ehrToast(navigator.onLine?`Upload failed: ${e.message}. Kept on this device; will retry.`:"Saved on device; will upload when online.",true);}
     this.busy=false;},
   save(tokP){ // called from the Save click
@@ -3539,7 +3799,7 @@ async function openFromDrive(){
     $("dl").innerHTML=f.length?f.map(x=>`<button class="ghost" data-fid="${x.id}" style="display:block;width:100%;text-align:left;margin:4px 0"><b>${esc(x.appProperties.name||x.name)}</b> · ${esc(x.appProperties.recId||"")}<br><span class="hint">${esc(x.appProperties.brgy||"")} · EDD ${esc(x.appProperties.edd||"?")} · last visit ${esc(x.appProperties.last||"")}</span></button>`).join(""):"No matching records.";};
   paint(); $("dq").oninput=paint;
   $("dl").onclick=async e=>{const b=e.target.closest("[data-fid]"); if(!b)return; b.disabled=true;
-    try{await loadDrive(b.dataset.fid); closeModal();}
+    try{const ok=await loadDrive(b.dataset.fid); if(ok&&typeof dashClose==="function")dashClose(); closeModal();}
     catch(err){b.disabled=false; ehrToast("Could not open: "+err.message,true);}};
 }
 async function loadDrive(fid){
@@ -3591,10 +3851,12 @@ if(CLOUD.on){
   addEventListener("online",()=>{gateOffBtn(); if(offlineOK&&!signedIn()){offlineOK=false; gateShow();}}); // back online: sign in
   setInterval(()=>{if(!signedIn()&&!offlineOK)gateShow();},20e3); // sign-in expired
   $("searchBtn").onclick=openFromDrive; $("openBtn").classList.add("hidden"); // in the app, saved files open from the search window
+  $("dashBtn").onclick=()=>dashToggle();
   addEventListener("online",()=>CLOUD.flush()); paintSign();
   try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist();}catch(e){} // keep the waiting list from being evicted
   // link from the Tracker sheet: ?open=<Drive file id>&rec=<Record ID>; signing in needs a tap, so offer a button
   const P=new URLSearchParams(location.search), fid=P.get("open"), rec=P.get("rec")||""; let linkOpen=null; // gate sign-in opens the linked record too
+  if(!fid&&P.get("view")==="dashboard") linkOpen=()=>dashOpen();
   if(IOS_BROWSER||fid){const bn=document.createElement("div");bn.className="alert amber";bn.id="linkBar";bn.style.cssText="margin:8px auto;max-width:1280px;display:flex;gap:10px;align-items:center;flex-wrap:wrap";
     bn.innerHTML=(IOS_BROWSER?`<span style="flex:1 1 100%"><b>Opened in Safari, not the installed app.</b> If you have the Prenatal Screening app on this phone, ${rec?"copy the Record ID, open the app, and choose <b>Open from Drive</b> to search for it there.":"open it there instead; to load a record, choose <b>Open from Drive</b> and search its Record ID."}</span>`:"")+
       (rec?`<span>Record ID: <b id="linkRec">${esc(rec)}</b></span><button class="ghost small" id="linkCopy">Copy</button>`:"")+(fid?`<span style="flex:1"></span><button class="small" id="linkGo">Open her record</button>`:"");
@@ -3683,6 +3945,627 @@ window.addEventListener("prenatal-ehr",e=>{
   ehrToast(`Loaded from EHR: ${p.name}`+(got.length?` (+${got.length} chart fields)`:"")+(warn.length?". ⚠ "+warn.join("; "):""),warn.length>0);
   checkMatch(); // code-set name fires no "change": look for her saved record here
 });
+/* ===================== IN-APP MOBILE-FRIENDLY DASHBOARD ===================== */
+const DASH_CACHE="prenatalDashCache";
+const DASH={open:false,loading:false,stale:true,loadedAt:0,offline:false,err:"",
+  patients:[],visits:[],visitsByRec:{},fileByRec:{},files:[],
+  tab:"overview",q:"",brgy:"",status:"",tri:"",doc:"",risk:"",quick:"",
+  sortCol:"recId",sortDir:1,alertsExp:false,drawerRec:null,showAllLabs:false};
+const dToday0=()=>{const n=new Date();return new Date(n.getFullYear(),n.getMonth(),n.getDate());};
+function dParseDate(s){
+  const t=String(s||"").trim(); if(!t||t==="—"||/not recalled/i.test(t))return null;
+  let m=/^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(t);
+  if(m){const d=new Date(+m[1],+m[2]-1,+m[3]); return isNaN(d)?null:d;}
+  m=/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(t);
+  if(m){const d=new Date(+m[3],+m[1]-1,+m[2]); return isNaN(d)?null:d;}
+  m=/^([A-Za-z]{3,9})\s+(\d{1,2}),?\s+(\d{4})/.exec(t);
+  if(m){const mi=MON.findIndex(x=>x.toLowerCase()===m[1].slice(0,3).toLowerCase()); if(mi>=0)return new Date(+m[3],mi,+m[2]);}
+  return null;
+}
+function dFmtDate(s){const d=s instanceof Date?s:dParseDate(s); return d?`${MON[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`:(String(s||"").trim()||"—");}
+function dOrdList(s){const t=String(s||"").trim(); if(!t||/^undated$/i.test(t))return t;
+  return t.split(/,\s*/).map(x=>/^\d+$/.test(x)?ord(+x):x).join(", ");}
+function dParseAog(raw,eddDate,active,today){
+  const t=String(raw||"").trim();
+  let m=/^(\d+)\s+(\d)\/7$/.exec(t);
+  if(m){const w=+m[1]+(+m[2])/7; return {wks:w,label:`${m[1]} ${m[2]}/7`,dec:w.toFixed(1)};}
+  if(t&&!isNaN(Number(t))){const w=Number(t); return {wks:w,label:Number.isInteger(w)?String(w):w.toFixed(1),dec:w.toFixed(1)};}
+  if(active&&eddDate){const dd=280-dayDiff(eddDate,today); if(dd>=0&&dd<=315){const w=dd/7; return {wks:w,label:wkStr(dd).replace(" wk",""),dec:w.toFixed(1)};}}
+  return null;
+}
+function dRiskNum(r){const m=/(\d)\s*$/.exec(String(r||"")); return m?+m[1]:0;}
+function dRiskCls(n){return n>=1&&n<=4?"l"+n:"lu";}
+function dashParseRows(tVals,vVals,today){
+  const T0=today||dToday0();
+  const toObjs=vals=>{if(!vals||vals.length<2)return []; const H=vals[0].map(x=>String(x||"").trim());
+    return vals.slice(1).map(r=>{const o={}; H.forEach((h,i)=>{if(h)o[h]=String(r[i]??"").trim();}); return o;});};
+  const vRaw=toObjs(vVals).filter(v=>v["Record ID"]||v["Visit date"]);
+  const visitsByRec={};
+  const visits=vRaw.map(v=>{
+    const d=dParseDate(v["Visit date"]);
+    const rec={raw:v,recId:v["Record ID"]||"",date:v["Visit date"]||"",dateObj:d,ts:d?+d:0,
+      place:v["Place"]||"",contact:v["Contact #"]||"",aog:v["AOG"]||"",
+      sbp:v["SBP"]||"",dbp:v["DBP"]||"",sbp2:v["Repeat SBP"]||"",dbp2:v["Repeat DBP"]||"",
+      wt:v["Weight (kg)"]||"",bmi:v["BMI"]||"",wg:v["Weight gain (kg)"]||"",wgSt:v["Weight gain status"]||"",
+      fht:v["FHT"]||"",fhtLoc:v["FHT location"]||"",fh:v["Fundic ht"]||"",
+      risk:v["Risk"]||"",dx:v["Diagnosis"]||"",labs:v["Labs requested"]||"",rx:v["Prescription"]||"",
+      ref:v["Referral"]||"",em:v["Emergency protocol"]||"",doc:v["Physician"]||"",labRes:v["Lab results"]||""};
+    if(rec.recId)(visitsByRec[rec.recId] ||= []).push(rec);
+    return rec;
+  }).sort((a,b)=>b.ts-a.ts);
+  Object.values(visitsByRec).forEach(arr=>arr.sort((a,b)=>b.ts-a.ts));
+
+  const pRaw=toObjs(tVals).filter(r=>r["Record ID"]||r["Name"]);
+  const patients=pRaw.map(r=>{
+    const status=r["Status"]||"Active";
+    const active=status==="Active", delivered=status==="Delivered";
+    const eddDate=dParseDate(r["EDD"]), nextDueDate=dParseDate(r["Next visit due"]), dlvDateObj=dParseDate(r["Delivery date"]);
+    const aog=dParseAog(r["AOG today"],eddDate,active,T0);
+    const triRaw=r["Trimester"]||"";
+    const tri=triRaw?String(triRaw).replace(/\D/g,""):(aog?(aog.wks<14?"1":aog.wks<28?"2":"3"):"");
+    const risk=r["Risk"]||"", riskNum=dRiskNum(risk);
+    const daysOverdue=active&&nextDueDate?dayDiff(T0,nextDueDate):null; // >0 overdue, <=0 upcoming
+    const daysToEdd=active&&eddDate?dayDiff(eddDate,T0):null;
+    const daysSinceDlv=delivered&&dlvDateObj?dayDiff(T0,dlvDateObj):null;
+    const missed=dOrdList(r["Missed contacts"]||"");
+    const recId=r["Record ID"]||"";
+    const pvs=visitsByRec[recId]||[];
+    let age=r["Age"]||"";
+    if(!age){const db=dParseDate(r["Date of birth"]); if(db)age=String(yrsOld(db,T0));}
+    return {raw:r,recId,name:r["Name"]||"Unnamed",dob:r["Date of birth"]||"",age,phone:(r["Contact no."]||"").replace(/^'/,""),
+      pin:(r["PhilHealth PIN"]||"").replace(/^'/,""),brgy:r["Barangay"]||"",lmp:r["LMP"]||"",edd:r["EDD"]||"",eddDate,
+      basis:r["Dating basis"]||"",aog,tri,ob:r["OB score"]||"",priorCs:r["Prior CS"]||"0",bmi:r["BMI"]||"",
+      firstVisit:r["1st visit"]||"",aogFirst:r["AOG at 1st visit"]||"",earlyAnc:r["Early ANC (≤12 wk)"]||"",
+      t1:r["T1 visits"]||"",t2:r["T2 visits"]||"",t3:r["T3 visits"]||"",ancN:r["ANC #"]||"",missed,onSched:r["On schedule"]||"",
+      lastVisit:r["Last visit"]||"",nextDue:r["Next visit due"]||"",nextDueDate,daysOverdue,daysToEdd,
+      risk,riskNum,riskBucket:riskNum?risk:"Unclassified",reasons:r["Main reasons"]||"",
+      hdp:r["HDP"]||"",hellp:r["HELLP"]||"",gt:r["Gestational thrombocytopenia"]||"",hb:r["Hb"]||"",anemia:r["Anemia"]||"",
+      rhNeg:r["Rh-negative"]||"",rpr:r["Syphilis (RPR)"]||"",hbsag:r["Hepatitis B (HBsAg)"]||"",hiv:r["HIV"]||"",
+      gdm:r["GDM screen"]||"",epdsPos:r["EPDS ≥10"]||"",aasPos:r["Abuse screen +"]||"",
+      aspirin:r["Aspirin"]||"",aspDose:r["Aspirin dose"]||"",aspStart:r["Aspirin start"]||"",flags:r["Flags"]||"",
+      plannedPlace:r["Planned place of delivery"]||"",referral:r["Referral"]||"",
+      tdThis:r["Td doses (this pregnancy)"]||"",td2plus:r["Td2 Plus"]||"",tdap:r["Tdap"]||"",
+      dewormed:r["Dewormed"]||"",ifaDone:r["IFA complete"]||"",caDone:r["CaCO₃ complete"]||"",
+      pp1:r["PP1"]||"",pp2:r["PP2"]||"",pp3:r["PP3"]||"",pp4:r["PP4"]||"",pp2plus:r["≥2 PP checks"]||"",
+      doc:r["Physician (last visit)"]||"",driveFile:r["Drive file"]||"",driveFileId:r["Drive file ID"]||((r["Record URL"]||"").match(/[?&]open=([^&]+)/)||[,""])[1]||"",updated:r["Updated"]||"",
+      status,active,delivered,dlvDate:r["Delivery date"]||"",dlvDateObj,daysSinceDlv,
+      dlvPlace:r["Place of delivery"]||"",facBased:r["Facility-based"]||"",facName:r["Facility name"]||"",
+      dlvAtt:r["Birth attendant"]||"",sba:r["SBA"]||"",dlvMode:r["Mode"]||"",dlvOut:r["Outcome"]||"",
+      dlvWt:r["Birth weight (g)"]||"",lbw:r["LBW"]||"",notes:r["Notes"]||"",visits:pvs};
+  });
+  const pByRec=Object.fromEntries(patients.map(p=>[p.recId,p]));
+  visits.forEach(v=>{const p=pByRec[v.recId]; v.name=p?p.name:""; v.brgy=p?p.brgy:""; v.status=p?p.status:""; v.tri=p?p.tri:"";});
+  return {patients,visits,visitsByRec};
+}
+function dashParseLabs(pVisits){
+  const seen=new Set(), all=[];
+  (pVisits||[]).forEach(v=>{
+    if(!v.labRes)return;
+    v.labRes.split(/;\s*/).map(x=>x.trim()).filter(Boolean).forEach(entry=>{
+      const m=/^([^:]+):\s*(.+?)(?:\s*\((\d{1,2}\/\d{1,2}\/\d{4}|\d{4}-\d{2}-\d{2})\))?$/.exec(entry);
+      const test=m?m[1].trim():"Lab";
+      const val=m?m[2].trim():entry;
+      const dStr=m&&m[3]?m[3]:v.date;
+      const dObj=dParseDate(dStr)||v.dateObj;
+      const ts=dObj?+dObj:0;
+      const key=`${test.toLowerCase()}|${val.toLowerCase()}|${ts}`;
+      if(seen.has(key))return; seen.add(key);
+      all.push({test,val,dateStr:dObj?dFmtDate(dObj):(dStr||"—"),ts});
+    });
+  });
+  all.sort((a,b)=>b.ts-a.ts||a.test.localeCompare(b.test));
+  const gotTest=new Set(), latest=[];
+  all.forEach(item=>{const k=item.test.toLowerCase(); if(gotTest.has(k))return; gotTest.add(k); latest.push(item);});
+  return {latest,all};
+}
+function dashIsOffSched(p){return p.active&&(p.onSched==="No"||(!!p.missed&&!/^undated$/i.test(p.missed)));}
+function dashIsOverdue(p){return p.active&&p.daysOverdue!=null&&p.daysOverdue>0;}
+function dashComputeMetrics(rows){
+  const total=rows.length;
+  const active=rows.filter(p=>p.active), delivered=rows.filter(p=>p.delivered);
+  const hr34=rows.filter(p=>p.riskNum===3||p.riskNum===4).length;
+  const offSched=active.filter(dashIsOffSched).length;
+  const earlyDen=rows.filter(p=>p.earlyAnc==="Yes"||p.earlyAnc==="No").length;
+  const earlyYes=rows.filter(p=>p.earlyAnc==="Yes").length;
+  const facDen=delivered.length;
+  const facYes=delivered.filter(p=>p.facBased==="Yes").length;
+  const overdue=active.filter(dashIsOverdue).length;
+  const pct=(a,b)=>b?Math.round(a/b*100):0;
+  const buckets=["Low-risk 1","High-risk 2","High-risk 3","High-risk 4","Unclassified"].map(lbl=>({
+    lbl,count:rows.filter(p=>p.riskBucket===lbl).length
+  }));
+  return {total,activeN:active.length,deliveredN:delivered.length,hr34,hr34Pct:pct(hr34,total),
+    offSched,offSchedPct:pct(offSched,active.length),earlyYes,earlyDen,earlyPct:pct(earlyYes,earlyDen),
+    facYes,facDen,facPct:pct(facYes,facDen),overdue,buckets};
+}
+function dashComputeAlerts(rows){
+  const out=[];
+  for(const p of rows){
+    if(!p.active&&!p.delivered)continue; // exclude Pregnancy loss, Referred-transferred, Lost to follow-up
+    const inPP42=p.delivered&&p.daysSinceDlv!=null&&p.daysSinceDlv>=0&&p.daysSinceDlv<=42;
+    if(p.delivered&&!inPP42)continue;
+    const tags=[]; const addTag=(t,c)=>{if(!tags.some(x=>x.t===t))tags.push({t,c});};
+    const isEmerg=p.active&&/emergency/i.test(p.referral);
+    const hasHellp=p.active&&!!p.hellp;
+    const isL4=p.active&&p.riskNum===4;
+    const isPpHdp=inPP42&&!!p.hdp;
+    const isOverdue=p.active&&p.daysOverdue!=null&&p.daysOverdue>0;
+    const isDueSoon=p.active&&p.daysOverdue!=null&&p.daysOverdue<=0&&p.daysOverdue>=-3;
+    const isUrg=p.active&&/urgent/i.test(p.referral);
+    const hasHdp=p.active&&!!p.hdp;
+    const isEpds=p.active&&p.epdsPos==="Yes";
+    const isAas=p.active&&p.aasPos==="Yes";
+    const isUnrefL3=p.active&&p.riskNum===3&&!p.referral;
+    const isOff=dashIsOffSched(p);
+    const isEdd4w=p.active&&p.daysToEdd!=null&&p.daysToEdd>=0&&p.daysToEdd<=28;
+    const isLowPP=inPP42&&p.pp2plus!=="Yes";
+    const isInf=p.active&&(p.rpr==="Reactive"||p.hbsag==="Reactive"||p.hiv==="Reactive");
+    const isRh=p.active&&p.rhNeg==="Yes";
+    const isAnem=p.active&&p.anemia==="Yes";
+    const isPendGdm=p.active&&p.gdm==="Pending repeat";
+    const hasFlags=p.active&&!!p.flags;
+    // Collect ALL applicable tags
+    if(isEmerg)addTag("Emergency","red");
+    if(hasHellp)addTag("HELLP","red");
+    if(isL4)addTag("Level 4","red");
+    if(isPpHdp)addTag("Postpartum HDP","red");
+    if(isOverdue)addTag(`Overdue ${p.daysOverdue}d`,"org");
+    else if(isDueSoon)addTag(p.daysOverdue===0?"Due today":`Due in ${Math.abs(p.daysOverdue)}d`,"org");
+    if(isUrg)addTag("Urgent","amb");
+    if(hasHdp)addTag("HDP","amb");
+    if(isEpds)addTag("EPDS ≥10","amb");
+    if(isAas)addTag("Abuse +","amb");
+    if(isUnrefL3)addTag("Unreferred L3","amb");
+    if(isOff&&p.onSched==="No")addTag("Off-schedule","amb");
+    if(p.active&&p.missed&&!/^undated$/i.test(p.missed))addTag(`Missed: ${p.missed}`,"amb");
+    if(isEdd4w)addTag("EDD ≤4 wk","blu");
+    if(isLowPP)addTag("<2 PP checks","blu");
+    if(p.active&&p.rpr==="Reactive")addTag("RPR Reactive","tel");
+    if(p.active&&p.hbsag==="Reactive")addTag("HBsAg Reactive","tel");
+    if(p.active&&p.hiv==="Reactive")addTag("HIV Reactive","tel");
+    if(isRh)addTag("Rh-negative","tel");
+    if(isAnem){addTag("Anemia","tel"); if(p.hb)addTag(`Hb ${p.hb}`,"tel");}
+    if(isPendGdm)addTag("GDM pending","tel");
+    if(hasFlags){p.flags.split(/;\s*/).filter(Boolean).forEach(f=>{
+      if(/^(Rh-negative|Hb |VDRL\/RPR|HBsAg)/i.test(f)&&(isRh||isAnem||isInf))return;
+      addTag(f,"tel");});}
+    // Highest tier P1..P6 + intra-tier sort key
+    let tier=0, sub=9;
+    if(isEmerg||hasHellp||isL4||isPpHdp){tier=1; sub=(isEmerg||hasHellp||isPpHdp)?0:(isOverdue?1:2);}
+    else if(isOverdue||isDueSoon){tier=2; sub=isOverdue?0:1;}
+    else if(isUrg||hasHdp||isEpds||isAas||isUnrefL3){tier=3; sub=(isUrg||hasHdp)?0:((isEpds||isAas)?1:2);}
+    else if(isOff){tier=4; sub=0;}
+    else if(isEdd4w||isLowPP){tier=5; sub=0;}
+    else if(isInf||isRh||isAnem||hasFlags||isPendGdm){tier=6; sub=(isInf||isRh)?0:1;}
+    if(!tier)continue;
+    const eddTs=p.eddDate?+p.eddDate:9e15, dlvTs=p.dlvDateObj?+p.dlvDateObj:9e15;
+    out.push({p,tier,sub,tags,eddTs,dlvTs,ov:p.daysOverdue||-999,rn:p.riskNum});
+  }
+  out.sort((a,b)=>{
+    if(a.tier!==b.tier)return a.tier-b.tier;
+    if(a.tier===1)return (a.sub-b.sub)||(a.eddTs-b.eddTs);
+    if(a.tier===2)return (a.sub-b.sub)||(b.rn-a.rn)||(b.ov-a.ov);
+    if(a.tier===3)return (a.sub-b.sub)||(a.eddTs-b.eddTs);
+    if(a.tier===4)return (b.rn-a.rn)||(a.eddTs-b.eddTs);
+    if(a.tier===5)return Math.min(a.eddTs,a.dlvTs)-Math.min(b.eddTs,b.dlvTs);
+    return (a.sub-b.sub)||(a.eddTs-b.eddTs);
+  });
+  return out;
+}
+function dashBaseFiltered(){
+  const q=DASH.q.trim().toLowerCase();
+  return DASH.patients.filter(p=>{
+    if(DASH.brgy&&p.brgy!==DASH.brgy)return false;
+    if(DASH.status&&p.status!==DASH.status)return false;
+    if(DASH.tri&&p.tri!==DASH.tri)return false;
+    if(DASH.doc&&p.doc!==DASH.doc)return false;
+    if(q){const hay=`${p.recId} ${p.name} ${p.brgy} ${p.risk} ${p.reasons} ${p.doc} ${p.status} ${p.flags}`.toLowerCase(); if(!hay.includes(q))return false;}
+    return true;
+  });
+}
+function dashFiltered(base){
+  const list=base||dashBaseFiltered();
+  return list.filter(p=>{
+    if(DASH.risk==="HR34"&&!(p.riskNum===3||p.riskNum===4))return false;
+    else if(DASH.risk&&DASH.risk!=="HR34"&&p.riskBucket!==DASH.risk)return false;
+    if(DASH.quick==="offsched"&&!dashIsOffSched(p))return false;
+    if(DASH.quick==="overdue"&&!dashIsOverdue(p))return false;
+    if(DASH.quick==="early"&&p.earlyAnc!=="Yes")return false;
+    if(DASH.quick==="facdlv"&&!(p.delivered&&p.facBased==="Yes"))return false;
+    return true;
+  });
+}
+function dashPopFilters(){
+  const bSel=$("dbBrgy"), dSel=$("dbDoc");
+  if(!bSel||!dSel)return;
+  const brgys=[...new Set([...BRGYS,...DASH.patients.map(p=>p.brgy).filter(Boolean)])].sort();
+  bSel.innerHTML=`<option value="">All Barangays</option>`+brgys.map(b=>`<option value="${esc(b)}">${esc(b)}</option>`).join("");
+  bSel.value=DASH.brgy;
+  const docs=[...new Set([...DOCS.map(d=>d.name),...DASH.patients.map(p=>p.doc).filter(Boolean)])].sort();
+  dSel.innerHTML=`<option value="">Physician: All</option>`+docs.map(d=>`<option value="${esc(d)}">${esc(d)}</option>`).join("");
+  dSel.value=DASH.doc;
+}
+function dashSortList(list){
+  const col=DASH.sortCol, dir=DASH.sortDir;
+  const get=p=>col==="recId"?p.recId:col==="name"?p.name:col==="age"?(+p.age||0):col==="brgy"?p.brgy:col==="aog"?(p.aog?p.aog.wks:-1):col==="bmi"?(+p.bmi||-1):col==="ancN"?(+p.ancN||-1):col==="risk"?p.riskNum:col==="status"?p.status:col==="nextDue"?(p.nextDueDate?+p.nextDueDate:9e15):p.recId;
+  return list.slice().sort((a,b)=>{const av=get(a), bv=get(b);
+    if(typeof av==="number"&&typeof bv==="number")return (av-bv)*dir;
+    return String(av).localeCompare(String(bv))*dir;});
+}
+function dashRenderRegistry(rows,title,subt){
+  const sorted=dashSortList(rows);
+  const arrow=c=>DASH.sortCol===c?(DASH.sortDir>0?" ↑":" ↓"):"";
+  const stCls=s=>s==="Active"?"act":s==="Delivered"?"dlv":"oth";
+  const tblRows=sorted.map(p=>`<tr data-rec="${esc(p.recId)}">
+    <td class="mono">${esc(p.recId||"—")}</td>
+    <td><b>${esc(p.name)}</b></td>
+    <td>${esc(p.age||"—")}</td>
+    <td>${esc(p.brgy||"—")}</td>
+    <td>${p.aog?esc(p.aog.label):"—"}</td>
+    <td>${esc(p.bmi||"—")}</td>
+    <td>${esc(p.ancN||"—")}</td>
+    <td>${esc(p.missed||"—")}</td>
+    <td><span class="db-rk ${dRiskCls(p.riskNum)}">${esc(p.risk||"Unclassified")}</span></td>
+    <td><span class="db-st ${stCls(p.status)}">${esc(p.status)}</span></td>
+    <td style="${dashIsOverdue(p)?"color:var(--warn);font-weight:700":""}">${p.nextDue?esc(dFmtDate(p.nextDue)):"—"}</td>
+    <td>${esc(p.dlvOut||"—")}</td>
+    <td>${esc(p.doc||"—")}</td>
+  </tr>`).join("");
+  const cards=sorted.map(p=>`<button type="button" class="db-pcard" data-rec="${esc(p.recId)}">
+    <div class="db-pc-top">
+      <div><div class="db-pc-nm">${esc(p.name)}</div><div class="db-pc-sub">${esc(p.recId||"—")}${p.age?" · Age "+esc(p.age):""}${p.brgy?" · "+esc(p.brgy):""}</div></div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none">
+        <span class="db-rk ${dRiskCls(p.riskNum)}">${esc(p.risk||"Unclassified")}</span>
+        <span class="db-st ${stCls(p.status)}">${esc(p.status)}</span>
+      </div>
+    </div>
+    <div class="db-pc-grid">
+      <div><span>AOG · BMI</span><b>${p.aog?esc(p.aog.label+" wk"):"—"}${p.bmi?" · BMI "+esc(p.bmi):""}</b></div>
+      <div><span>ANC # · Missed</span><b>${p.ancN?esc(p.ancN+"/8"):"—"}${p.missed?" · "+esc(p.missed):""}</b></div>
+      <div><span>${p.delivered?"Delivery outcome":"Next visit"}</span><b style="${dashIsOverdue(p)?"color:var(--warn)":""}">${p.delivered?esc(p.dlvOut||dFmtDate(p.dlvDate)):(p.nextDue?esc(dFmtDate(p.nextDue)):"—")}</b></div>
+      <div><span>Physician</span><b>${esc(p.doc||"—")}</b></div>
+    </div>
+  </button>`).join("");
+  return `<div class="db-card">
+    <div class="db-ch"><div><h3>${esc(title)}</h3><div class="subt">${esc(subt)}</div></div><span class="db-cnt">${sorted.length} record${sorted.length===1?"":"s"}</span></div>
+    ${sorted.length?`<div class="db-tblw"><table class="db-tbl"><thead><tr>
+      <th data-sort="recId">Record ID${arrow("recId")}</th><th data-sort="name">Patient Name${arrow("name")}</th><th data-sort="age">Age${arrow("age")}</th>
+      <th data-sort="brgy">Barangay${arrow("brgy")}</th><th data-sort="aog">AOG (wks)${arrow("aog")}</th><th data-sort="bmi">BMI${arrow("bmi")}</th>
+      <th data-sort="ancN">ANC #${arrow("ancN")}</th><th class="ns">Missed</th><th data-sort="risk">Risk Level${arrow("risk")}</th>
+      <th data-sort="status">Status${arrow("status")}</th><th data-sort="nextDue">Next Visit${arrow("nextDue")}</th><th class="ns">Delivery Outcome</th><th class="ns">Physician</th>
+    </tr></thead><tbody>${tblRows}</tbody></table></div><div class="db-cards">${cards}</div>`:`<div class="db-empty">No patients match the current filters.</div>`}
+  </div>`;
+}
+function dashRenderVisits(filtPatients){
+  const allow=new Set(filtPatients.map(p=>p.recId));
+  const list=DASH.visits.filter(v=>!v.recId||allow.has(v.recId));
+  const tblRows=list.slice(0,250).map(v=>{const rn=dRiskNum(v.risk);
+    const bp=v.sbp&&v.dbp?`${v.sbp}/${v.dbp}`:"—";
+    return `<tr data-rec="${esc(v.recId)}">
+      <td>${esc(dFmtDate(v.date))}</td>
+      <td><b>${esc(v.name||v.recId||"—")}</b><div class="mono">${esc(v.recId)}</div></td>
+      <td>${esc(v.place||"—")}</td>
+      <td>${esc(v.contact?(/^PP/i.test(v.contact)?v.contact:"#"+v.contact):"—")}</td>
+      <td>${esc(v.aog||"—")}</td>
+      <td>${esc(bp)}</td>
+      <td>${v.wt?esc(v.wt+" kg"):"—"}</td>
+      <td>${v.fht?esc(v.fht):"—"}</td>
+      <td>${v.risk?`<span class="db-rk ${dRiskCls(rn)}">${esc(v.risk)}</span>`:"—"}</td>
+      <td class="wrapcell">${esc(v.dx||"—")}</td>
+      <td>${esc(v.ref||"—")}</td>
+      <td>${esc(v.doc||"—")}</td>
+    </tr>`;}).join("");
+  const cards=list.slice(0,150).map(v=>{const rn=dRiskNum(v.risk);
+    const vit=[v.sbp&&v.dbp?`BP ${v.sbp}/${v.dbp}`:"",v.wt?`Wt ${v.wt} kg`:"",v.fht?`FHT ${v.fht}`:""].filter(Boolean).join(" · ");
+    return `<button type="button" class="db-pcard" data-rec="${esc(v.recId)}">
+      <div class="db-pc-top">
+        <div><div class="db-pc-nm">${esc(v.name||v.recId)}</div><div class="db-pc-sub">${esc(dFmtDate(v.date))}${v.place?" · "+esc(v.place):""}${v.contact?" · "+esc(/^PP/i.test(v.contact)?v.contact:"Contact #"+v.contact):""}</div></div>
+        ${v.risk?`<span class="db-rk ${dRiskCls(rn)}">${esc(v.risk)}</span>`:""}
+      </div>
+      ${vit?`<div style="font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums">${esc(vit)}</div>`:""}
+      ${v.aog?`<div class="db-pc-sub">AOG: ${esc(v.aog)}</div>`:""}
+      ${v.dx?`<div class="db-pc-sub" style="color:var(--ink)">${esc(v.dx)}</div>`:""}
+    </button>`;}).join("");
+  return `<div class="db-card">
+    <div class="db-ch"><div><h3>Visits</h3><div class="subt">Chronological prenatal &amp; postpartum visits (newest first) — tap any visit to open patient profile</div></div><span class="db-cnt">${list.length} visit${list.length===1?"":"s"}</span></div>
+    ${list.length?`<div class="db-tblw"><table class="db-tbl"><thead><tr>
+      <th class="ns">Visit Date</th><th class="ns">Patient</th><th class="ns">Place</th><th class="ns">Contact</th><th class="ns">AOG</th>
+      <th class="ns">BP</th><th class="ns">Weight</th><th class="ns">FHT</th><th class="ns">Risk</th><th class="ns">Diagnosis</th><th class="ns">Referral</th><th class="ns">Physician</th>
+    </tr></thead><tbody>${tblRows}</tbody></table></div><div class="db-cards">${cards}</div>`:`<div class="db-empty">No visits match the current filters.</div>`}
+  </div>`;
+}
+function dashRender(){
+  if(!$("dashView"))return;
+  const base=dashBaseFiltered(), filt=dashFiltered(base);
+  $("dbCount").textContent=`${filt.length} of ${DASH.patients.length} patient${DASH.patients.length===1?"":"s"}`;
+  document.querySelectorAll("[data-dbtab]").forEach(b=>{const on=b.dataset.dbtab===DASH.tab; b.classList.toggle("on",on); b.setAttribute("aria-selected",String(on));});
+  const meta=[];
+  if(DASH.loading)meta.push("Syncing latest data from Bagac Pregnancy Tracker…");
+  else if(DASH.loadedAt)meta.push(`${DASH.offline?"Offline snapshot · ":""}Synced ${new Date(DASH.loadedAt).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"})}`);
+  if(DASH.err)meta.push(`<span style="color:var(--warn)">${esc(DASH.err)}</span>`);
+  $("dbMeta").innerHTML=meta.join(" · ");
+  // Active filter chips
+  const chips=[];
+  if(DASH.risk)chips.push(`<button type="button" class="db-chip" data-clr="risk">${DASH.risk==="HR34"?"High-risk 3 & 4":esc(DASH.risk)} ✕</button>`);
+  if(DASH.quick){const ql={offsched:"Off-schedule ANC",overdue:"Overdue visits",early:"Early ANC (≤12 wk)",facdlv:"Facility delivery"}[DASH.quick]||DASH.quick;
+    chips.push(`<button type="button" class="db-chip" data-clr="quick">${esc(ql)} ✕</button>`);}
+  if(DASH.q||DASH.brgy||DASH.status||DASH.tri||DASH.doc||DASH.risk||DASH.quick)chips.push(`<button type="button" class="db-chip" data-clr="all" style="background:var(--fill2);color:var(--ink)">Clear all filters</button>`);
+  $("dbChips").innerHTML=chips.join("");
+  if(DASH.loading&&!DASH.patients.length){$("dbBody").innerHTML=`<div class="db-card"><div class="db-empty">Loading Bagac Pregnancy Tracker…</div></div>`; return;}
+  if(DASH.tab==="registry"){$("dbBody").innerHTML=dashRenderRegistry(filt,"Patient Registry","Click any row to view full clinical profile, labs, prophylaxis, delivery & visits"); return;}
+  if(DASH.tab==="visits"){$("dbBody").innerHTML=dashRenderVisits(filt); return;}
+  // Overview tab
+  const M=dashComputeMetrics(base), alerts=dashComputeAlerts(filt);
+  const kpi=(id,lbl,val,sub,ic,col,on)=>`<button type="button" class="db-kpi${on?" on":""}" data-kpi="${id}">
+    <div class="db-kpi-top"><span class="db-kpi-lbl">${lbl}</span><svg class="db-kpi-ic" style="color:${col}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ic}</svg></div>
+    <div class="db-kpi-val"><b>${val}</b><span>${sub}</span></div>
+  </button>`;
+  const kpiHTML=`<div class="db-kpis">
+    ${kpi("total","Total Patients",M.total,`${M.activeN} active · ${M.deliveredN} delivered`,'<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',"#0f6b5c",!DASH.risk&&!DASH.quick)}
+    ${kpi("hr34","High-Risk 3 & 4",`${M.hr34Pct}%`,`${M.hr34} / ${M.total}`,'<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',"#D97706",DASH.risk==="HR34")}
+    ${kpi("offsched","Off-Schedule ANC",`${M.offSchedPct}%`,`${M.offSched} / ${M.activeN} active`,'<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',"#2563EB",DASH.quick==="offsched")}
+    ${kpi("early","Early ANC (≤12 wk)",`${M.earlyPct}%`,`${M.earlyYes} / ${M.earlyDen}`,'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',"#16A34A",DASH.quick==="early")}
+    ${kpi("facdlv","Facility Delivery",`${M.facPct}%`,`${M.facYes} / ${M.facDen}`,'<circle cx="12" cy="12" r="9"/><path d="M9 12h6M12 9v6"/>',"#7C3AED",DASH.quick==="facdlv")}
+    ${kpi("overdue","Overdue Visits",M.overdue,"patients past due",'<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>',"#DC2626",DASH.quick==="overdue")}
+  </div>`;
+  const rCols={"Low-risk 1":"#16A34A","High-risk 2":"#2563EB","High-risk 3":"#F59E0B","High-risk 4":"#DC2626","Unclassified":"#94A3B8"};
+  const maxR=Math.max(1,...M.buckets.map(b=>b.count));
+  const riskCard=`<div class="db-card">
+    <div class="db-ch"><div><h3>Risk Stratification</h3><div class="subt">Click any bar to filter by risk level</div></div>
+      <svg style="width:18px;height:18px;color:var(--muted)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    </div>
+    ${M.buckets.map(b=>`<button type="button" class="db-rrow${DASH.risk===b.lbl?" on":""}" data-risk="${esc(b.lbl)}">
+      <div class="db-rtop"><span class="db-rlbl"><span class="db-dot" style="background:${rCols[b.lbl]}"></span>${esc(b.lbl)}</span><b>${b.count}</b></div>
+      <div class="db-track"><div class="db-fill" style="width:${b.count?Math.max(4,Math.round(b.count/maxR*100)):0}%;background:${rCols[b.lbl]}"></div></div>
+    </button>`).join("")}
+  </div>`;
+  const showAl=DASH.alertsExp?alerts:alerts.slice(0,6);
+  const alCards=showAl.map(a=>`<button type="button" class="db-al p${a.tier}" data-rec="${esc(a.p.recId)}">
+    <div class="db-al-top"><span class="db-pbdg p${a.tier}">P${a.tier}</span><span class="db-al-nm">${esc(a.p.name)}</span><span class="db-al-id">${esc(a.p.recId)}</span></div>
+    <div class="db-tags">${a.tags.map(t=>`<span class="db-tag ${t.c}">${esc(t.t)}</span>`).join("")}</div>
+    ${a.p.reasons?`<div class="db-al-rsn">${esc(a.p.reasons)}</div>`:""}
+  </button>`).join("");
+  const moreBtn=alerts.length>6?`<button type="button" class="db-al-more${DASH.alertsExp?" exp":""}" id="dbAlMore">${DASH.alertsExp?"Show fewer":`Show ${alerts.length-6} more`}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>`:"";
+  const alertsCard=`<div class="db-card">
+    <div class="db-ch"><div><h3>Clinical Alerts &amp; Priority Follow-ups <span class="db-cnt">${alerts.length} patient${alerts.length===1?"":"s"}</span></h3><div class="subt">Prioritized P1–P6 follow-up queue</div></div>
+      <svg style="width:18px;height:18px;color:var(--muted)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg>
+    </div>
+    ${alerts.length?`<div class="db-algrid">${alCards}</div>${moreBtn}`:`<div class="db-empty">No active clinical alerts or overdue follow-ups in this view.</div>`}
+  </div>`;
+  $("dbBody").innerHTML=kpiHTML+`<div class="db-mid">${riskCard}${alertsCard}</div>`+dashRenderRegistry(filt,"Patient Registry","Click any row to view full clinical profile, labs, prophylaxis, delivery & visits");
+}
+function dashRenderDrawer(){
+  const p=DASH.patients.find(x=>x.recId===DASH.drawerRec); if(!p)return;
+  const stCls=p.status==="Active"?"act":p.status==="Delivered"?"dlv":"oth";
+  const labs=dashParseLabs(p.visits);
+  const shownLabs=DASH.showAllLabs?labs.all:labs.latest;
+  const scr=(lbl,val,flag)=>`<div class="db-scr"><span>${esc(lbl)}</span><b class="${flag?"flag":""}">${esc(val||"—")}</b></div>`;
+  const ppDates=[p.pp1,p.pp2,p.pp3,p.pp4].filter(Boolean).map(dFmtDate).join(" / ");
+  const dlvCard=(p.delivered||p.dlvDate||p.dlvOut)?`<div class="db-sec"><div class="db-sec-t">Delivery &amp; Birth Outcome</div>
+    <div class="db-kvg">
+      <div><span>Delivery Date:</span> <b>${esc(dFmtDate(p.dlvDate))}</b></div>
+      <div><span>Mode:</span> <b>${esc(p.dlvMode||"—")}</b></div>
+      <div><span>Outcome:</span> <b>${esc(p.dlvOut||"—")}</b></div>
+      <div><span>Place:</span> <b>${esc(p.dlvPlace||"—")}</b></div>
+      <div><span>Facility:</span> <b>${esc(p.facName||"—")}</b></div>
+      <div><span>Attendant:</span> <b>${esc(p.dlvAtt||"—")}</b></div>
+      <div><span>Birth Weight:</span> <b>${p.dlvWt?esc(p.dlvWt+" g"):"—"}</b></div>
+      <div><span>LBW:</span> <b>${esc(p.lbw||"—")}</b></div>
+      <div><span>SBA / Facility:</span> <b>${esc([p.sba,p.facBased].filter(Boolean).join(" / ")||"—")}</b></div>
+    </div>
+    ${p.notes?`<div style="margin-top:8px;font-size:12.5px;color:var(--muted)"><span>Notes:</span> <b style="color:var(--ink)">${esc(p.notes)}</b></div>`:""}
+  </div>`:"";
+  const vCards=p.visits.map(v=>{
+    const vit=[];
+    if(v.sbp&&v.dbp)vit.push(`<span>BP: <b>${esc(v.sbp)}/${esc(v.dbp)}</b>${v.sbp2&&v.dbp2?` → ${esc(v.sbp2)}/${esc(v.dbp2)}`:""}</span>`);
+    if(v.wt)vit.push(`<span>Wt: <b>${esc(v.wt)}</b></span>`);
+    if(v.bmi)vit.push(`<span>BMI: <b>${esc(v.bmi)}</b></span>`);
+    if(v.wg)vit.push(`<span>Wt Gain: <b>${esc(v.wg)} kg${v.wgSt?` (${esc(v.wgSt)})`:""}</b></span>`);
+    if(v.fht)vit.push(`<span>FHT: <b>${esc(v.fht)} bpm</b></span>`);
+    if(v.fh)vit.push(`<span>FH: <b>${esc(v.fh)} cm</b></span>`);
+    const cLbl=v.contact?(/^PP/i.test(v.contact)?v.contact:"Contact #"+v.contact):"";
+    return `<div class="db-vcard">
+      <div class="db-vc-hd"><b>${esc(dFmtDate(v.date))}${v.place?" · "+esc(v.place):""}</b><span>${esc(cLbl)}</span></div>
+      ${vit.length?`<div class="db-vc-vit">${vit.join("")}</div>`:""}
+      ${v.aog?`<div><span style="color:var(--muted)">AOG:</span> ${esc(v.aog)}</div>`:""}
+      ${v.dx?`<div><b>Dx:</b> ${esc(v.dx)}</div>`:""}
+      ${v.labs?`<div><b>Labs:</b> ${esc(v.labs)}</div>`:""}
+      ${v.rx?`<div><b>Rx:</b> ${esc(v.rx)}</div>`:""}
+      ${v.ref?`<div><b>Referral:</b> ${esc(v.ref)}</div>`:""}
+      ${v.em?`<div style="color:var(--warn)"><b>Emergency:</b> ${esc(v.em)}</div>`:""}
+    </div>`;
+  }).join("");
+  $("dbSheet").innerHTML=`
+    <div class="db-sh-hd">
+      <div class="db-sh-top">
+        <div class="db-sh-badges">
+          <span class="db-sh-id">${esc(p.recId||"—")}</span>
+          <span class="db-st ${stCls}">${esc(p.status)}</span>
+          <span class="db-rk ${dRiskCls(p.riskNum)}">${esc(p.risk||"Unclassified")}</span>
+        </div>
+        <button type="button" class="db-sh-close" id="dbShClose" aria-label="Close patient profile">✕</button>
+      </div>
+      <h2 class="db-sh-nm" id="dbShName">${esc(p.name)}</h2>
+      <div class="db-sh-sub">
+        <span>DOB: ${esc(dFmtDate(p.dob))}</span><span>·</span><span>Age ${esc(p.age||"—")}</span>
+        ${p.ob?`<span>·</span><span>${esc(p.ob)}</span>`:""}
+        ${p.brgy?`<span>·</span><span>${esc(p.brgy)}</span>`:""}
+        ${p.phone?`<span>·</span><a href="tel:${esc(p.phone.replace(/\s+/g,""))}">${esc(p.phone)}</a>`:""}
+      </div>
+      <div class="db-sh-act">
+        <button type="button" id="dbOpenForm"><svg class="bi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Open in Form</button>
+      </div>
+    </div>
+    <div class="db-sh-body">
+      <div class="db-stats">
+        <div class="db-stat"><span>AOG Today</span><b>${p.aog?esc(p.aog.label+" wks"):"—"}</b></div>
+        <div class="db-stat"><span>EDD</span><b>${p.edd?esc(dFmtDate(p.edd)):"—"}</b></div>
+        <div class="db-stat"><span>Next Visit</span><b class="${dashIsOverdue(p)?"ov":""}">${p.nextDue?esc(dFmtDate(p.nextDue)):"—"}</b></div>
+        <div class="db-stat"><span>BMI</span><b>${esc(p.bmi||"—")}</b></div>
+      </div>
+      ${p.reasons?`<div class="db-rsnbox"><b>Risk Factors &amp; Clinical Reasons</b>${esc(p.reasons)}</div>`:""}
+      ${dlvCard}
+      <div class="db-sec">
+        <div class="db-sec-t">Pregnancy &amp; ANC History</div>
+        <div class="db-kvg">
+          <div><span>LMP:</span> <b>${p.lmp?esc(/not recalled/i.test(p.lmp)?p.lmp:dFmtDate(p.lmp)):"—"}</b></div>
+          <div><span>Dating Basis:</span> <b>${esc(p.basis||"—")}</b></div>
+          <div><span>Prior CS:</span> <b>${esc(p.priorCs||"0")}</b></div>
+          <div><span>1st Visit:</span> <b>${p.firstVisit?esc(dFmtDate(p.firstVisit)):"—"}</b></div>
+          <div><span>AOG at 1st Visit:</span> <b>${p.aogFirst?esc(p.aogFirst+" wks"):"—"}</b></div>
+          <div><span>ANC #:</span> <b>${esc(p.ancN||"—")}</b></div>
+          <div><span>Missed Contacts:</span> <b>${esc(p.missed||"—")}</b></div>
+          <div><span>On Schedule:</span> <b>${esc(p.onSched||"—")}</b></div>
+          <div><span>Last Updated:</span> <b>${esc(dFmtDate(p.lastVisit||p.updated))}</b></div>
+        </div>
+      </div>
+      <div class="db-sec">
+        <div class="db-sec-t">Clinical Screening &amp; Labs</div>
+        <div class="db-scrg">
+          ${scr("HDP",p.hdp,!!p.hdp)}${scr("HELLP",p.hellp,!!p.hellp)}${scr("Gest. Thrombocytopenia",p.gt,p.gt==="Yes")}
+          ${scr("Hb",p.hb?p.hb+" g/dL":"",p.anemia==="Yes")}${scr("Anemia",p.anemia,p.anemia==="Yes")}${scr("Rh-negative",p.rhNeg,p.rhNeg==="Yes")}
+          ${scr("Syphilis (RPR)",p.rpr,p.rpr==="Reactive")}${scr("Hepatitis B (HBsAg)",p.hbsag,p.hbsag==="Reactive")}${scr("HIV",p.hiv,p.hiv==="Reactive")}
+          ${scr("GDM Screen",p.gdm,p.gdm==="Positive"||p.gdm==="Pending repeat")}
+          ${p.epdsPos==="Yes"?scr("EPDS ≥10",p.epdsPos,true):""}${p.aasPos==="Yes"?scr("Abuse Screen +",p.aasPos,true):""}
+        </div>
+        <div class="db-sec-t" style="margin-top:4px">
+          <span>${DASH.showAllLabs?`All Lab Results (${labs.all.length})`:`Latest Lab Results (${labs.latest.length})`}</span>
+          ${labs.all.length?`<button type="button" class="db-labtgl" id="dbLabTgl">${DASH.showAllLabs?"Show latest only":"View all lab results"}</button>`:""}
+        </div>
+        ${shownLabs.length?`<div class="db-lablist">${shownLabs.map(l=>`<div class="db-lab"><div><b>${esc(l.test)}:</b> ${esc(l.val)}</div><span class="db-lab-d">${esc(l.dateStr)}</span></div>`).join("")}</div>`:`<div class="hint">No dated lab results recorded yet.</div>`}
+      </div>
+      <div class="db-sec">
+        <div class="db-sec-t">Prophylaxis, Immunization &amp; Postpartum</div>
+        <div class="db-kvg">
+          <div><span>Aspirin:</span> <b>${esc(p.aspirin?(p.aspirin+(p.aspDose?" ("+p.aspDose+")":"")):"—")}</b></div>
+          <div><span>Td Doses:</span> <b>${esc(p.tdThis||"—")}</b></div>
+          <div><span>Td2 Plus:</span> <b>${esc(p.td2plus||"—")}</b></div>
+          <div><span>Tdap:</span> <b>${p.tdap?esc(dFmtDate(p.tdap)):"—"}</b></div>
+          <div><span>Dewormed:</span> <b>${p.dewormed?esc(dFmtDate(p.dewormed)):"—"}</b></div>
+          <div><span>IFA Complete:</span> <b>${esc(p.ifaDone||"—")}</b></div>
+          <div><span>CaCO₃ Complete:</span> <b>${esc(p.caDone||"—")}</b></div>
+          <div><span>PP1–PP4:</span> <b>${esc(ppDates||"—")}</b></div>
+          <div><span>≥2 PP Checks:</span> <b>${esc(p.pp2plus||"—")}</b></div>
+        </div>
+        <div style="margin-top:10px;padding-top:8px;border-top:.5px solid var(--line);font-size:12.5px"><span style="color:var(--muted)">Planned Place of Delivery:</span> <b>${esc(p.plannedPlace||"—")}</b></div>
+      </div>
+      <div>
+        <div class="db-sec-t" style="margin-bottom:8px">Visit History (${p.visits.length})</div>
+        ${vCards?`<div class="db-vlist">${vCards}</div>`:`<div class="hint">No visit entries recorded yet.</div>`}
+      </div>
+    </div>`;
+  $("dbShClose").onclick=dashCloseDrawer;
+  const lt=$("dbLabTgl"); if(lt)lt.onclick=()=>{DASH.showAllLabs=!DASH.showAllLabs; dashRenderDrawer();};
+  $("dbOpenForm").onclick=e=>dashOpenInForm(p.recId,e.currentTarget);
+}
+function dashOpenPatient(recId){
+  DASH.drawerRec=recId; DASH.showAllLabs=false;
+  dashRenderDrawer();
+  $("dashDrawer").classList.add("open"); $("dashDrawer").setAttribute("aria-hidden","false");
+}
+function dashCloseDrawer(){
+  $("dashDrawer").classList.remove("open"); $("dashDrawer").setAttribute("aria-hidden","true");
+}
+async function dashOpenInForm(recId,btn){
+  const prevHtml=btn?btn.innerHTML:"";
+  if(btn){btn.disabled=true; btn.textContent="Opening…";}
+  try{
+    await CLOUD.token();
+    const pObj=DASH.patients.find(x=>x.recId===recId);
+    let fid=(pObj&&pObj.driveFileId)||DASH.fileByRec[recId];
+    if(!fid){
+      const files=await CLOUD.list().catch(()=>[]);
+      DASH.files=files; DASH.fileByRec={};
+      files.forEach(f=>{const r=f.appProperties&&f.appProperties.recId; if(r&&!DASH.fileByRec[r])DASH.fileByRec[r]=f.id;});
+      fid=DASH.fileByRec[recId];
+      if(!fid&&pObj){const m=files.find(f=>nameMatch(pObj.name,(f.appProperties&&f.appProperties.name)||f.name)); if(m)fid=m.id;}
+    }
+    if(!fid){ehrToast("No saved Drive record found for "+recId,true); return;}
+    const ok=await loadDrive(fid);
+    if(ok){dashCloseDrawer(); dashClose(); window.scrollTo(0,0); ehrToast("Opened "+recId+" in form");}
+  }catch(e){ehrToast("Could not open record: "+(e.message||e),true);}
+  finally{if(btn){btn.disabled=false; btn.innerHTML=prevHtml;}}
+}
+function dashLoadCache(){
+  try{const c=JSON.parse(localStorage.getItem(DASH_CACHE)||"null");
+    if(c&&Array.isArray(c.tVals)){const parsed=dashParseRows(c.tVals,c.vVals||[]);
+      DASH.patients=parsed.patients; DASH.visits=parsed.visits; DASH.visitsByRec=parsed.visitsByRec; DASH.loadedAt=c.ts||0; return true;}}catch(e){}
+  return false;
+}
+async function dashLoad(force){
+  if(DASH.loading)return;
+  if(!force&&!DASH.stale&&DASH.patients.length){dashRender(); return;}
+  DASH.loading=true; DASH.err=""; DASH.offline=false;
+  const rb=$("dbRefresh"); if(rb)rb.classList.add("spin");
+  if(!DASH.patients.length)dashLoadCache();
+  dashPopFilters(); dashRender();
+  try{
+    await CLOUD.token();
+    const root=await CLOUD.folder("Bagac Prenatal Records");
+    const tid=await CLOUD.tracker(root);
+    const [sheet,files]=await Promise.all([
+      CLOUD.api(`https://sheets.googleapis.com/v4/spreadsheets/${tid}/values:batchGet?ranges=${CLOUD.q("Tracker!A1:ZZ")}&ranges=${CLOUD.q("Visits!A1:ZZ")}&valueRenderOption=FORMATTED_VALUE`),
+      CLOUD.list().catch(()=>[])
+    ]);
+    const tVals=(sheet.valueRanges&&sheet.valueRanges[0]&&sheet.valueRanges[0].values)||[];
+    const vVals=(sheet.valueRanges&&sheet.valueRanges[1]&&sheet.valueRanges[1].values)||[];
+    const parsed=dashParseRows(tVals,vVals);
+    DASH.patients=parsed.patients; DASH.visits=parsed.visits; DASH.visitsByRec=parsed.visitsByRec;
+    DASH.files=files||[]; DASH.fileByRec={};
+    DASH.files.forEach(f=>{const r=f.appProperties&&f.appProperties.recId; if(r&&!DASH.fileByRec[r])DASH.fileByRec[r]=f.id;});
+    DASH.loadedAt=Date.now(); DASH.stale=false;
+    try{localStorage.setItem(DASH_CACHE,JSON.stringify({ts:DASH.loadedAt,tVals,vVals}));}catch(e){}
+  }catch(e){
+    DASH.offline=!navigator.onLine||e.message==="offline";
+    DASH.err=DASH.offline?"Offline — showing last synced copy":("Could not sync: "+(e.message||e));
+  }finally{
+    DASH.loading=false; if(rb)rb.classList.remove("spin");
+    dashPopFilters(); dashRender();
+  }
+}
+function dashSyncBtn(){
+  const b=$("dashBtn"); if(!b)return;
+  b.setAttribute("aria-pressed",String(DASH.open));
+  b.querySelector(".dbFull").textContent=DASH.open?"← Form":"Dashboard";
+  b.querySelector(".dbShort").textContent=DASH.open?"← Form":"Dash";
+}
+function dashOpen(){
+  DASH.open=true; document.body.classList.add("dash-open");
+  document.body.classList.remove("toolsOpen","sheet-open");
+  dashSyncBtn(); window.scrollTo(0,0);
+  dashLoad(false);
+}
+function dashClose(){
+  DASH.open=false; dashCloseDrawer(); document.body.classList.remove("dash-open"); dashSyncBtn();
+}
+function dashToggle(){DASH.open?dashClose():dashOpen();}
+// Wire Dashboard UI interactions
+if($("dashView")){
+  $("dbRefresh").onclick=()=>dashLoad(true);
+  $("dbNewBtn").onclick=()=>{if(!confirmLeave())return; dashClose(); setView(null); $("clearBtn").onclick(); DIRTY=false; ehrToast("Blank form for a new patient");};
+  $("dbQ").addEventListener("input",e=>{DASH.q=e.target.value; dashRender();});
+  $("dbBrgy").addEventListener("change",e=>{DASH.brgy=e.target.value; dashRender();});
+  $("dbStatus").addEventListener("change",e=>{DASH.status=e.target.value; dashRender();});
+  $("dbTri").addEventListener("change",e=>{DASH.tri=e.target.value; dashRender();});
+  $("dbDoc").addEventListener("change",e=>{DASH.doc=e.target.value; dashRender();});
+  $("dashView").addEventListener("click",e=>{
+    const tb=e.target.closest("[data-dbtab]"); if(tb){DASH.tab=tb.dataset.dbtab; dashRender(); return;}
+    const cl=e.target.closest("[data-clr]"); if(cl){const k=cl.dataset.clr;
+      if(k==="risk")DASH.risk=""; else if(k==="quick")DASH.quick="";
+      else {DASH.q=DASH.brgy=DASH.status=DASH.tri=DASH.doc=DASH.risk=DASH.quick=""; $("dbQ").value=$("dbBrgy").value=$("dbStatus").value=$("dbTri").value=$("dbDoc").value="";}
+      dashRender(); return;}
+    const kp=e.target.closest("[data-kpi]"); if(kp){const id=kp.dataset.kpi;
+      if(id==="total"){DASH.risk=""; DASH.quick="";}
+      else if(id==="hr34"){DASH.risk=DASH.risk==="HR34"?"":"HR34"; DASH.quick="";}
+      else {DASH.quick=DASH.quick===id?"":id; DASH.risk="";}
+      dashRender(); return;}
+    const rb=e.target.closest("[data-risk]"); if(rb){const r=rb.dataset.risk; DASH.risk=DASH.risk===r?"":r; dashRender(); return;}
+    if(e.target.closest("#dbAlMore")){DASH.alertsExp=!DASH.alertsExp; dashRender(); return;}
+    const sh=e.target.closest("th[data-sort]"); if(sh){const c=sh.dataset.sort; if(DASH.sortCol===c)DASH.sortDir*=-1; else{DASH.sortCol=c; DASH.sortDir=1;} dashRender(); return;}
+    const recEl=e.target.closest("[data-rec]"); if(recEl&&recEl.dataset.rec){dashOpenPatient(recEl.dataset.rec); return;}
+  });
+  $("dashDrawer").addEventListener("click",e=>{if(e.target===$("dashDrawer"))dashCloseDrawer();});
+}
 renderPast(); render();
 </script>
 <script>if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js",{updateViaCache:"none"});</script>
